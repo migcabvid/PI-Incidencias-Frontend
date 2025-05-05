@@ -14,11 +14,13 @@ import { Router } from '@angular/router';
 export class LoginComponent {
   usuario = '';
   password = '';
-
-  // Separamos valor y etiqueta
-  selectedRoleValue = '';                         // "Profesor", "CoordinadorTic", "EquipoDirectivo"
-  selectedRoleLabel = 'Selecciona un rol';        // lo que ve el usuario
-
+  availableRoles = [
+    { value: 'Profesor',        label: 'Profesor' },
+    { value: 'CoordinadorTic',  label: 'Coordinador Tic' },
+    { value: 'EquipoDirectivo', label: 'Equipo Directivo' }
+  ];
+  selectedRoleValue = '';   // valor que envía al backend
+  selectedRoleLabel = 'Selecciona un rol'; // lo que ve el usuario
   optionsVisible = false;
   errorMessage = '';
 
@@ -28,36 +30,26 @@ export class LoginComponent {
     this.optionsVisible = !this.optionsVisible;
   }
 
-  // Ahora recibimos valor y etiqueta
   selectOption(value: string, label: string) {
     this.selectedRoleValue = value;
     this.selectedRoleLabel = label;
     this.optionsVisible = false;
   }
 
-  closeOptions(event: Event) {
-    if (!(event.target as HTMLElement).closest('.custom-select')) {
-      this.optionsVisible = false;
-    }
-  }
-
   onSubmit() {
     if (!this.usuario || !this.password || !this.selectedRoleValue) {
-      this.errorMessage = 'Por favor, completa todos los campos.';
+      this.errorMessage = 'Completa usuario, contraseña y selecciona un rol.';
       return;
     }
 
     const body: LoginRequest = {
       username: this.usuario,
       password: this.password,
-      rol: this.selectedRoleValue
+      rol:      this.selectedRoleValue
     };
 
     this.authService.login(body).subscribe({
-      next: resp => {
-        console.log('Éxito:', resp);
-        this.router.navigate(['/dashboard']);
-      },
+      next: () => this.router.navigate(['/incidencia']),
       error: err => {
         this.errorMessage = err.error?.message || 'Error en el login.';
       }
@@ -73,6 +65,14 @@ export class LoginComponent {
     } else {
       pwd.type = 'password';
       eye.classList.replace('ri-eye-line', 'ri-eye-off-line');
+    }
+  }
+
+  closeOptions(event: Event) {
+    const tgt = (event.target as HTMLElement);
+    // sólo cierra si clicas fuera del custom-select
+    if (!tgt.closest('.login__box--custom-select')) {
+      this.optionsVisible = false;
     }
   }
 }
