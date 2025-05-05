@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../auth.service'; // Importa el servicio de autenticación
-import { Router } from '@angular/router'; // Importa el Router para redirecciones
+import { AuthService, LoginRequest } from '../auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -12,11 +12,15 @@ import { Router } from '@angular/router'; // Importa el Router para redireccione
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  usuario: string = '';
-  password: string = '';
-  selectedRole: string = 'Selecciona un rol';
-  optionsVisible: boolean = false;
-  errorMessage: string = ''; // Para mostrar errores en el inicio de sesión
+  usuario = '';
+  password = '';
+
+  // Separamos valor y etiqueta
+  selectedRoleValue = '';                         // "Profesor", "CoordinadorTic", "EquipoDirectivo"
+  selectedRoleLabel = 'Selecciona un rol';        // lo que ve el usuario
+
+  optionsVisible = false;
+  errorMessage = '';
 
   constructor(private authService: AuthService, private router: Router) {}
 
@@ -24,47 +28,51 @@ export class LoginComponent {
     this.optionsVisible = !this.optionsVisible;
   }
 
-  selectOption(role: string) {
-    this.selectedRole = role;
+  // Ahora recibimos valor y etiqueta
+  selectOption(value: string, label: string) {
+    this.selectedRoleValue = value;
+    this.selectedRoleLabel = label;
     this.optionsVisible = false;
   }
 
   closeOptions(event: Event) {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.custom-select')) {
+    if (!(event.target as HTMLElement).closest('.custom-select')) {
       this.optionsVisible = false;
     }
   }
 
   onSubmit() {
-    if (!this.usuario || !this.password || this.selectedRole === 'Selecciona un rol') {
+    if (!this.usuario || !this.password || !this.selectedRoleValue) {
       this.errorMessage = 'Por favor, completa todos los campos.';
       return;
     }
 
-    this.authService.login(this.usuario, this.password).subscribe({
-      next: (response) => {
-        console.log('Inicio de sesión exitoso:', response);
-        // Redirigir al usuario a otra página después del inicio de sesión
-        this.router.navigate(['/dashboard']); // Cambia '/dashboard' según tu ruta
+    const body: LoginRequest = {
+      username: this.usuario,
+      password: this.password,
+      rol: this.selectedRoleValue
+    };
+
+    this.authService.login(body).subscribe({
+      next: resp => {
+        console.log('Éxito:', resp);
+        this.router.navigate(['/dashboard']);
       },
-      error: (error) => {
-        console.error('Error al iniciar sesión:', error);
-        this.errorMessage = 'Usuario o contraseña incorrectos.';
+      error: err => {
+        this.errorMessage = err.error?.message || 'Error en el login.';
       }
     });
   }
 
   togglePasswordVisibility() {
-    const passwordInput = document.getElementById('login-pass') as HTMLInputElement;
-    const toggleEye = document.querySelector('.login__eye') as HTMLElement;
-
-    if (passwordInput.type === 'password') {
-      passwordInput.type = 'text';
-      toggleEye.classList.replace('ri-eye-off-line', 'ri-eye-line');
+    const pwd = document.getElementById('login-pass') as HTMLInputElement;
+    const eye = document.querySelector('.login__eye') as HTMLElement;
+    if (pwd.type === 'password') {
+      pwd.type = 'text';
+      eye.classList.replace('ri-eye-off-line', 'ri-eye-line');
     } else {
-      passwordInput.type = 'password';
-      toggleEye.classList.replace('ri-eye-line', 'ri-eye-off-line');
+      pwd.type = 'password';
+      eye.classList.replace('ri-eye-line', 'ri-eye-off-line');
     }
   }
 }

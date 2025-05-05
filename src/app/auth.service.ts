@@ -1,5 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+  rol: string;
+}
+
+export interface LoginResponse {
+  message: string;
+  roles: string[];
+  activeRole: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -7,19 +20,15 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  login(username: string, password: string) {
-    return this.http.post<{ message: string }>(
-      `${this.baseUrl}/login`,
-      { username, password },
-      { withCredentials: true }
+  login(data: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(
+      `${this.baseUrl}/login`, data, { withCredentials: true }
     );
   }
 
-  logout() {
-    return this.http.post<{ message: string }>(
-      `${this.baseUrl}/logout`,
-      {},
-      { withCredentials: true }
+  logout(): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(
+      `${this.baseUrl}/logout`, {}, { withCredentials: true }
     );
   }
 }
