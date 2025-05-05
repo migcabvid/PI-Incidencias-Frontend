@@ -1,0 +1,11 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-mis-incidencias',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './misIncidencias.component.html',
+  styleUrls: ['./misIncidencias.component.css']
+})
+export class MisIncidenciasComponent {}

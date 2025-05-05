@@ -1,0 +1,30 @@
+<nav class="bg-[#1B4332] text-white p-4 shadow-lg">
+  <div class="container mx-auto flex justify-between items-center">
+    <div class="flex items-center space-x-4">
+      <i class="ri-user-3-line h-6 w-6"></i>
+      <select
+        [ngModel]="userRole"
+        (ngModelChange)="onRoleChange($event)"
+        class="bg-[#1B4332] text-white border border-white rounded px-2 py-1"
+      >
+        <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+      </select>
+      <button
+        (click)="goTo('mis-incidencias')"
+        class="hover:bg-[#2D6A4F] px-4 py-2 rounded-md transition"
+      >
+        Mis Incidencias
+      </button>
+    </div>
+    <div class="flex items-center space-x-4">
+      <span class="font-semibold">{{ title }}</span>
+      <button
+        (click)="logout()"
+        class="flex items-center space-x-2 hover:bg-[#2D6A4F] px-4 py-2 rounded-md transition"
+      >
+        <i class="ri-logout-circle-r-line h-5 w-5"></i>
+        <span>Salir</span>
+      </button>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,48 @@
+<main class="container mx-auto px-4 py-8">
+  <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <form (ngSubmit)="onSubmit()" class="p-6">
+      <!-- ID & Fecha -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">ID Incidencia</label>
+          <input type="text" [value]="formData.id" disabled
+                 class="w-full p-2 border rounded-md bg-gray-100 cursor-not-allowed"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+          <input type="date" [value]="formData.fecha" disabled
+                 class="w-full p-2 border rounded-md bg-gray-100 cursor-not-allowed"/>
+        </div>
+      </div>
+      <!-- Descripción & Foto -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+          <textarea [(ngModel)]="formData.descripcion" name="descripcion" rows="8"
+                    class="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Foto</label>
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center h-[calc(100%-2rem)]">
+            <p class="mt-2 text-sm text-gray-500">
+              Arrastra y suelta una imagen o haz clic para seleccionar
+            </p>
+          </div>
+        </div>
+      </div>
+      <!-- Tipo Incidencia -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo Incidencia</label>
+        <select [(ngModel)]="formData.tipo" name="tipo"
+                class="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent">
+          <option *ngFor="let t of tipos" [value]="t.value">{{ t.label }}</option>
+        </select>
+      </div>
+      <!-- Botones -->
+      <div class="flex justify-start space-x-4">
+        <button type="button" (click)="onReset()" class="bg-red-500 text-white px-4 py-2 rounded">Limpiar</button>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Confirmar</button>
+      </div>
+    </form>
+  </div>
+</main>
