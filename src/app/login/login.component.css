@@ -41,6 +41,10 @@ img {
   display: grid;
   align-items: center;
   justify-items: center;
+  background-image: url('../assets/images/fondo.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .login__img {
