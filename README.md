@@ -1,59 +1,38 @@
-# IncidenciasTicInstalaciones
+# Front‑End Angular · **Gestión de Incidencias**
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.9.
+Este repositorio contiene el _front_ de la **Aplicación de Gestión de Incidencias**, desarrollado con **Angular**.  
+La interfaz permite a los **Coordinadores TIC** y **Profesores** registrar y consultar incidencias de forma sencilla.
 
-## Development server
+---
 
-To start a local development server, run:
+## ✨ Características principales
 
-```bash
-ng serve
-```
+- **Login básico (sin cifrado)** contra el back‑end.
+- Gestión de roles: **Coordinador TIC** y **Profesor**.
+- Diseño **responsive**.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## 📋 Requisitos previos
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+| Herramienta | Versión recomendada |
+|-------------|---------------------|
+| Node.js     | ≥ 18 LTS            |
+| npm         | ≥ 9                |
+| Angular CLI | ≥ 16               |
+| Git         | ≥ 2.30             |
 
-```bash
-ng generate component component-name
-```
+---
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## 🚀 Puesta en marcha
 
 ```bash
-ng build
-```
+# 1) Clona el repositorio
+git clone https://github.com/tu-org/incidencias-frontend.git
+cd incidencias-frontend
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+# 2) Instala dependencias
+npm install
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+# 4) Inicia el servidor en modo desarrollo
+ng serve -o
