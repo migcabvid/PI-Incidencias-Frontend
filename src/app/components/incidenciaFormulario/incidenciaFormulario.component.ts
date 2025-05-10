@@ -11,7 +11,7 @@ interface FormData {
 }
 
 @Component({
-  selector: 'app-incidencia-formulario',
+  selector: 'crearIncidencia',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './incidenciaFormulario.component.html',

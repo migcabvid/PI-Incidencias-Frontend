@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-mis-incidencias',
+  selector: 'incidencias',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './misIncidencias.component.html',

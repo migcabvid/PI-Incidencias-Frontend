@@ -2,8 +2,8 @@ import { Component }    from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { NgIf }         from '@angular/common';
 
-import { NavbarComponent }  from './navbar/navbar.component';
-import { ToasterComponent } from './toast/toaster.component';
+import { NavbarComponent }  from './components/navbar/navbar.component';
+import { ToasterComponent } from './components/toast/toaster.component';
 
 @Component({
   selector: 'app-root',
