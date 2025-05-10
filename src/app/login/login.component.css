@@ -278,3 +278,11 @@ input:-webkit-autofill {
   font-family: "Poppins", sans-serif;
   color: black;
 }
+
+/* Mensaje de error */
+.error-message {
+  color: red; /* Cambia el color del texto a rojo */
+  font-size: 0.875rem; /* Tamaño de fuente más pequeño */
+  margin-top: 1rem; /* Espaciado superior */
+  text-align: center; /* Centra el texto */
+}
