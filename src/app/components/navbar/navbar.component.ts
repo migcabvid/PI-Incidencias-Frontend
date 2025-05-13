@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router }    from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
+import { AuthService }  from '../../auth.service';  // <-- importa el servicio
 
 @Component({
   selector: 'app-navbar',
@@ -14,7 +15,10 @@ export class NavbarComponent {
   userRole = 'Profesor';
   roles    = ['Profesor', 'Coordinador TIC', 'Equipo Directivo'];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private auth: AuthService               // <-- inyecta AuthService
+  ) {}
 
   onRoleChange(ev: Event) {
     this.userRole = (ev.target as HTMLSelectElement).value;
@@ -25,7 +29,10 @@ export class NavbarComponent {
   }
 
   logout() {
-    this.router.navigate(['/login']);
+    // Llama al backend para invalidar sesión y luego redirige a /login
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']);
+    });
   }
 
   get title(): string {
