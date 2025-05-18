@@ -49,7 +49,7 @@ export class LoginComponent {
     };
 
     this.authService.login(body).subscribe({
-      next: () => this.router.navigate(['/home']),
+      next: () => this.router.navigate(['/crearIncidencia']),
       error: err => {
         this.errorMessage = err.error?.message || 'Error en el login.';
       }
