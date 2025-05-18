@@ -1,38 +1,38 @@
 import { Component } from '@angular/core';
-import { Router }    from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule }  from '@angular/forms';
-import { AuthService }  from '../../auth.service';  // <-- importa el servicio
+import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent {
-  userRole = 'Profesor';
-  roles    = ['Profesor', 'Coordinador TIC', 'Equipo Directivo'];
+  optionsVisible = false;
 
   constructor(
     private router: Router,
-    private auth: AuthService               // <-- inyecta AuthService
+    public auth: AuthService
   ) {}
 
-  onRoleChange(ev: Event) {
-    this.userRole = (ev.target as HTMLSelectElement).value;
+  toggleOptions() {
+    this.optionsVisible = !this.optionsVisible;
+  }
+
+  selectOption(role: string) {
+    this.auth.changeRole(role);
+    this.optionsVisible = false;
+  }
+
+  logout() {
+    this.auth.logout().subscribe(() => this.router.navigate(['/login']));
   }
 
   goTo(path: string) {
     this.router.navigate([path]);
-  }
-
-  logout() {
-    // Llama al backend para invalidar sesión y luego redirige a /login
-    this.auth.logout().subscribe(() => {
-      this.router.navigate(['/login']);
-    });
   }
 
   get title(): string {

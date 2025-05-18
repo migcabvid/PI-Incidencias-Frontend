@@ -1,22 +1,30 @@
 <nav class="navbar">
   <div class="navbar-left">
-    <!-- Icono usuario + select de roles -->
     <i class="bi bi-person-fill icon"></i>
-    <select
-      [ngModel]="userRole"
-      (ngModelChange)="onRoleChange($event)"
-      class="role-select"
-    >
-      <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
-    </select>
 
-    <!-- Crear (Formulario de Incidencia) -->
+    <!-- custom select igual al login -->
+    <div class="login__box login__box--custom-select">
+      <i class="ri-user-settings-line login__icon"></i>
+      <div class="login__box-input custom-select" 
+           [class.open]="optionsVisible">
+        <div class="selected-option" (click)="toggleOptions()">
+          {{ auth.activeRole || 'Selecciona rol' }}
+        </div>
+        <div class="options" 
+             [style.display]="optionsVisible ? 'block' : 'none'">
+          <div class="option" 
+               *ngFor="let r of auth.allRoles" 
+               (click)="selectOption(r)">
+            {{ r }}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <button (click)="goTo('crearIncidencia')" class="nav-btn">
       <i class="bi bi-check-circle-fill icon"></i>
       <span>Crear</span>
     </button>
-
-    <!-- Gestión (Mis Incidencias) -->
     <button (click)="goTo('incidencias')" class="nav-btn">
       <i class="bi bi-clipboard-data icon"></i>
       <span>Gestión</span>
@@ -24,13 +32,10 @@
   </div>
 
   <div class="navbar-right">
-    <!-- Incidencias / Home -->
     <button (click)="goTo('home')" class="nav-btn">
       <i class="bi bi-clock-fill icon"></i>
       <span>Incidencias</span>
     </button>
-
-    <!-- Logout -->
     <button (click)="logout()" class="logout-btn">
       <i class="bi bi-escape icon"></i>
     </button>
