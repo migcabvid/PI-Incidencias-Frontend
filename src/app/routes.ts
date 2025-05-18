@@ -10,7 +10,7 @@ export const routes: Routes = [
     path: '',
     canActivate: [AuthGuard],
     children: [
-      { path: 'incidencias', component: MisIncidenciasComponent },
+      { path: 'misIncidencias', component: MisIncidenciasComponent },
       { path: 'crearIncidencia', component: IncidenciaFormularioComponent },
       { path: '', redirectTo: 'crearIncidencia', pathMatch: 'full' }
     ]

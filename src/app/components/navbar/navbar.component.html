@@ -21,13 +21,16 @@
       </div>
     </div>
 
-    <button (click)="goTo('crearIncidencia')" class="nav-btn">
-      <i class="bi bi-check-circle-fill icon"></i>
-      <span>Crear</span>
-    </button>
-    <button (click)="goTo('incidencias')" class="nav-btn">
+    <!-- Solo muestra "Mis Incidencias" si estás en crearIncidencia -->
+    <button *ngIf="isCrearIncidencia" (click)="goTo('misIncidencias')" class="nav-btn">
       <i class="bi bi-clipboard-data icon"></i>
-      <span>Gestión</span>
+      <span>Mis Incidencias</span>
+    </button>
+
+    <!-- Solo muestra "Crear" si estás en misIncidencias -->
+    <button *ngIf="isMisIncidencias" (click)="goTo('crearIncidencia')" class="nav-btn">
+      <i class="bi bi-check-circle-fill icon"></i>
+      <span>Crear Incidencia</span>
     </button>
   </div>
 

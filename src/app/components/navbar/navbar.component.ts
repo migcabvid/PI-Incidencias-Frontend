@@ -42,4 +42,12 @@ export class NavbarComponent {
       default:                 return '';
     }
   }
+
+  get isCrearIncidencia(): boolean {
+    return this.router.url === '/crearIncidencia' || this.router.url === '/';
+  }
+
+  get isMisIncidencias(): boolean {
+    return this.router.url === '/misIncidencias';
+  }
 }
