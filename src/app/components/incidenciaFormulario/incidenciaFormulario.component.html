@@ -1,49 +1,70 @@
-<main class="container mx-auto px-4 py-8">
-  <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
-    <form (ngSubmit)="onSubmit()" class="p-6">
+<main class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <form (ngSubmit)="onSubmit()">
             <!-- Tipo Incidencia -->
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo Incidencia</label>
-        <select [(ngModel)]="formData.tipo" name="tipo"
-                class="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent">
-          <option *ngFor="let t of tipos" [value]="t.value">{{ t.label }}</option>
-        </select>
-      </div>
-      <!-- ID & Fecha -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">ID Incidencia</label>
-          <input type="text" [value]="formData.id" disabled
-                 class="w-full p-2 border rounded-md bg-gray-100 cursor-not-allowed"/>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
-          <input type="date" [value]="formData.fecha" disabled
-                 class="w-full p-2 border rounded-md bg-gray-100 cursor-not-allowed"/>
-        </div>
-      </div>
-      <!-- Descripción & Foto -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-          <textarea [(ngModel)]="formData.descripcion" name="descripcion" rows="8"
-                    class="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent"></textarea>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Foto</label>
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center h-[calc(100%-2rem)]">
-            <p class="mt-2 text-sm text-gray-500">
-              Arrastra y suelta una imagen o haz clic para seleccionar
-            </p>
-          </div>
-        </div>
-      </div>
+            <div class="mb-4">
+              <label for="tipo" class="form-label">Tipo Incidencia</label>
+              <select id="tipo" name="tipo" class="form-select" [(ngModel)]="formData.tipo" required>
+                <option *ngFor="let t of tipos" [value]="t.value">
+                  {{ t.label }}
+                </option>
+              </select>
+            </div>
 
-      <!-- Botones -->
-      <div class="flex justify-start space-x-4">
-        <button type="button" (click)="onReset()" class="bg-red-500 text-white px-4 py-2 rounded">Limpiar</button>
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Confirmar</button>
+            <!-- ID & Fecha -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label for="idIncidencia" class="form-label">ID Incidencia</label>
+                <input type="text" id="idIncidencia" class="form-control" [value]="formData.id" disabled />
+              </div>
+              <div class="col-md-6">
+                <label for="fecha" class="form-label">Fecha</label>
+                <input type="date" id="fecha" class="form-control" [value]="formData.fecha" disabled />
+              </div>
+            </div>
+
+            <!-- Descripción & Foto -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea id="descripcion" name="descripcion" class="form-control" rows="8"
+                  [(ngModel)]="formData.descripcion" required>
+                </textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label d-block">
+                  Foto
+                </label>
+                <div class="form-control d-flex flex-column justify-content-center align-items-center"
+                  style="height: 220px; cursor: pointer; min-height: unset; max-height: 220px; overflow: hidden;"
+                  (click)="triggerFileInput()">
+                                    <i class="bi bi-image"></i>
+                  <p class="mb-1">Arrastra y suelta una imagen</p>
+                  <p class="small text-muted">o haz clic para seleccionar</p>
+                  <input type="file" accept="image/*" #fileInput class="d-none" (change)="onFileSelected($event)" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex gap-3 justify-content-end">
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle-fill ms-2"></i>
+                Confirmar
+
+              </button>
+              <button type="button" class="btn btn-danger" (click)="onReset()">
+                <i class="bi bi-x-circle-fill ms-2"></i>
+                Limpiar
+
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </form>
+    </div>
   </div>
 </main>

@@ -1,13 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule }      from '@angular/common';
-import { FormsModule }       from '@angular/forms';
-import { ToastService }      from '../toast/toast.service';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule }  from '@angular/forms';
+import { ToastService } from '../toast/toast.service';
 
 interface FormData {
   id: string;
   fecha: string;
   descripcion: string;
   tipo: string;
+  fotoFile: File | null;
 }
 
 @Component({
@@ -18,12 +24,21 @@ interface FormData {
   styleUrls: ['./incidenciaFormulario.component.css']
 })
 export class IncidenciaFormularioComponent implements OnInit {
-  formData: FormData = { id: '', fecha: '', descripcion: '', tipo: '' };
+  formData: FormData = {
+    id: '',
+    fecha: '',
+    descripcion: '',
+    tipo: '',
+    fotoFile: null
+  };
+
   tipos = [
     { value: '',       label: 'Selecciona un tipo' },
     { value: 'T.I.C.',  label: 'T.I.C.' },
     { value: 'Centro',  label: 'Centro' }
   ];
+
+  @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
 
   constructor(private toast: ToastService) {}
 
@@ -49,14 +64,41 @@ export class IncidenciaFormularioComponent implements OnInit {
   private resetIds() {
     this.formData.id    = this.generateId();
     this.formData.fecha = this.getCurrentDate();
+    // Reset foto también
+    this.formData.fotoFile = null;
+    if (this.fileInputRef) {
+      this.fileInputRef.nativeElement.value = '';
+    }
+  }
+
+  triggerFileInput(): void {
+    this.fileInputRef.nativeElement.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length) {
+      this.formData.fotoFile = input.files[0];
+      // opcional: vista previa o lógica adicional
+      console.log('Archivo seleccionado:', this.formData.fotoFile);
+    }
   }
 
   onSubmit() {
     if (!this.formData.descripcion || !this.formData.tipo) {
-      this.toast.show('Error', 'Completa todos los campos requeridos', 'destructive');
+      this.toast.show(
+        'Error',
+        'Completa todos los campos requeridos',
+        'destructive'
+      );
       return;
     }
-    this.toast.show('Incidencia registrada', 'La incidencia se ha registrado correctamente', 'success');
+    this.toast.show(
+      'Incidencia registrada',
+      'La incidencia se ha registrado correctamente',
+      'success'
+    );
+    // Aquí podrías enviar formData, incluyendo formData.fotoFile
     this.resetIds();
     this.formData.descripcion = '';
     this.formData.tipo        = '';
@@ -65,5 +107,9 @@ export class IncidenciaFormularioComponent implements OnInit {
   onReset() {
     this.formData.descripcion = '';
     this.formData.tipo        = '';
+    this.formData.fotoFile    = null;
+    if (this.fileInputRef) {
+      this.fileInputRef.nativeElement.value = '';
+    }
   }
 }
