@@ -1,46 +1,100 @@
-<nav class="navbar">
-  <div class="navbar-left">
-    <i class="bi bi-person-fill icon"></i>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- Agrega esto en el <head> de tu index.html -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,500,700&display=swap" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
 
-    <!-- custom select igual al login -->
-    <div class="login__box login__box--custom-select">
-      <i class="ri-user-settings-line login__icon"></i>
-      <div class="login__box-input custom-select" 
-           [class.open]="optionsVisible">
-        <div class="selected-option" (click)="toggleOptions()">
-          {{ auth.activeRole || 'Selecciona rol' }}
-        </div>
-        <div class="options" 
-             [style.display]="optionsVisible ? 'block' : 'none'">
-          <div class="option" 
-               *ngFor="let r of auth.allRoles" 
-               (click)="selectOption(r)">
-            {{ r }}
-          </div>
-        </div>
-      </div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+  <div class="container-fluid">
+    <!-- Icono / marca -->
+    <a class="navbar-brand" href="#">
+      <i class="bi bi-person-fill"></i>
+    </a>
+
+    <!-- Botón toggler para móvil -->
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenido colapsable -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <!-- Dropdown de roles -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle"
+             href="#"
+             id="rolesDropdown"
+             role="button"
+             data-bs-toggle="dropdown"
+             aria-expanded="false">
+            {{ auth.activeRole || 'Selecciona rol' }}
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="rolesDropdown">
+            <li *ngFor="let r of auth.allRoles">
+              <a class="dropdown-item" href="#"
+                 (click)="selectOption(r)">
+                {{ r }}
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Mis Incidencias (visible en crearIncidencia) -->
+        <li class="nav-item" *ngIf="isCrearIncidencia">
+          <a class="nav-link"
+             href="#"
+             (click)="goTo('misIncidencias')">
+            <i class="bi bi-inboxes"></i>
+            Mis Incidencias
+          </a>
+        </li>
+
+        <!-- Crear Incidencia (visible en misIncidencias) -->
+        <li class="nav-item" *ngIf="isMisIncidencias">
+          <a class="nav-link"
+             href="#"
+             (click)="goTo('crearIncidencia')">
+            <i class="bi bi-check-circle-fill"></i>
+            Crear Incidencia
+          </a>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav mb-2 mb-lg-0">
+        <!-- Incidencias -->
+        <li class="nav-item">
+          <span class="nav-link disabled" style="pointer-events: none;">
+            Incidencias
+          </span>
+        </li>
+        <!-- Logout -->
+        <li class="nav-item">
+          <a class="nav-link"
+             href="#"
+             (click)="logout()">
+            <i class="bi bi-escape"></i>
+          </a>
+        </li>
+      </ul>
     </div>
-
-    <!-- Solo muestra "Mis Incidencias" si estás en crearIncidencia -->
-    <button *ngIf="isCrearIncidencia" (click)="goTo('misIncidencias')" class="nav-btn">
-      <i class="bi bi-clipboard-data icon"></i>
-      <span>Mis Incidencias</span>
-    </button>
-
-    <!-- Solo muestra "Crear" si estás en misIncidencias -->
-    <button *ngIf="isMisIncidencias" (click)="goTo('crearIncidencia')" class="nav-btn">
-      <i class="bi bi-check-circle-fill icon"></i>
-      <span>Crear Incidencia</span>
-    </button>
-  </div>
-
-  <div class="navbar-right">
-    <button (click)="goTo('home')" class="nav-btn">
-      <i class="bi bi-clock-fill icon"></i>
-      <span>Incidencias</span>
-    </button>
-    <button (click)="logout()" class="logout-btn">
-      <i class="bi bi-escape icon"></i>
-    </button>
   </div>
 </nav>
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+</body>
+</html>

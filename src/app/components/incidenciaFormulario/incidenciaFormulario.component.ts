@@ -21,9 +21,8 @@ export class IncidenciaFormularioComponent implements OnInit {
   formData: FormData = { id: '', fecha: '', descripcion: '', tipo: '' };
   tipos = [
     { value: '',       label: 'Selecciona un tipo' },
-    { value: 'tipo1',  label: 'Tipo 1' },
-    { value: 'tipo2',  label: 'Tipo 2' },
-    { value: 'tipo3',  label: 'Tipo 3' }
+    { value: 'T.I.C.',  label: 'T.I.C.' },
+    { value: 'Centro',  label: 'Centro' }
   ];
 
   constructor(private toast: ToastService) {}
