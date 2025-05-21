@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 
 export interface LoginRequest {
   username: string;
@@ -15,67 +15,79 @@ export interface LoginResponse {
   activeRole: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
   private rolesSubject = new BehaviorSubject<string[]>([]);
   private activeRoleSubject = new BehaviorSubject<string | null>(null);
 
-  /** Streams para suscribirse en el navbar, etc. */
-  roles$ = this.rolesSubject.asObservable();
-  activeRole$ = this.activeRoleSubject.asObservable();
+  roles$       = this.rolesSubject.asObservable();
+  activeRole$  = this.activeRoleSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // Intentamos recargar sesión al iniciar la app
+    this.checkSession().subscribe({
+      next: resp => {
+        // Si hay sesión, actualizamos subjects
+        this.rolesSubject.next(resp.roles);
+        this.activeRoleSubject.next(resp.activeRole);
+        // Y persistimos (opcional)
+        localStorage.setItem('roles', JSON.stringify(resp.roles));
+        localStorage.setItem('activeRole', resp.activeRole);
+      },
+      error: () => {
+        // Si no hay sesión, restauramos fallback de localStorage
+        const savedRoles = localStorage.getItem('roles');
+        const savedActive = localStorage.getItem('activeRole');
+        if (savedRoles) this.rolesSubject.next(JSON.parse(savedRoles));
+        if (savedActive) this.activeRoleSubject.next(savedActive);
+      }
+    });
+  }
 
-  /** Llama a POST /auth/login y guarda roles y rol activo */
   login(req: LoginRequest): Observable<LoginResponse> {
-    return this.http
-      .post<LoginResponse>(
-        'http://localhost:8080/auth/login',
-        req,
-        { withCredentials: true }
-      )
-      .pipe(
-        tap(resp => {
-          this.rolesSubject.next(resp.roles);
-          this.activeRoleSubject.next(resp.activeRole);
-        })
-      );
-  }
-
-  /** Cierra sesión en backend y limpia estado */
-  logout(): Observable<void> {
-    return this.http
-      .post<void>(
-        'http://localhost:8080/auth/logout',
-        {},
-        { withCredentials: true }
-      )
-      .pipe(
-        tap(() => {
-          this.rolesSubject.next([]);
-          this.activeRoleSubject.next(null);
-        })
-      );
-  }
-
-  /** Comprueba si la sesión sigue activa (GET /auth/session) */
-  checkSession(): Observable<void> {
-    return this.http.get<void>(
-      'http://localhost:8080/auth/session',
-      { withCredentials: true }
+    return this.http.post<LoginResponse>(
+      'http://localhost:8080/auth/login', req, { withCredentials: true }
+    ).pipe(
+      tap(resp => {
+        this.rolesSubject.next(resp.roles);
+        this.activeRoleSubject.next(resp.activeRole);
+        localStorage.setItem('roles', JSON.stringify(resp.roles));
+        localStorage.setItem('activeRole', resp.activeRole);
+      })
     );
   }
 
-  /** Permite cambiar el rol activo en la UI (no en el backend) */
+  logout(): Observable<void> {
+    return this.http.post<void>(
+      'http://localhost:8080/auth/logout', {}, { withCredentials: true }
+    ).pipe(
+      tap(() => {
+        this.rolesSubject.next([]);
+        this.activeRoleSubject.next(null);
+        localStorage.removeItem('roles');
+        localStorage.removeItem('activeRole');
+      })
+    );
+  }
+
+  /** Ahora devuelve el DTO con roles y activeRole */
+  checkSession(): Observable<LoginResponse> {
+    return this.http.get<LoginResponse>(
+      'http://localhost:8080/auth/session', { withCredentials: true }
+    ).pipe(
+      catchError(_ => {
+        // Convertimos el error en throw para el subscribe del constructor
+        throw _;
+      })
+    );
+  }
+
   setActiveRole(rol: string) {
     this.activeRoleSubject.next(rol);
+    localStorage.setItem('activeRole', rol);
   }
-  /**
-   * Indica si hay sesión (rol activo distinto de null)
-   */
-  public get loggedIn(): boolean {
+
+  get loggedIn(): boolean {
     return this.activeRoleSubject.getValue() !== null;
   }
 }

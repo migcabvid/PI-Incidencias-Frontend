@@ -1,11 +1,10 @@
-// src/app/app.component.ts
-import { Component, OnInit }        from '@angular/core';
-import { Router, RouterOutlet }     from '@angular/router';
-import { NgIf }                     from '@angular/common';
+import { Component, OnInit }    from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { NgIf }                 from '@angular/common';
 
-import { NavbarComponent }          from './components/navbar/navbar.component';
-import { ToasterComponent }         from './components/toast/toaster.component';
-import { AuthService }              from './auth.service';
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { ToasterComponent } from './components/toast/toaster.component';
+import { AuthService }      from './auth.service';
 
 @Component({
   selector: 'app-root',
@@ -26,23 +25,25 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Al cargar la app, comprobamos sesión y redirigimos según el resultado
+    // Comprueba sesión en el backend; si falla, redirige a login
     this.auth.checkSession().subscribe({
       next: () => {
-        // Si ya está logueado y está en /login, lo mandamos a crearIncidencia
+        // Si estamos en /login y la sesión es válida, vamos a crearIncidencia
         if (this.router.url === '/login') {
-          this.router.navigate(['/crearIncidencia']);
-        }
+        this.router.navigate(['/misIncidencias']);
+      }
       },
       error: () => {
-        // Si recibimos 401, redirigimos a /login
         this.router.navigate(['/login']);
       }
     });
   }
 
-  /** Muestra navbar y toaster solo cuando hay sesión y no estamos en /login */
+  /** 
+   * Muestra navbar y toaster siempre que NO estemos en /login.
+   * De esta forma, tras F5 en una ruta protegida, el layout sigue visible.
+   */
   showLayout(): boolean {
-    return this.auth.loggedIn && this.router.url !== '/login';
+    return this.router.url !== '/login';
   }
 }

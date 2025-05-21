@@ -1,3 +1,6 @@
+// src/main.ts
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';  // <-- Importa Bootstrap JS (incluye Popper)
+
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter }        from '@angular/router';
 import { importProvidersFrom }  from '@angular/core';

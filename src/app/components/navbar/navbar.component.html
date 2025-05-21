@@ -15,61 +15,65 @@
 <!-- src/app/components/navbar/navbar.component.html -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-success">
   <div class="container-fluid">
-    <!-- Icono / marca -->
-    <a class="navbar-brand" href="#">
-      <i class="bi bi-person-fill"></i>
-    </a>
-
-    <!-- Botón toggler para móvil -->
-    <button class="navbar-toggler" type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false"
-            aria-label="Toggle navigation">
+    <!-- Toggler móvil -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- Contenido colapsable -->
+    <!-- Menú colapsable -->
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <!-- Dropdown de roles -->
+
+        <!-- Toggle de rol con icono y texto juntos -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle"
-             href="#"
-             id="rolesDropdown"
-             role="button"
-             data-bs-toggle="dropdown"
-             aria-expanded="false">
-            {{ activeRole || 'Selecciona rol' }}
+          <a
+            class="nav-link dropdown-toggle"
+            href="javascript:void(0)"
+            (click)="$event.preventDefault()"
+            id="rolesDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="bi bi-person-fill me-1"></i>
+            {{ displayActiveRole }}
           </a>
           <ul class="dropdown-menu" aria-labelledby="rolesDropdown">
-            <li *ngFor="let r of allRoles">
-              <a class="dropdown-item" href="#"
-                 (click)="selectOption(r)">
-                {{ r }}
+            <li *ngFor="let r of otherRoles">
+              <a
+                class="dropdown-item"
+                href="javascript:void(0)"
+                (click)="selectOption(r, $event)"
+              >
+                {{ roleDisplayMap[r.toLowerCase()] || titleCase(r) }}
               </a>
+            </li>
+            <li
+              *ngIf="otherRoles.length === 0"
+              class="dropdown-item text-muted"
+            >
+              No hay más roles
             </li>
           </ul>
         </li>
 
-        <!-- Mis Incidencias (visible en crearIncidencia) -->
+        <!-- Mis Incidencias / Crear Incidencia -->
         <li class="nav-item" *ngIf="isCrearIncidencia">
-          <a class="nav-link"
-             href="#"
-             (click)="goTo('misIncidencias')">
-            <i class="bi bi-clipboard2-data"></i>
-            Mis Incidencias
+          <a class="nav-link" [routerLink]="['/misIncidencias']">
+            <i class="bi bi-clipboard2-data"></i> Mis Incidencias
           </a>
         </li>
-
-        <!-- Crear Incidencia (visible en misIncidencias) -->
         <li class="nav-item" *ngIf="isMisIncidencias">
-          <a class="nav-link"
-             href="#"
-             (click)="goTo('crearIncidencia')">
-            <i class="bi bi-clipboard2-plus"></i>
-            Crear Incidencia
+          <a class="nav-link" [routerLink]="['/crearIncidencia']">
+            <i class="bi bi-clipboard2-plus"></i> Crear Incidencia
           </a>
         </li>
       </ul>
@@ -83,9 +87,11 @@
         </li>
         <!-- Logout -->
         <li class="nav-item">
-          <a class="nav-link"
-             href="#"
-             (click)="logout()">
+          <a
+            class="nav-link"
+            href="javascript:void(0)"
+            (click)="logout()"
+          >
             <i class="bi bi-escape"></i>
           </a>
         </li>
@@ -94,9 +100,10 @@
   </div>
 </nav>
 
-<!-- Bootstrap Bundle with Popper -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+
+
+
+
 
 </body>
 </html>
