@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 export interface LoginRequest {
   username: string;
@@ -11,87 +11,71 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   message: string;
-  allRoles: string[];
-  activeRole: string | null;
+  roles: string[];
+  activeRole: string;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class AuthService {
-  private baseUrl = 'http://localhost:8080/auth';
-  private _loggedIn = false;
-  private _currentUser: string | null = null;
-  private _allRoles: string[] = [];
-  private _activeRole: string | null = null;
+  private rolesSubject = new BehaviorSubject<string[]>([]);
+  private activeRoleSubject = new BehaviorSubject<string | null>(null);
 
-  constructor(private http: HttpClient) {
-    const savedUser = sessionStorage.getItem('currentUser');
-    const savedRoles = sessionStorage.getItem('allRoles');
-    const savedActive = sessionStorage.getItem('activeRole');
-    if (savedUser && savedRoles && savedActive) {
-      this._currentUser = savedUser;
-      this._allRoles    = JSON.parse(savedRoles);
-      this._activeRole  = savedActive;
-      this._loggedIn    = true;
-    }
-  }
+  /** Streams para suscribirse en el navbar, etc. */
+  roles$ = this.rolesSubject.asObservable();
+  activeRole$ = this.activeRoleSubject.asObservable();
 
-  login(data: LoginRequest): Observable<LoginResponse> {
+  constructor(private http: HttpClient) {}
+
+  /** Llama a POST /auth/login y guarda roles y rol activo */
+  login(req: LoginRequest): Observable<LoginResponse> {
     return this.http
-      .post<LoginResponse>(`${this.baseUrl}/login`, data, { withCredentials: true })
+      .post<LoginResponse>(
+        'http://localhost:8080/auth/login',
+        req,
+        { withCredentials: true }
+      )
       .pipe(
         tap(resp => {
-          this._loggedIn    = true;
-          this._currentUser = data.username;
-          this._allRoles    = resp.allRoles;
-          this._activeRole  = resp.activeRole;
-          sessionStorage.setItem('currentUser', data.username);
-          sessionStorage.setItem('allRoles', JSON.stringify(resp.allRoles));
-          sessionStorage.setItem('activeRole', resp.activeRole!);
+          this.rolesSubject.next(resp.roles);
+          this.activeRoleSubject.next(resp.activeRole);
         })
       );
   }
 
-  logout(): Observable<any> {
+  /** Cierra sesión en backend y limpia estado */
+  logout(): Observable<void> {
     return this.http
-      .post<any>(`${this.baseUrl}/logout`, {}, { withCredentials: true })
+      .post<void>(
+        'http://localhost:8080/auth/logout',
+        {},
+        { withCredentials: true }
+      )
       .pipe(
         tap(() => {
-          this._loggedIn    = false;
-          this._currentUser = null;
-          this._allRoles    = [];
-          this._activeRole  = null;
-          sessionStorage.clear();
+          this.rolesSubject.next([]);
+          this.activeRoleSubject.next(null);
         })
       );
   }
 
-  /** Comprueba en el servidor si la sesión sigue activa */
-  public checkSession(): Observable<boolean> {
-    return this.http
-      .get<void>(`${this.baseUrl}/session`, { withCredentials: true })
-      .pipe(
-        map(() => {
-          this._loggedIn = true;
-          return true;
-        }),
-        catchError(() => {
-          this._loggedIn = false;
-          return of(false);
-        })
-      );
+  /** Comprueba si la sesión sigue activa (GET /auth/session) */
+  checkSession(): Observable<void> {
+    return this.http.get<void>(
+      'http://localhost:8080/auth/session',
+      { withCredentials: true }
+    );
   }
 
-  // getters
-  get loggedIn(): boolean         { return this._loggedIn; }
-  get currentUser(): string | null { return this._currentUser; }
-  get allRoles(): string[]        { return this._allRoles; }
-  get activeRole(): string | null  { return this._activeRole; }
-
-  /** Cambia de rol sin volver a loguearse */
-  changeRole(newRole: string) {
-    if (this._allRoles.includes(newRole)) {
-      this._activeRole = newRole;
-      sessionStorage.setItem('activeRole', newRole);
-    }
+  /** Permite cambiar el rol activo en la UI (no en el backend) */
+  setActiveRole(rol: string) {
+    this.activeRoleSubject.next(rol);
+  }
+  /**
+   * Indica si hay sesión (rol activo distinto de null)
+   */
+  public get loggedIn(): boolean {
+    return this.activeRoleSubject.getValue() !== null;
   }
 }
