@@ -2,6 +2,10 @@
   <div class="row justify-content-center">
     <div class="col-lg-8">
       <div class="card shadow-sm">
+        <!-- Título dentro de la misma caja del formulario -->
+        <div class="titulo-formulario">
+          Registrar Incidencia
+        </div>
         <div class="card-body">
           <form (ngSubmit)="onSubmit()">
             <!-- Tipo Incidencia -->
@@ -37,11 +41,11 @@
               <div class="col-md-6">
                 <label class="form-label d-block">
                   Foto
+                  <i class="bi bi-image"></i>
                 </label>
                 <div class="form-control d-flex flex-column justify-content-center align-items-center"
                   style="height: 220px; cursor: pointer; min-height: unset; max-height: 220px; overflow: hidden;"
                   (click)="triggerFileInput()">
-                                    <i class="bi bi-image"></i>
                   <p class="mb-1">Arrastra y suelta una imagen</p>
                   <p class="small text-muted">o haz clic para seleccionar</p>
                   <input type="file" accept="image/*" #fileInput class="d-none" (change)="onFileSelected($event)" />
@@ -54,12 +58,10 @@
               <button type="submit" class="btn btn-success">
                 <i class="bi bi-check-circle-fill ms-2"></i>
                 Confirmar
-
               </button>
               <button type="button" class="btn btn-danger" (click)="onReset()">
                 <i class="bi bi-x-circle-fill ms-2"></i>
                 Limpiar
-
               </button>
             </div>
           </form>
