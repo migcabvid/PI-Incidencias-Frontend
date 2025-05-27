@@ -1,1 +1,51 @@
-/* Copia aquí los estilos originales de misIncidencias */
+/* Fuente y color general */
+.card,
+.card label,
+.card input,
+.card select,
+.card .form-label,
+.card .form-control,
+.card .btn,
+.table {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+}
+
+/* Fondo de la tarjeta */
+.card {
+  background-color: #EDF1EF;
+}
+
+/* Título */
+.titulo-formulario {
+  background-color: #285846;
+  color: #fff;
+  text-align: center;
+  padding: 0.75rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+/* Tablas personalizadas */
+.summary-table th,
+.incidents-table th {
+  background-color: #285846;
+  color: #fff;
+  font-weight: 500;
+}
+
+.summary-table td,
+.incidents-table td {
+  vertical-align: middle;
+}
+
+/* Ajuste de botones en tabla */
+.incidents-table .btn {
+  font-size: 0.9rem;
+}
+
+.quitarTablaAbajo{
+    margin-bottom: 0px;
+}

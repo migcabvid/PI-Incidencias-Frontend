@@ -1,6 +1,112 @@
-<main class="container mx-auto px-4 py-8">
-  <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-bold mb-6">Lista de Incidencias</h2>
-    <p class="text-gray-500">No hay incidencias registradas</p>
+<main class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-sm">
+        <!-- Título de la sección -->
+        <div class="titulo-formulario">
+          Lista de Incidencias
+        </div>
+        <div class="card-body">
+          <!-- Filtros de fecha y búsqueda -->
+          <div class="row g-3 mb-4 align-items-end">
+            <div class="col-md-4">
+              <label for="from" class="form-label">Fecha Desde</label>
+              <div class="input-group">
+                <input #from type="date" id="from" class="form-control">
+                <button class="btn btn-success" (click)="filterByDate(from, to)">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label for="to" class="form-label">Fecha Hasta</label>
+              <div class="input-group">
+                <input #to type="date" id="to" class="form-control">
+                <button class="btn btn-success" (click)="filterByDate(from, to)">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-4 mx-auto">
+              <button class="btn btn-success d-flex align-items-center gap-2">
+                <i class="bi bi-search"></i>
+                Buscar
+              </button>
+            </div>
+          </div>
+
+          <!-- Resumen -->
+          <div class="table-responsive rounded-3 border mb-4 mx-auto" style="max-width:60%;">
+            <table class="table text-center summary-table quitarTablaAbajo">
+              <thead>
+                <tr>
+                  <th>Incidencias</th>
+                  <th>Número</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of summaryData">
+                  <td>{{ s.type }}</td>
+                  <td>{{ s.count }}</td>
+                  <td>
+                    <button class="btn btn-success btn-sm-sm me-1">
+                      <i class="bi bi-plus"></i>
+                    </button>
+                    <button class="btn btn-success btn-sm-sm me-1">
+                      <i class="bi bi-file-text"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="col-md-4">
+            <label for="searchId" class="form-label">Buscar ID</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input #searchId type="text" id="searchId" class="form-control" placeholder="Escribe el ID..."
+                (input)="filterById(searchId.value)">
+            </div>
+          </div>
+
+          <!-- Tabla de incidencias -->
+          <div class="table-responsive rounded-3 border">
+            <table class="table align-middle incidents-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Descripción</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th class="text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let inc of filteredIncidents">
+                  <td>{{ inc.id }}</td>
+                  <td>{{ inc.description }}</td>
+                  <td>{{ inc.date }}</td>
+                  <td>{{ inc.status }}</td>
+                  <td class="text-center">
+                    <button class="btn btn-success btn-sm me-1">
+                      <i class="bi bi-plus"></i>
+                    </button>
+                    <button class="btn btn-success btn-sm me-1">
+                      <i class="bi bi-check"></i>
+                    </button>
+                    <button class="btn btn-success btn-sm">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </div>
 </main>
