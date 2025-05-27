@@ -1,20 +1,14 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <!-- Agrega esto en el <head> de tu index.html -->
-  <link href="https://fonts.googleapis.com/css?family=Poppins:400,500,700&display=swap" rel="stylesheet">
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-
 <!-- src/app/components/navbar/navbar.component.html -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+<nav class="navbar navbar-expand-lg navbar-dark">
   <div class="container-fluid">
+    <!-- Marca sólo en móvil -->
+    <a 
+      class="navbar-brand d-lg-none" 
+      [routerLink]="['/crearIncidencia']"
+    >
+      Incidencias
+    </a>
+
     <!-- Toggler móvil -->
     <button
       class="navbar-toggler"
@@ -23,40 +17,35 @@
       data-bs-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent"
       aria-expanded="false"
-      aria-label="Toggle navigation"
+      aria-label="Alternar navegación"
     >
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <!-- Menú colapsable -->
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-        <!-- Toggle de rol con icono y texto juntos -->
+      <!-- PRIMERA LISTA: ocultamos vía [hidden], sin eliminar del DOM -->
+      <ul class="navbar-nav mb-2 mb-lg-0">
+        <!-- Dropdown de roles -->
         <li class="nav-item dropdown">
           <a
             class="nav-link dropdown-toggle"
-            href="javascript:void(0)"
+            href="#"
             (click)="$event.preventDefault()"
             id="rolesDropdown"
             role="button"
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            <i class="bi bi-person-fill me-1"></i>
+            <i class="bi bi-person-fill"></i>
             {{ displayActiveRole }}
           </a>
           <ul class="dropdown-menu" aria-labelledby="rolesDropdown">
             <li *ngFor="let r of otherRoles">
-              <a
-                class="dropdown-item"
-                href="javascript:void(0)"
-                (click)="selectOption(r, $event)"
-              >
+              <a class="dropdown-item" href="#" (click)="selectOption(r, $event)">
                 {{ roleDisplayMap[r.toLowerCase()] || titleCase(r) }}
               </a>
             </li>
-            <!-- Item no clicable -->
             <li *ngIf="otherRoles.length === 0">
               <span class="dropdown-item text-muted disabled">
                 No hay más roles
@@ -65,40 +54,42 @@
           </ul>
         </li>
 
-        <!-- Mis Incidencias / Crear Incidencia -->
-        <li class="nav-item" *ngIf="isCrearIncidencia">
+        <!-- Cuando estamos en “Crear”, muestro “Mis Incidencias” -->
+        <li class="nav-item" [hidden]="!isCrearIncidencia">
           <a class="nav-link" [routerLink]="['/misIncidencias']">
-            <i class="bi bi-clipboard2-data"></i> Mis Incidencias
+            <i class="bi bi-clipboard2-data"></i>
+            Mis Incidencias
           </a>
         </li>
-        <li class="nav-item" *ngIf="isMisIncidencias">
+        <!-- Cuando estamos en “Mis”, muestro “Crear Incidencia” -->
+        <li class="nav-item" [hidden]="!isMisIncidencias">
           <a class="nav-link" [routerLink]="['/crearIncidencia']">
-            <i class="bi bi-clipboard2-plus"></i> Crear Incidencia
+            <i class="bi bi-clipboard2-plus"></i>
+            Crear Incidencia
           </a>
         </li>
       </ul>
 
-      <ul class="navbar-nav mb-2 mb-lg-0">
-        <!-- Sección fija -->
-        <li class="nav-item">
-          <span class="nav-link disabled" style="pointer-events: none;">
-            Incidencias
-          </span>
-        </li>
-        <!-- Logout -->
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="javascript:void(0)"
-            (click)="logout()"
+      <!-- SEGUNDA LISTA: igual que antes -->
+      <ul class="navbar-nav mb-2 mb-lg-0 align-items-lg-center ms-lg-auto">
+        <!-- Marca sólo en escritorio -->
+        <li class="nav-item d-none d-lg-flex">
+          <a 
+            class="nav-link pe-3" 
+            [routerLink]="['/crearIncidencia']"
           >
+            Incidencias
+          </a>
+        </li>
+
+        <!-- Logout: icono + texto sólo en móvil -->
+        <li class="nav-item">
+          <a class="nav-link" href="#" (click)="logout()">
             <i class="bi bi-escape"></i>
+            <span class="d-lg-none">Salir</span>
           </a>
         </li>
       </ul>
     </div>
   </div>
 </nav>
-
-</body>
-</html>

@@ -1,34 +1,30 @@
+/* src/app/components/navbar/navbar.component.css */
 nav.navbar {
-  width: 100vw;
-  min-height: 75px;
-  height: 75px;
+  width: 100%;
   background-color: #153529 !important;
   font-family: 'Poppins', sans-serif;
+  padding: 0.5rem 1rem;
 }
 
-.navbar .nav-link,
 .navbar .navbar-brand,
+.navbar .nav-link,
 .navbar .navbar-text {
+  display: flex;
+  align-items: center;
   color: #fff !important;
   font-family: 'Poppins', sans-serif;
   font-size: 16px;
-  line-height: 16px;
-  display: flex;
-  align-items: center;
-  height: 75px;
-}
-
-.navbar .nav-link.disabled {
-  opacity: 1;
-  color: #fff !important;
+  line-height: 1.2;
 }
 
 .navbar .bi {
   margin-right: 6px;
   font-size: 1.2em;
+  vertical-align: top;
 }
 
-/* Asegura que los iconos estén alineados arriba si es necesario */
-.navbar .bi {
-  vertical-align: top;
+/* Opcional: ajusta el padding del enlace "Incidencias" en desktop */
+.navbar-nav .nav-item.d-lg-flex .nav-link {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
