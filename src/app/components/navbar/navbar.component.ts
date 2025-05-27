@@ -87,7 +87,7 @@ export class NavbarComponent implements OnInit {
   selectOption(r: string, event: MouseEvent) {
     event.preventDefault();
     this.auth.setActiveRole(r);
-    this.router.navigate(['/misIncidencias']);
+    this.router.navigate(['/crearIncidencia']);
   }
 
   logout() {

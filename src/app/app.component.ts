@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
       next: () => {
         // Si estamos en /login y la sesión es válida, vamos a crearIncidencia
         if (this.router.url === '/login') {
-        this.router.navigate(['/misIncidencias']);
+        this.router.navigate(['/crearIncidencia']);
       }
       },
       error: () => {

@@ -100,7 +100,7 @@ closeOptions(event: MouseEvent) {
 
     this.auth.login(req).subscribe({
       next: () => {
-        this.router.navigate(['/misIncidencias']);
+        this.router.navigate(['/crearIncidencia']);
       },
       error: err => {
         if (err.status === 401 || err.status === 403) {
