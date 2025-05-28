@@ -42,6 +42,8 @@ export class IncidenciaFormularioComponent implements OnInit {
 
   // Nueva propiedad para estado de “drag over”
   isDragOver = false;
+  private dragCounter = 0;
+
   isHover = false;
 
   tipos = [
@@ -157,15 +159,28 @@ export class IncidenciaFormularioComponent implements OnInit {
     }
   }
 
-    /** Evita que el navegador abra el fichero al hacer drop */
-  onDragOver(event: DragEvent): void {
+  /** Solo marca true la primera vez que entra el drag */
+  onDragEnter(event: DragEvent): void {
     event.preventDefault();
-    this.isDragOver = true;
+    this.dragCounter++;
+    if (this.dragCounter === 1) {
+      this.isDragOver = true;
+    }
   }
 
+  /** Solo evita el comportamiento por defecto
+   *  pero NO toca el isDragOver */
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();  // sólo evitamos el default, no tocamos el contador
+  }
+
+  /** Cuando sales del área, desactiva */
   onDragLeave(event: DragEvent): void {
     event.preventDefault();
-    this.isDragOver = false;
+    this.dragCounter--;
+    if (this.dragCounter === 0) {
+      this.isDragOver = false;
+    }
   }
 
   onMouseEnter(): void {
@@ -180,6 +195,7 @@ export class IncidenciaFormularioComponent implements OnInit {
   onDrop(event: DragEvent): void {
     event.preventDefault();
     this.isDragOver = false;
+    this.dragCounter = 0;
     const files = event.dataTransfer?.files;
     if (files && files.length) {
       const file = files[0];
