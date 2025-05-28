@@ -1,16 +1,16 @@
 // src/app/services/incidencia.service.ts
-import { Injectable }      from '@angular/core';
-import { HttpClient }      from '@angular/common/http';
-import { Observable }      from 'rxjs';
-import { environment }     from '../../environments/environment';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Incidencia {
-  id: string;
-  fecha: string;
-  tipo: string;
+  idIncidencia: string;
+  fechaIncidencia: string;
+  tipoIncidencia: string;
   descripcion: string;
   dniProfesor: string;
-  // foto no la incluimos en el JSON de respuesta
+  // la foto no se incluye en el JSON de respuesta
 }
 
 @Injectable({ providedIn: 'root' })
@@ -19,12 +19,43 @@ export class IncidenciaService {
 
   constructor(private http: HttpClient) {}
 
+  /** Nuevo método */
+  nextId(): Observable<string> {
+    return this.http.get<string>(`${this.apiUrl}/next-id`, { withCredentials: true });
+  }
+
   crearConFoto(formData: FormData): Observable<Incidencia> {
-    // No pongas headers: angular detecta el multipart y añade el boundary
+    // Angular detecta multipart automáticamente y añade el boundary
     return this.http.post<Incidencia>(
       this.apiUrl,
       formData,
-      { withCredentials: true }  // si estás usando cookies/sesión
+      { withCredentials: true }
+    );
+  }
+
+  listarTodas(): Observable<Incidencia[]> {
+    return this.http.get<Incidencia[]>(this.apiUrl, { withCredentials: true });
+  }
+
+  buscarPorId(idIncidencia: string, dniProfesor: string): Observable<Incidencia> {
+    return this.http.get<Incidencia>(
+      `${this.apiUrl}/${idIncidencia}/${dniProfesor}`,
+      { withCredentials: true }
+    );
+  }
+
+  actualizar(inc: Incidencia): Observable<Incidencia> {
+    return this.http.put<Incidencia>(
+      `${this.apiUrl}/${inc.idIncidencia}/${inc.dniProfesor}`,
+      inc,
+      { withCredentials: true }
+    );
+  }
+
+  eliminar(idIncidencia: string, dniProfesor: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/${idIncidencia}/${dniProfesor}`,
+      { withCredentials: true }
     );
   }
 }

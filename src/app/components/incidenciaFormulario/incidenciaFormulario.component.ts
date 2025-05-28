@@ -7,12 +7,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../toast/toast.service';
-import { IncidenciaService } from '../../services/incidencia.service';
+import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
 import { AuthService } from '../../auth.service';
-import { take, filter } from 'rxjs/operators';
+import { take, filter, switchMap } from 'rxjs/operators';
 
 interface FormDataIncidencia {
-  id: string;
+  id?: string;
   fecha: string;
   descripcion: string;
   tipo: string;
@@ -37,13 +37,9 @@ export class IncidenciaFormularioComponent implements OnInit {
     dniProfesor: ''
   };
 
-  // Nueva propiedad para almacenar el DataURL
   imagePreview: string | ArrayBuffer | null = null;
-
-  // Nueva propiedad para estado de “drag over”
   isDragOver = false;
   private dragCounter = 0;
-
   isHover = false;
 
   tipos = [
@@ -61,38 +57,33 @@ export class IncidenciaFormularioComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.resetIds();
+    // 1) Carga próximo ID
+    this.incService.nextId().subscribe(id => this.formData.id = id);
 
+    // 2) Fecha actual
+    this.formData.fecha = this.getCurrentDate();
+
+    // 3) DNI profesor
     this.authService.dniProfesor$
       .pipe(
         filter((dni): dni is string => dni !== null),
         take(1)
       )
-      .subscribe(dni => {
-        this.formData.dniProfesor = dni;
-      });
+      .subscribe(dni => this.formData.dniProfesor = dni);
   }
 
   private getCurrentDate(): string {
     return new Date().toISOString().split('T')[0];
   }
 
-  private generateId(): string {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    let seq = +(localStorage.getItem('lastSequence') || '0') + 1;
-    seq %= 1000;
-    localStorage.setItem('lastSequence', seq.toString());
-    return `${y}${m}${d}${String(seq).padStart(3, '0')}`;
-  }
-
-  private resetIds(): void {
-    this.formData.id = this.generateId();
-    this.formData.fecha = this.getCurrentDate();
+  private resetFormFields(): void {
+    // sólo limpia descripción, tipo, foto y preview/drag states
+    this.formData.descripcion = '';
+    this.formData.tipo = '';
     this.formData.fotoFile = null;
-    this.imagePreview = null;               // limpiamos la previsualización
+    this.imagePreview = null;
+    this.isDragOver = false;
+    this.isHover = false;
     if (this.fileInputRef) {
       this.fileInputRef.nativeElement.value = '';
     }
@@ -104,15 +95,11 @@ export class IncidenciaFormularioComponent implements OnInit {
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length) {
+    if (input.files?.length) {
       const file = input.files[0];
       this.formData.fotoFile = file;
-
-      // Leemos el fichero para previsualizarlo
       const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result;
-      };
+      reader.onload = () => this.imagePreview = reader.result;
       reader.readAsDataURL(file);
     }
   }
@@ -124,7 +111,7 @@ export class IncidenciaFormularioComponent implements OnInit {
     }
 
     const payload = new FormData();
-    payload.append('id', this.formData.id);
+    payload.append('id', this.formData.id!);
     payload.append('fecha', this.formData.fecha);
     payload.append('tipo', this.formData.tipo);
     payload.append('descripcion', this.formData.descripcion);
@@ -133,12 +120,16 @@ export class IncidenciaFormularioComponent implements OnInit {
       payload.append('foto', this.formData.fotoFile, this.formData.fotoFile.name);
     }
 
-    this.incService.crearConFoto(payload).subscribe({
-      next: inc => {
-        this.toast.show('Éxito', 'Incidencia creada correctamente', 'success');
-        this.resetIds();
-        this.formData.descripcion = '';
-        this.formData.tipo = '';
+    this.incService.crearConFoto(payload).pipe(
+      // tras crear, pedimos el siguiente ID antes de limpiar
+      switchMap((inc: Incidencia) => {
+        this.toast.show('Éxito', `Incidencia ${inc.idIncidencia} creada`, 'success');
+        return this.incService.nextId();
+      })
+    ).subscribe({
+      next: nextId => {
+        this.formData.id = nextId;
+        this.resetFormFields();
       },
       error: err => {
         console.error('Error al crear incidencia:', err);
@@ -148,18 +139,11 @@ export class IncidenciaFormularioComponent implements OnInit {
   }
 
   onReset(): void {
-    this.formData.descripcion = '';
-    this.formData.tipo = '';
-    this.formData.fotoFile = null;
-    this.imagePreview = null;               // eliminamos la previsualización
-    this.isDragOver = false;
-    this.isHover = false;
-    if (this.fileInputRef) {
-      this.fileInputRef.nativeElement.value = '';
-    }
+    this.resetFormFields();
+    // opcional: puedes recargar un nuevo ID
+    this.incService.nextId().subscribe(id => this.formData.id = id);
   }
 
-  /** Solo marca true la primera vez que entra el drag */
   onDragEnter(event: DragEvent): void {
     event.preventDefault();
     this.dragCounter++;
@@ -168,13 +152,10 @@ export class IncidenciaFormularioComponent implements OnInit {
     }
   }
 
-  /** Solo evita el comportamiento por defecto
-   *  pero NO toca el isDragOver */
   onDragOver(event: DragEvent): void {
-    event.preventDefault();  // sólo evitamos el default, no tocamos el contador
+    event.preventDefault();
   }
 
-  /** Cuando sales del área, desactiva */
   onDragLeave(event: DragEvent): void {
     event.preventDefault();
     this.dragCounter--;
@@ -191,20 +172,17 @@ export class IncidenciaFormularioComponent implements OnInit {
     this.isHover = false;
   }
 
-  /** Procesa el fichero arrastrado igual que onFileSelected */
   onDrop(event: DragEvent): void {
     event.preventDefault();
     this.isDragOver = false;
     this.dragCounter = 0;
     const files = event.dataTransfer?.files;
-    if (files && files.length) {
+    if (files?.length) {
       const file = files[0];
       this.formData.fotoFile = file;
-
       const reader = new FileReader();
       reader.onload = () => this.imagePreview = reader.result;
       reader.readAsDataURL(file);
     }
   }
-
 }
