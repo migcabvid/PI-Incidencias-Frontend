@@ -187,22 +187,28 @@ input:-webkit-autofill {
   margin-bottom: 2rem;
 }
 
+/* selected-option ahora contiene un <i> */
 .selected-option {
   padding-block: 0.8rem;
-  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
-/* flecha giratoria */
-.selected-option::after {
-  content: '▾';
-  display: inline-block;
+/* icono por defecto, sin rotar */
+.icon-toggle {
   margin-left: 0.5rem;
   transition: transform 300ms ease;
+  font-size: 1.1rem;
+  vertical-align: middle;
+  transform: rotate(0deg);      /* flecha a la derecha */
+
 }
 
-.custom-select.open .selected-option::after {
-  transform: rotate(180deg);
+/* cuando .custom-select tenga la clase .open, gira -90° para apuntar hacia arriba */
+.custom-select.open .icon-toggle {
+  transform: rotate(90deg);    /* flecha arriba */
 }
+
 
 /* Estado cerrado: colapsado y transparente */
 .options {
