@@ -34,20 +34,27 @@
             <div class="row g-3 mb-4">
               <div class="col-md-6">
                 <label for="descripcion" class="form-label">Descripción</label>
-                <textarea id="descripcion" name="descripcion" class="form-control" rows="8"
-                  [(ngModel)]="formData.descripcion" required>
-                </textarea>
+                <textarea id="descripcion" name="descripcion" class="form-control" rows="8" [(ngModel)]="formData.descripcion"
+                  required>
+                              </textarea>
               </div>
               <div class="col-md-6">
                 <label class="form-label d-block">
-                  Foto
-                  <i class="bi bi-image"></i>
+                  Foto <i class="bi bi-image"></i>
                 </label>
+              
                 <div class="form-control d-flex flex-column justify-content-center align-items-center"
                   style="height: 220px; cursor: pointer; min-height: unset; max-height: 220px; overflow: hidden;"
-                  (click)="triggerFileInput()">
-                  <p class="mb-1">Arrastra y suelta una imagen</p>
-                  <p class="small text-muted">o haz clic para seleccionar</p>
+                  (click)="triggerFileInput()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+                  <ng-container *ngIf="!imagePreview">
+                    <p class="mb-1">Arrastra y suelta una imagen</p>
+                    <p class="small text-muted">o haz clic para seleccionar</p>
+                  </ng-container>
+              
+                  <!-- Previsualización -->
+                  <img *ngIf="imagePreview" [src]="imagePreview" alt="Previsualización"
+                    style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+              
                   <input type="file" accept="image/*" #fileInput class="d-none" (change)="onFileSelected($event)" />
                 </div>
               </div>

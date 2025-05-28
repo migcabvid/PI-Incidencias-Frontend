@@ -11,7 +11,6 @@ import { IncidenciaService } from '../../services/incidencia.service';
 import { AuthService } from '../../auth.service';
 import { take, filter } from 'rxjs/operators';
 
-
 interface FormDataIncidencia {
   id: string;
   fecha: string;
@@ -35,8 +34,11 @@ export class IncidenciaFormularioComponent implements OnInit {
     descripcion: '',
     tipo: '',
     fotoFile: null,
-    dniProfesor: ''      // ahora lo llenaremos desde AuthService
+    dniProfesor: ''
   };
+
+  // Nueva propiedad para almacenar el DataURL
+  imagePreview: string | ArrayBuffer | null = null;
 
   tipos = [
     { value: '', label: 'Selecciona un tipo' },
@@ -49,22 +51,21 @@ export class IncidenciaFormularioComponent implements OnInit {
   constructor(
     private toast: ToastService,
     private incService: IncidenciaService,
-    private authService: AuthService   // inyectamos AuthService
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
-  this.resetIds();
+    this.resetIds();
 
-  this.authService.dniProfesor$
-    .pipe(
-      filter((dni): dni is string => dni !== null), // sólo valores no-null
-      take(1)                                        // y después se completa
-    )
-    .subscribe(dni => {
-      this.formData.dniProfesor = dni;
-    });
-}
-
+    this.authService.dniProfesor$
+      .pipe(
+        filter((dni): dni is string => dni !== null),
+        take(1)
+      )
+      .subscribe(dni => {
+        this.formData.dniProfesor = dni;
+      });
+  }
 
   private getCurrentDate(): string {
     return new Date().toISOString().split('T')[0];
@@ -85,6 +86,7 @@ export class IncidenciaFormularioComponent implements OnInit {
     this.formData.id = this.generateId();
     this.formData.fecha = this.getCurrentDate();
     this.formData.fotoFile = null;
+    this.imagePreview = null;               // limpiamos la previsualización
     if (this.fileInputRef) {
       this.fileInputRef.nativeElement.value = '';
     }
@@ -97,7 +99,15 @@ export class IncidenciaFormularioComponent implements OnInit {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length) {
-      this.formData.fotoFile = input.files[0];
+      const file = input.files[0];
+      this.formData.fotoFile = file;
+
+      // Leemos el fichero para previsualizarlo
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result;
+      };
+      reader.readAsDataURL(file);
     }
   }
 
@@ -107,7 +117,6 @@ export class IncidenciaFormularioComponent implements OnInit {
       return;
     }
 
-    // Montar FormData para multipart/form-data
     const payload = new FormData();
     payload.append('id', this.formData.id);
     payload.append('fecha', this.formData.fecha);
@@ -118,7 +127,6 @@ export class IncidenciaFormularioComponent implements OnInit {
       payload.append('foto', this.formData.fotoFile, this.formData.fotoFile.name);
     }
 
-    // Llamada al backend
     this.incService.crearConFoto(payload).subscribe({
       next: inc => {
         this.toast.show('Éxito', 'Incidencia creada correctamente', 'success');
@@ -137,8 +145,29 @@ export class IncidenciaFormularioComponent implements OnInit {
     this.formData.descripcion = '';
     this.formData.tipo = '';
     this.formData.fotoFile = null;
+    this.imagePreview = null;               // eliminamos la previsualización
     if (this.fileInputRef) {
       this.fileInputRef.nativeElement.value = '';
     }
   }
+
+    /** Evita que el navegador abra el fichero al hacer drop */
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  /** Procesa el fichero arrastrado igual que onFileSelected */
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    const files = event.dataTransfer?.files;
+    if (files && files.length) {
+      const file = files[0];
+      this.formData.fotoFile = file;
+
+      const reader = new FileReader();
+      reader.onload = () => this.imagePreview = reader.result;
+      reader.readAsDataURL(file);
+    }
+  }
+
 }
