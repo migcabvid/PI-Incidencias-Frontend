@@ -13,15 +13,18 @@ export interface LoginResponse {
   message: string;
   roles: string[];
   activeRole: string;
+  dniProfesor: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private rolesSubject = new BehaviorSubject<string[]>([]);
   private activeRoleSubject = new BehaviorSubject<string | null>(null);
+  private dniSubject        = new BehaviorSubject<string | null>(null);
 
   roles$       = this.rolesSubject.asObservable();
   activeRole$  = this.activeRoleSubject.asObservable();
+  dniProfesor$ = this.dniSubject.asObservable();
 
   constructor(private http: HttpClient) {
     // Intentamos recargar sesión al iniciar la app
@@ -30,6 +33,7 @@ export class AuthService {
         // Si hay sesión, actualizamos subjects
         this.rolesSubject.next(resp.roles);
         this.activeRoleSubject.next(resp.activeRole);
+        this.dniSubject.next(resp.dniProfesor);
         // Y persistimos (opcional)
         localStorage.setItem('roles', JSON.stringify(resp.roles));
         localStorage.setItem('activeRole', resp.activeRole);
@@ -51,6 +55,7 @@ export class AuthService {
       tap(resp => {
         this.rolesSubject.next(resp.roles);
         this.activeRoleSubject.next(resp.activeRole);
+        this.dniSubject.next(resp.dniProfesor);
         localStorage.setItem('roles', JSON.stringify(resp.roles));
         localStorage.setItem('activeRole', resp.activeRole);
       })
@@ -64,6 +69,7 @@ export class AuthService {
       tap(() => {
         this.rolesSubject.next([]);
         this.activeRoleSubject.next(null);
+        this.dniSubject.next(null);
         localStorage.removeItem('roles');
         localStorage.removeItem('activeRole');
       })
@@ -90,4 +96,9 @@ export class AuthService {
   get loggedIn(): boolean {
     return this.activeRoleSubject.getValue() !== null;
   }
+
+  get dniProfesor(): string | null {
+    return this.dniSubject.getValue();
+  }
+  
 }

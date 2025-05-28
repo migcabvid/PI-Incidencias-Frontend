@@ -5,15 +5,20 @@ import {
   ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule }  from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { ToastService } from '../toast/toast.service';
+import { IncidenciaService } from '../../services/incidencia.service';
+import { AuthService } from '../../auth.service';
+import { take, filter } from 'rxjs/operators';
 
-interface FormData {
+
+interface FormDataIncidencia {
   id: string;
   fecha: string;
   descripcion: string;
   tipo: string;
   fotoFile: File | null;
+  dniProfesor: string;
 }
 
 @Component({
@@ -24,27 +29,42 @@ interface FormData {
   styleUrls: ['./incidenciaFormulario.component.css']
 })
 export class IncidenciaFormularioComponent implements OnInit {
-  formData: FormData = {
+  formData: FormDataIncidencia = {
     id: '',
     fecha: '',
     descripcion: '',
     tipo: '',
-    fotoFile: null
+    fotoFile: null,
+    dniProfesor: ''      // ahora lo llenaremos desde AuthService
   };
 
   tipos = [
-    { value: '',       label: 'Selecciona un tipo' },
-    { value: 'T.I.C.',  label: 'T.I.C.' },
-    { value: 'Centro',  label: 'Centro' }
+    { value: '', label: 'Selecciona un tipo' },
+    { value: 'T.I.C.', label: 'T.I.C.' },
+    { value: 'Centro', label: 'Centro' }
   ];
 
   @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
 
-  constructor(private toast: ToastService) {}
+  constructor(
+    private toast: ToastService,
+    private incService: IncidenciaService,
+    private authService: AuthService   // inyectamos AuthService
+  ) { }
 
-  ngOnInit() {
-    this.resetIds();
-  }
+  ngOnInit(): void {
+  this.resetIds();
+
+  this.authService.dniProfesor$
+    .pipe(
+      filter((dni): dni is string => dni !== null), // sólo valores no-null
+      take(1)                                        // y después se completa
+    )
+    .subscribe(dni => {
+      this.formData.dniProfesor = dni;
+    });
+}
+
 
   private getCurrentDate(): string {
     return new Date().toISOString().split('T')[0];
@@ -55,16 +75,15 @@ export class IncidenciaFormularioComponent implements OnInit {
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, '0');
     const d = String(now.getDate()).padStart(2, '0');
-    let seq = +(localStorage.getItem('lastSequence') || 0) + 1;
+    let seq = +(localStorage.getItem('lastSequence') || '0') + 1;
     seq %= 1000;
     localStorage.setItem('lastSequence', seq.toString());
     return `${y}${m}${d}${String(seq).padStart(3, '0')}`;
   }
 
-  private resetIds() {
-    this.formData.id    = this.generateId();
+  private resetIds(): void {
+    this.formData.id = this.generateId();
     this.formData.fecha = this.getCurrentDate();
-    // Reset foto también
     this.formData.fotoFile = null;
     if (this.fileInputRef) {
       this.fileInputRef.nativeElement.value = '';
@@ -79,35 +98,45 @@ export class IncidenciaFormularioComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length) {
       this.formData.fotoFile = input.files[0];
-      // opcional: vista previa o lógica adicional
-      console.log('Archivo seleccionado:', this.formData.fotoFile);
     }
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (!this.formData.descripcion || !this.formData.tipo) {
-      this.toast.show(
-        'Error',
-        'Completa todos los campos requeridos',
-        'destructive'
-      );
+      this.toast.show('Error', 'Completa todos los campos requeridos', 'destructive');
       return;
     }
-    this.toast.show(
-      'Incidencia registrada',
-      'La incidencia se ha registrado correctamente',
-      'success'
-    );
-    // Aquí podrías enviar formData, incluyendo formData.fotoFile
-    this.resetIds();
-    this.formData.descripcion = '';
-    this.formData.tipo        = '';
+
+    // Montar FormData para multipart/form-data
+    const payload = new FormData();
+    payload.append('id', this.formData.id);
+    payload.append('fecha', this.formData.fecha);
+    payload.append('tipo', this.formData.tipo);
+    payload.append('descripcion', this.formData.descripcion);
+    payload.append('dniProfesor', this.formData.dniProfesor);
+    if (this.formData.fotoFile) {
+      payload.append('foto', this.formData.fotoFile, this.formData.fotoFile.name);
+    }
+
+    // Llamada al backend
+    this.incService.crearConFoto(payload).subscribe({
+      next: inc => {
+        this.toast.show('Éxito', 'Incidencia creada correctamente', 'success');
+        this.resetIds();
+        this.formData.descripcion = '';
+        this.formData.tipo = '';
+      },
+      error: err => {
+        console.error('Error al crear incidencia:', err);
+        this.toast.show('Error', 'No se pudo crear la incidencia', 'destructive');
+      }
+    });
   }
 
-  onReset() {
+  onReset(): void {
     this.formData.descripcion = '';
-    this.formData.tipo        = '';
-    this.formData.fotoFile    = null;
+    this.formData.tipo = '';
+    this.formData.fotoFile = null;
     if (this.fileInputRef) {
       this.fileInputRef.nativeElement.value = '';
     }
