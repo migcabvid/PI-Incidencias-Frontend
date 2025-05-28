@@ -29,3 +29,36 @@
 .card {
   background-color: #EDF1EF;
 }
+
+/* borde base */
+.drop-zone {
+  border: 2px dashed #ccc;
+  transition: border-color 0.2s;
+}
+
+/* mientras arrastras: pulso verde */
+.drop-zone.drag-over {
+  border-color: #28a745;
+  animation: pulse-border 1.5s infinite;
+}
+
+/* con imagen cargada: sólo borde verde */
+.drop-zone.has-preview {
+  border-color: #28a745;
+  animation: none;
+}
+
+/* keyframes de pulso */
+@keyframes pulse-border {
+  0%   { box-shadow: 0 0 0 0 rgba(40,168,69, 0.7); }
+  70%  { box-shadow: 0 0 0 10px rgba(40,168,69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(40,168,69, 0); }
+}
+
+/* foco verde en inputs, textarea y selects */
+.form-control:focus,
+.form-select:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40,168,69, .25);
+  outline: none;
+}

@@ -40,6 +40,10 @@ export class IncidenciaFormularioComponent implements OnInit {
   // Nueva propiedad para almacenar el DataURL
   imagePreview: string | ArrayBuffer | null = null;
 
+  // Nueva propiedad para estado de “drag over”
+  isDragOver = false;
+  isHover = false;
+
   tipos = [
     { value: '', label: 'Selecciona un tipo' },
     { value: 'T.I.C.', label: 'T.I.C.' },
@@ -146,6 +150,8 @@ export class IncidenciaFormularioComponent implements OnInit {
     this.formData.tipo = '';
     this.formData.fotoFile = null;
     this.imagePreview = null;               // eliminamos la previsualización
+    this.isDragOver = false;
+    this.isHover = false;
     if (this.fileInputRef) {
       this.fileInputRef.nativeElement.value = '';
     }
@@ -154,11 +160,26 @@ export class IncidenciaFormularioComponent implements OnInit {
     /** Evita que el navegador abra el fichero al hacer drop */
   onDragOver(event: DragEvent): void {
     event.preventDefault();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = false;
+  }
+
+  onMouseEnter(): void {
+    this.isHover = true;
+  }
+
+  onMouseLeave(): void {
+    this.isHover = false;
   }
 
   /** Procesa el fichero arrastrado igual que onFileSelected */
   onDrop(event: DragEvent): void {
     event.preventDefault();
+    this.isDragOver = false;
     const files = event.dataTransfer?.files;
     if (files && files.length) {
       const file = files[0];

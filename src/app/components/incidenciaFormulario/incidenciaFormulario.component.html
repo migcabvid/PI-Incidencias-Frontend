@@ -43,9 +43,10 @@
                   Foto <i class="bi bi-image"></i>
                 </label>
               
-                <div class="form-control d-flex flex-column justify-content-center align-items-center"
+                <div class="form-control drop-zone d-flex flex-column justify-content-center align-items-center" [class.drag-over]="isDragOver|| isHover" [class.has-preview]="!!imagePreview"
                   style="height: 220px; cursor: pointer; min-height: unset; max-height: 220px; overflow: hidden;"
-                  (click)="triggerFileInput()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+                  (click)="triggerFileInput()" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+                  (drop)="onDrop($event)" (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">
                   <ng-container *ngIf="!imagePreview">
                     <p class="mb-1">Arrastra y suelta una imagen</p>
                     <p class="small text-muted">o haz clic para seleccionar</p>
