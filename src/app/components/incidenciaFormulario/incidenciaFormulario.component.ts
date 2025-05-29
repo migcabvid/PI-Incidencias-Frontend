@@ -41,6 +41,7 @@ export class IncidenciaFormularioComponent implements OnInit {
   isDragOver = false;
   private dragCounter = 0;
   isHover = false;
+  showModal = false;
 
   tipos = [
     { value: '', label: 'Selecciona un tipo' },
@@ -121,9 +122,9 @@ export class IncidenciaFormularioComponent implements OnInit {
     }
 
     this.incService.crearConFoto(payload).pipe(
-      // tras crear, pedimos el siguiente ID antes de limpiar
       switchMap((inc: Incidencia) => {
-        this.toast.show('Éxito', `Incidencia ${inc.idIncidencia} creada`, 'success');
+        // Mostrar modal en vez de toast
+        this.showModal = true;
         return this.incService.nextId();
       })
     ).subscribe({
@@ -136,6 +137,10 @@ export class IncidenciaFormularioComponent implements OnInit {
         this.toast.show('Error', 'No se pudo crear la incidencia', 'destructive');
       }
     });
+  }
+
+  closeModal(): void {
+    this.showModal = false;
   }
 
   onReset(): void {

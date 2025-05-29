@@ -78,3 +78,34 @@
     </div>
   </div>
 </main>
+
+<!-- Modal de confirmación -->
+<!-- wrapper del modal: sólo aparece cuando showModal = true -->
+<div
+  class="modal fade show d-block custom-modal-backdrop"
+  tabindex="-1"
+  *ngIf="showModal"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content custom-modal-content">
+      <!-- HEADER -->
+      <div class="modal-header custom-modal-header">
+        <h5 class="modal-title flex-grow-1 text-center">
+          Mensaje
+        </h5>
+        <button
+          type="button"
+          class="btn-close custom-btn-close"
+          aria-label="Cerrar"
+          (click)="closeModal()"
+        >
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+      <!-- BODY -->
+      <div class="modal-body text-center custom-modal-body">
+        Incidencia enviada.
+      </div>
+    </div>
+  </div>
+</div>
