@@ -28,6 +28,8 @@
 /* Fondo de la tarjeta */
 .card {
   background-color: #EDF1EF;
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
 /* borde base */
