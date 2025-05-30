@@ -45,7 +45,7 @@
         </div>
       </div>
 
-      <!-- Rol (custom select) -->
+      <!-- Rol (custom select con transición) -->
       <div class="login__box login__box--custom-select">
         <i class="ri-user-settings-line login__icon"></i>
         <div
@@ -54,11 +54,10 @@
         >
           <div class="selected-option" (click)="toggleOptions($event)">
             {{ selectedRoleLabel }}
+            <!-- Icono de Remix Icon: ri-arrow-down-s-line -->
+            <i class="ri-arrow-right-s-line icon-toggle"></i>
           </div>
-          <div
-            class="options"
-            [style.display]="optionsVisible ? 'block' : 'none'"
-          >
+          <div class="options">
             <div
               class="option"
               *ngFor="let role of availableRoles"

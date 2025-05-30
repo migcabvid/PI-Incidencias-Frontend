@@ -5,15 +5,19 @@ import {
   ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule }  from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { ToastService } from '../toast/toast.service';
+import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
+import { AuthService } from '../../auth.service';
+import { take, filter, switchMap } from 'rxjs/operators';
 
-interface FormData {
-  id: string;
+interface FormDataIncidencia {
+  id?: string;
   fecha: string;
   descripcion: string;
   tipo: string;
   fotoFile: File | null;
+  dniProfesor: string;
 }
 
 @Component({
@@ -24,48 +28,63 @@ interface FormData {
   styleUrls: ['./incidenciaFormulario.component.css']
 })
 export class IncidenciaFormularioComponent implements OnInit {
-  formData: FormData = {
+  formData: FormDataIncidencia = {
     id: '',
     fecha: '',
     descripcion: '',
     tipo: '',
-    fotoFile: null
+    fotoFile: null,
+    dniProfesor: ''
   };
 
+  imagePreview: string | ArrayBuffer | null = null;
+  isDragOver = false;
+  private dragCounter = 0;
+  isHover = false;
+  showModal = false;
+
   tipos = [
-    { value: '',       label: 'Selecciona un tipo' },
-    { value: 'T.I.C.',  label: 'T.I.C.' },
-    { value: 'Centro',  label: 'Centro' }
+    { value: '', label: 'Selecciona un tipo' },
+    { value: 'T.I.C.', label: 'T.I.C.' },
+    { value: 'Centro', label: 'Centro' }
   ];
 
   @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
 
-  constructor(private toast: ToastService) {}
+  constructor(
+    private toast: ToastService,
+    private incService: IncidenciaService,
+    private authService: AuthService
+  ) { }
 
-  ngOnInit() {
-    this.resetIds();
+  ngOnInit(): void {
+    // 1) Carga próximo ID
+    this.incService.nextId().subscribe(id => this.formData.id = id);
+
+    // 2) Fecha actual
+    this.formData.fecha = this.getCurrentDate();
+
+    // 3) DNI profesor
+    this.authService.dniProfesor$
+      .pipe(
+        filter((dni): dni is string => dni !== null),
+        take(1)
+      )
+      .subscribe(dni => this.formData.dniProfesor = dni);
   }
 
   private getCurrentDate(): string {
     return new Date().toISOString().split('T')[0];
   }
 
-  private generateId(): string {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    let seq = +(localStorage.getItem('lastSequence') || 0) + 1;
-    seq %= 1000;
-    localStorage.setItem('lastSequence', seq.toString());
-    return `${y}${m}${d}${String(seq).padStart(3, '0')}`;
-  }
-
-  private resetIds() {
-    this.formData.id    = this.generateId();
-    this.formData.fecha = this.getCurrentDate();
-    // Reset foto también
+  private resetFormFields(): void {
+    // sólo limpia descripción, tipo, foto y preview/drag states
+    this.formData.descripcion = '';
+    this.formData.tipo = '';
     this.formData.fotoFile = null;
+    this.imagePreview = null;
+    this.isDragOver = false;
+    this.isHover = false;
     if (this.fileInputRef) {
       this.fileInputRef.nativeElement.value = '';
     }
@@ -77,39 +96,98 @@ export class IncidenciaFormularioComponent implements OnInit {
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length) {
-      this.formData.fotoFile = input.files[0];
-      // opcional: vista previa o lógica adicional
-      console.log('Archivo seleccionado:', this.formData.fotoFile);
+    if (input.files?.length) {
+      const file = input.files[0];
+      this.formData.fotoFile = file;
+      const reader = new FileReader();
+      reader.onload = () => this.imagePreview = reader.result;
+      reader.readAsDataURL(file);
     }
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (!this.formData.descripcion || !this.formData.tipo) {
-      this.toast.show(
-        'Error',
-        'Completa todos los campos requeridos',
-        'destructive'
-      );
+      this.toast.show('Error', 'Completa todos los campos requeridos', 'destructive');
       return;
     }
-    this.toast.show(
-      'Incidencia registrada',
-      'La incidencia se ha registrado correctamente',
-      'success'
-    );
-    // Aquí podrías enviar formData, incluyendo formData.fotoFile
-    this.resetIds();
-    this.formData.descripcion = '';
-    this.formData.tipo        = '';
+
+    const payload = new FormData();
+    payload.append('id', this.formData.id!);
+    payload.append('fecha', this.formData.fecha);
+    payload.append('tipo', this.formData.tipo);
+    payload.append('descripcion', this.formData.descripcion);
+    payload.append('dniProfesor', this.formData.dniProfesor);
+    if (this.formData.fotoFile) {
+      payload.append('foto', this.formData.fotoFile, this.formData.fotoFile.name);
+    }
+
+    this.incService.crearConFoto(payload).pipe(
+      switchMap((inc: Incidencia) => {
+        // Mostrar modal en vez de toast
+        this.showModal = true;
+        return this.incService.nextId();
+      })
+    ).subscribe({
+      next: nextId => {
+        this.formData.id = nextId;
+        this.resetFormFields();
+      },
+      error: err => {
+        console.error('Error al crear incidencia:', err);
+        this.toast.show('Error', 'No se pudo crear la incidencia', 'destructive');
+      }
+    });
   }
 
-  onReset() {
-    this.formData.descripcion = '';
-    this.formData.tipo        = '';
-    this.formData.fotoFile    = null;
-    if (this.fileInputRef) {
-      this.fileInputRef.nativeElement.value = '';
+  closeModal(): void {
+    this.showModal = false;
+  }
+
+  onReset(): void {
+    this.resetFormFields();
+    // opcional: puedes recargar un nuevo ID
+    this.incService.nextId().subscribe(id => this.formData.id = id);
+  }
+
+  onDragEnter(event: DragEvent): void {
+    event.preventDefault();
+    this.dragCounter++;
+    if (this.dragCounter === 1) {
+      this.isDragOver = true;
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.dragCounter--;
+    if (this.dragCounter === 0) {
+      this.isDragOver = false;
+    }
+  }
+
+  onMouseEnter(): void {
+    this.isHover = true;
+  }
+
+  onMouseLeave(): void {
+    this.isHover = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = false;
+    this.dragCounter = 0;
+    const files = event.dataTransfer?.files;
+    if (files?.length) {
+      const file = files[0];
+      this.formData.fotoFile = file;
+      const reader = new FileReader();
+      reader.onload = () => this.imagePreview = reader.result;
+      reader.readAsDataURL(file);
     }
   }
 }
