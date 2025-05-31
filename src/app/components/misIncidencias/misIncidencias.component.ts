@@ -1,12 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-interface Incident {
-  id: string;
-  description: string;
-  date: string;
-  status: string;
-}
+import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
+import { AuthService } from '../../auth.service'; // importa tu servicio de auth
 
 @Component({
   selector: 'app-mis-incidencias',
@@ -16,24 +11,31 @@ interface Incident {
   styleUrls: ['./misIncidencias.component.css']
 })
 export class MisIncidenciasComponent implements OnInit {
-  // Datos iniciales de incidencias
-  incidentsData: Incident[] = [
-    { id: 'IDG-001', description: 'Fallo crítico en servidor #3', date: '2025-05-19', status: 'Abierto' },
-    { id: 'IDG-002', description: 'Error de conexión a base de datos', date: '2025-05-18', status: 'Resuelto' },
-    { id: 'IDG-003', description: 'Lentitud en la aplicación móvil', date: '2025-05-17', status: 'En Progreso' }
-  ];
+  incidentsData: Incidencia[] = [];
+  filteredIncidents: Incidencia[] = [];
+  dniProfesor: string = '';
 
-  filteredIncidents: Incident[] = [];
+  constructor(
+    private incidenciaService: IncidenciaService,
+    private authService: AuthService // inyecta el servicio de auth
+  ) {}
 
   ngOnInit(): void {
-    // Inicializar con todos los datos
-    this.filteredIncidents = [...this.incidentsData];
+    // Suponiendo que tienes un observable o método para obtener el dni
+    this.authService.dniProfesor$.subscribe(dni => {
+      this.dniProfesor = dni ?? '';
+      this.incidenciaService.listarTodas().subscribe(data => {
+        // Filtra solo las incidencias del usuario actual
+        this.incidentsData = data.filter(i => i.dniProfesor === this.dniProfesor);
+        this.filteredIncidents = [...this.incidentsData];
+      });
+    });
   }
 
   filterById(term: string): void {
     const q = term.trim().toLowerCase();
     this.filteredIncidents = this.incidentsData.filter(i =>
-      i.id.toLowerCase().includes(q)
+      i.idIncidencia.toLowerCase().includes(q)
     );
   }
 }

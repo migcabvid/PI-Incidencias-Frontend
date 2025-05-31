@@ -10,6 +10,7 @@ export interface Incidencia {
   tipoIncidencia: string;
   descripcion: string;
   dniProfesor: string;
+   estado?: string;
   // la foto no se incluye en el JSON de respuesta
 }
 
