@@ -15,6 +15,10 @@ export class MisIncidenciasComponent implements OnInit {
   filteredIncidents: Incidencia[] = [];
   dniProfesor: string = '';
 
+  showModal = false;
+  showSuccessModal = false; // Modal de éxito
+  incidenciaAEliminar: Incidencia | null = null;
+
   constructor(
     private incidenciaService: IncidenciaService,
     private authService: AuthService // inyecta el servicio de auth
@@ -32,10 +36,57 @@ export class MisIncidenciasComponent implements OnInit {
     });
   }
 
+  cargarIncidencias(): void {
+    this.incidenciaService.listarTodas().subscribe(incidencias => {
+      this.filteredIncidents = incidencias;
+    });
+  }
+
+  // Llama a este método desde el botón de la papelera
+  openDeleteModal(incidencia: Incidencia): void {
+    this.incidenciaAEliminar = incidencia;
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    this.incidenciaAEliminar = null;
+  }
+
+  confirmDelete(): void {
+    if (!this.incidenciaAEliminar) return;
+    this.incidenciaService.eliminar(
+      this.incidenciaAEliminar.idIncidencia,
+      this.incidenciaAEliminar.dniProfesor
+    ).subscribe({
+      next: () => {
+        // Elimina de la lista local
+        this.filteredIncidents = this.filteredIncidents.filter(
+          inc => inc.idIncidencia !== this.incidenciaAEliminar?.idIncidencia
+        );
+        this.showModal = false;
+        this.showSuccessModal = true;
+        this.incidenciaAEliminar = null;
+        // Oculta el modal de éxito tras 1.5 segundos
+        setTimeout(() => this.showSuccessModal = false, 1500);
+      },
+      error: () => {
+        this.showModal = false;
+        this.incidenciaAEliminar = null;
+        // Aquí podrías mostrar un modal de error si lo deseas
+      }
+    });
+  }
+
   filterById(term: string): void {
     const q = term.trim().toLowerCase();
     this.filteredIncidents = this.incidentsData.filter(i =>
       i.idIncidencia.toLowerCase().includes(q)
     );
+  }
+
+  // Si quieres mostrar el modal tras eliminar, llama a esto:
+  onDeleteSuccess(): void {
+    this.showModal = true;
   }
 }

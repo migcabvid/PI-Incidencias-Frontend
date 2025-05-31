@@ -7,7 +7,7 @@
           Lista de Incidencias
         </div>
         <div class="card-body">
-          
+
           <!-- BUSCADOR por ID -->
           <div class="row g-3 mb-4">
             <div class="col-md-12">
@@ -16,14 +16,8 @@
                 <span class="input-group-text">
                   <i class="bi bi-search"></i>
                 </span>
-                <input
-                  #searchId
-                  type="text"
-                  id="searchId"
-                  class="form-control"
-                  placeholder="Escribe el ID..."
-                  (input)="filterById(searchId.value)"
-                />
+                <input #searchId type="text" id="searchId" class="form-control" placeholder="Escribe el ID..."
+                  (input)="filterById(searchId.value)" />
               </div>
             </div>
           </div>
@@ -51,7 +45,7 @@
                     <button class="btn btn-success btn-sm me-1">
                       <i class="bi bi-plus"></i>
                     </button>
-                    <button class="btn btn-success btn-sm">
+                    <button class="btn btn-success btn-sm" (click)="openDeleteModal(inc)">
                       <i class="bi bi-trash"></i>
                     </button>
                   </td>
@@ -65,3 +59,46 @@
     </div>
   </div>
 </main>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content custom-modal-content">
+      <div class="modal-header custom-modal-header">
+        <h5 class="modal-title flex-grow-1 text-center">
+          Eliminación
+        </h5>
+      </div>
+      <div class="modal-body text-center custom-modal-body">
+        ¿Desea eliminar?
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <button type="button" class="btn btn-success me-2" (click)="confirmDelete()">
+          <i class="bi bi-check-circle-fill me-1"></i> Aceptar
+        </button>
+        <button type="button" class="btn btn-danger" (click)="closeModal()">
+          <i class="bi bi-x-circle-fill me-1"></i> Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de eliminación exitosa -->
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content custom-modal-content">
+      <div class="modal-header custom-modal-header">
+        <h5 class="modal-title flex-grow-1 text-center">
+          Eliminación
+        </h5>
+        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="showSuccessModal = false">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+      <div class="modal-body text-center custom-modal-body">
+        Eliminado correctamente.
+      </div>
+    </div>
+  </div>
+</div>
