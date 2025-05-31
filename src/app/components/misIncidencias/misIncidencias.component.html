@@ -1,79 +1,36 @@
 <main class="container py-5">
   <div class="row justify-content-center">
-    <div class="col-lg-10">
+    <div class="col-lg-8">
       <div class="card shadow-sm">
-        <!-- Título de la sección -->
+        <!-- Título dentro de la misma caja -->
         <div class="titulo-formulario">
           Lista de Incidencias
         </div>
         <div class="card-body">
-          <!-- Filtros de fecha y búsqueda -->
-          <div class="row g-3 mb-4 align-items-end">
-            <div class="col-md-4">
-              <label for="from" class="form-label">Fecha Desde</label>
+          
+          <!-- BUSCADOR por ID -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-12">
+              <label for="searchId" class="form-label">Buscar ID</label>
               <div class="input-group">
-                <input #from type="date" id="from" class="form-control">
-                <button class="btn btn-success" (click)="filterByDate(from, to)">
+                <span class="input-group-text">
                   <i class="bi bi-search"></i>
-                </button>
+                </span>
+                <input
+                  #searchId
+                  type="text"
+                  id="searchId"
+                  class="form-control"
+                  placeholder="Escribe el ID..."
+                  (input)="filterById(searchId.value)"
+                />
               </div>
             </div>
-            <div class="col-md-4">
-              <label for="to" class="form-label">Fecha Hasta</label>
-              <div class="input-group">
-                <input #to type="date" id="to" class="form-control">
-                <button class="btn btn-success" (click)="filterByDate(from, to)">
-                  <i class="bi bi-search"></i>
-                </button>
-              </div>
-            </div>
-            <div class="col-md-4 mx-auto">
-              <button class="btn btn-success d-flex align-items-center gap-2">
-                <i class="bi bi-search"></i>
-                Buscar
-              </button>
-            </div>
           </div>
 
-          <!-- Resumen -->
-          <div class="table-responsive rounded-3 border mb-4 mx-auto" style="max-width:60%;">
-            <table class="table text-center summary-table quitarTablaAbajo">
-              <thead>
-                <tr>
-                  <th>Incidencias</th>
-                  <th>Número</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let s of summaryData">
-                  <td>{{ s.type }}</td>
-                  <td>{{ s.count }}</td>
-                  <td>
-                    <button class="btn btn-success btn-sm-sm me-1">
-                      <i class="bi bi-plus"></i>
-                    </button>
-                    <button class="btn btn-success btn-sm-sm me-1">
-                      <i class="bi bi-file-text"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="col-md-4">
-            <label for="searchId" class="form-label">Buscar ID</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-search"></i></span>
-              <input #searchId type="text" id="searchId" class="form-control" placeholder="Escribe el ID..."
-                (input)="filterById(searchId.value)">
-            </div>
-          </div>
-
-          <!-- Tabla de incidencias -->
+          <!-- TABLA de Incidencias -->
           <div class="table-responsive rounded-3 border">
-            <table class="table align-middle incidents-table">
+            <table class="table align-middle incidents-table mb-0">
               <thead>
                 <tr>
                   <th>ID</th>
@@ -90,12 +47,11 @@
                   <td>{{ inc.date }}</td>
                   <td>{{ inc.status }}</td>
                   <td class="text-center">
+                    <!-- Botón “plus” -->
                     <button class="btn btn-success btn-sm me-1">
                       <i class="bi bi-plus"></i>
                     </button>
-                    <button class="btn btn-success btn-sm me-1">
-                      <i class="bi bi-check"></i>
-                    </button>
+                    <!-- Botón “trash” -->
                     <button class="btn btn-success btn-sm">
                       <i class="bi bi-trash"></i>
                     </button>

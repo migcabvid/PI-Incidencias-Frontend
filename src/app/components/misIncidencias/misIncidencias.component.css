@@ -1,4 +1,4 @@
-/* Fuente y color general */
+/* Fuente y color general para tarjetas, formularios, tablas y botones */
 .card,
 .card label,
 .card input,
@@ -14,9 +14,11 @@
 /* Fondo de la tarjeta */
 .card {
   background-color: #EDF1EF;
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
-/* Título */
+/* Título del componente (idéntico al formulario anterior) */
 .titulo-formulario {
   background-color: #285846;
   color: #fff;
@@ -28,24 +30,19 @@
   border-top-right-radius: 0.5rem;
 }
 
-/* Tablas personalizadas */
-.summary-table th,
+/* Estilos de encabezado de la tabla de incidencias */
 .incidents-table th {
   background-color: #285846;
   color: #fff;
   font-weight: 500;
 }
 
-.summary-table td,
+/* Alineación vertical de celdas */
 .incidents-table td {
   vertical-align: middle;
 }
 
-/* Ajuste de botones en tabla */
+/* Ajuste de botones en la tabla de incidencias */
 .incidents-table .btn {
   font-size: 0.9rem;
-}
-
-.quitarTablaAbajo{
-    margin-bottom: 0px;
 }
