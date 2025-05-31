@@ -19,6 +19,9 @@ export class MisIncidenciasComponent implements OnInit {
   showSuccessModal = false; // Modal de éxito
   incidenciaAEliminar: Incidencia | null = null;
 
+  showDetailModal = false;
+  incidenciaDetalle: Incidencia | null = null;
+
   constructor(
     private incidenciaService: IncidenciaService,
     private authService: AuthService // inyecta el servicio de auth
@@ -88,5 +91,15 @@ export class MisIncidenciasComponent implements OnInit {
   // Si quieres mostrar el modal tras eliminar, llama a esto:
   onDeleteSuccess(): void {
     this.showModal = true;
+  }
+
+  openDetailModal(incidencia: Incidencia): void {
+    this.incidenciaDetalle = incidencia;
+    this.showDetailModal = true;
+  }
+
+  closeDetailModal(): void {
+    this.showDetailModal = false;
+    this.incidenciaDetalle = null;
   }
 }
