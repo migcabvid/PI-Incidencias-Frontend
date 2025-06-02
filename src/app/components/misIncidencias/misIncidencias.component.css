@@ -91,3 +91,11 @@
   font-size: 16px;
   padding: 1.5rem 1rem;
 }
+
+/* foco verde en inputs, textarea y selects */
+.form-control:focus,
+.form-select:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 168, 69, 0.25);
+  outline: none;
+}
