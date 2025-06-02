@@ -99,3 +99,29 @@
   box-shadow: 0 0 0 0.2rem rgba(40, 168, 69, 0.25);
   outline: none;
 }
+
+
+
+/* 1. Al recibir foco, quitamos outline y box-shadow azul; 
+   pero NO le ponemos fondo verde a los inactivos */
+.pagination .page-link:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  color: #28a745 !important;       /* obligamos el texto verde en el caso inactivo */
+  border-color: #28a745 !important; /* borde verde */
+}
+
+/* 2. SOLO si el <li> padre está activo, queremos que el fondo verde permanezca en focus */
+.pagination .page-item.active .page-link:focus {
+  background-color: #28a745 !important; /* verde */
+  border-color:     #28a745 !important; /* verde */
+  color:            #fff    !important; /* texto blanco */
+}
+
+/* 3. Aseguramos también que, aunque pierda el foco, la página activa se vea siempre en verde */
+.pagination .page-item.active .page-link {
+  background-color: #28a745 !important; /* verde */
+  border-color:     #28a745 !important; /* verde */
+  color:            #fff    !important; /* texto blanco */
+}
