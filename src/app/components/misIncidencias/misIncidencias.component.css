@@ -91,3 +91,58 @@
   font-size: 16px;
   padding: 1.5rem 1rem;
 }
+
+/* foco verde en inputs, textarea y selects */
+.form-control:focus,
+.form-select:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 168, 69, 0.25);
+  outline: none;
+}
+
+
+
+/* 1. Al recibir foco, quitamos outline y box-shadow azul; 
+   pero NO le ponemos fondo verde a los inactivos */
+.pagination .page-link:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  color: #28a745 !important;       /* obligamos el texto verde en el caso inactivo */
+  border-color: #28a745 !important; /* borde verde */
+}
+
+/* 2. SOLO si el <li> padre está activo, queremos que el fondo verde permanezca en focus */
+.pagination .page-item.active .page-link:focus {
+  background-color: #28a745 !important; /* verde */
+  border-color:     #28a745 !important; /* verde */
+  color:            #fff    !important; /* texto blanco */
+}
+
+/* 3. Aseguramos también que, aunque pierda el foco, la página activa se vea siempre en verde */
+.pagination .page-item.active .page-link {
+  background-color: #28a745 !important; /* verde */
+  border-color:     #28a745 !important; /* verde */
+  color:            #fff    !important; /* texto blanco */
+}
+
+/* ==============================================
+   Ajuste de botones para móvil (<576px)
+   ============================================== */
+@media (max-width: 575.98px) {
+  /* Todos los botones .btn-sm dentro de la tabla de incidencias */
+  .incidents-table .btn-sm {
+    padding: 0.75rem 1rem;    /* Más alto y más ancho */
+    font-size: 1rem;          /* Texto más grande */
+    line-height: 1.2;         /* Asegura que el contenido quepa */
+  }
+  /* Si quieres que ocupen casi todo el ancho de la celda: */
+  .incidents-table .btn-sm {
+    width: 100%;
+  }
+  /* Y si hay separación entre botones dentro de .d-inline-flex, aumenta el gap: */
+  .incidents-table .d-none.d-sm-inline-flex.gap-1 {
+    gap: 0.5rem; /* 0.5rem = 8px; p.ej. en lugar de 0.25rem */
+  }
+}
+
