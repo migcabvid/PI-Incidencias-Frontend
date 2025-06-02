@@ -55,14 +55,54 @@
                   <td>{{ inc.descripcion }}</td>
                   <td>{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
                   <td>{{ inc.estado }}</td>
+
                   <td class="text-center">
-                    <button class="btn btn-success btn-sm me-1" (click)="openDetailModal(inc)">
-                      <i class="bi bi-plus"></i>
-                    </button>
-                    <button class="btn btn-danger btn-sm" (click)="openDeleteModal(inc)">
-                      <i class="bi bi-trash-fill text-white"></i>
-                    </button>
+                    <!-- Botones individuales: visibles solo en pantallas ≥ sm (≥576px) -->
+                    <div class="d-none d-sm-inline-flex gap-1">
+                      <button class="btn btn-success btn-sm" (click)="openDetailModal(inc)" title="Ver detalles">
+                        <i class="bi bi-plus"></i>
+                      </button>
+                      <button class="btn btn-danger btn-sm" (click)="openDeleteModal(inc)" title="Eliminar">
+                        <i class="bi bi-trash-fill text-white"></i>
+                      </button>
+                      <!-- Si quieres añadir un tercer botón en sm+, descomenta y edita esto:
+                      <button
+                        class="btn btn-warning btn-sm"
+                        (click)="otraAccion(inc)"
+                        title="Editar"
+                      >
+                        <i class="bi bi-pencil-fill"></i>
+                      </button>
+                      -->
+                    </div>
+                  
+                    <!-- Dropdown de acciones: visible solo en pantallas < sm (<576px) -->
+                    <div class="dropdown d-inline-block d-sm-none">
+                      <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownAcciones{{ inc.idIncidencia }}"
+                        data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+                        <i class="bi bi-three-dots-vertical"></i>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end" [attr.aria-labelledby]="'dropdownAcciones' + inc.idIncidencia">
+                        <li>
+                          <!-- Fondo verde completo -->
+                          <button class="dropdown-item bg-success text-white" (click)="openDetailModal(inc)">
+                            <i class="bi bi-plus me-2"></i>
+                            Ver detalles
+                          </button>
+                        </li>
+                        <li>
+                          <!-- Fondo rojo completo -->
+                          <button class="dropdown-item bg-danger text-white" (click)="openDeleteModal(inc)">
+                            <i class="bi bi-trash me-2"></i>
+                            Eliminar
+                          </button>
+                        </li>
+                        <!-- Más opciones aquí… -->
+                      </ul>
+                    </div>
+
                   </td>
+
                 </tr>
               </tbody>
             </table>
