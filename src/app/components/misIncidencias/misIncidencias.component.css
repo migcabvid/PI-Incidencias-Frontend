@@ -1,1 +1,148 @@
-/* Copia aquí los estilos originales de misIncidencias */
+/* Fuente y color general para tarjetas, formularios, tablas y botones */
+.card,
+.card label,
+.card input,
+.card select,
+.card .form-label,
+.card .form-control,
+.card .btn,
+.table {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+}
+
+/* Fondo de la tarjeta */
+.card {
+  background-color: #EDF1EF;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Título del componente (idéntico al formulario anterior) */
+.titulo-formulario {
+  background-color: #285846;
+  color: #fff;
+  text-align: center;
+  padding: 0.75rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+/* Estilos de encabezado de la tabla de incidencias */
+.incidents-table th {
+  background-color: #285846;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Alineación vertical de celdas */
+.incidents-table td {
+  vertical-align: middle;
+}
+
+/* Ajuste de botones en la tabla de incidencias */
+.incidents-table .btn {
+  font-size: 0.9rem;
+}
+
+/* Modal backdrop */
+.custom-modal-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* radio de bordes en todo el contenedor */
+.custom-modal-content {
+  border-radius: 0.5rem;
+  overflow: hidden; 
+}
+
+/* header en verde, texto blanco */
+.custom-modal-header {
+  background-color: #3C7E66;
+  color: #fff;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: none;
+  padding: 0.75rem 1rem;
+}
+
+/* título centrado */
+.custom-modal-header .modal-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* botón de cerrar */
+.custom-btn-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0;
+}
+
+/* body con tipografía Poppins */
+.custom-modal-body {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  padding: 1.5rem 1rem;
+}
+
+/* foco verde en inputs, textarea y selects */
+.form-control:focus,
+.form-select:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 168, 69, 0.25);
+  outline: none;
+}
+
+
+
+/* 1. Al recibir foco, quitamos outline y box-shadow azul; 
+   pero NO le ponemos fondo verde a los inactivos */
+.pagination .page-link:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  color: #28a745 !important;       /* obligamos el texto verde en el caso inactivo */
+  border-color: #28a745 !important; /* borde verde */
+}
+
+/* 2. SOLO si el <li> padre está activo, queremos que el fondo verde permanezca en focus */
+.pagination .page-item.active .page-link:focus {
+  background-color: #28a745 !important; /* verde */
+  border-color:     #28a745 !important; /* verde */
+  color:            #fff    !important; /* texto blanco */
+}
+
+/* 3. Aseguramos también que, aunque pierda el foco, la página activa se vea siempre en verde */
+.pagination .page-item.active .page-link {
+  background-color: #28a745 !important; /* verde */
+  border-color:     #28a745 !important; /* verde */
+  color:            #fff    !important; /* texto blanco */
+}
+
+/* ==============================================
+   Ajuste de botones para móvil (<576px)
+   ============================================== */
+@media (max-width: 575.98px) {
+  /* Todos los botones .btn-sm dentro de la tabla de incidencias */
+  .incidents-table .btn-sm {
+    padding: 0.75rem 1rem;    /* Más alto y más ancho */
+    font-size: 1rem;          /* Texto más grande */
+    line-height: 1.2;         /* Asegura que el contenido quepa */
+  }
+  /* Si quieres que ocupen casi todo el ancho de la celda: */
+  .incidents-table .btn-sm {
+    width: 100%;
+  }
+  /* Y si hay separación entre botones dentro de .d-inline-flex, aumenta el gap: */
+  .incidents-table .d-none.d-sm-inline-flex.gap-1 {
+    gap: 0.5rem; /* 0.5rem = 8px; p.ej. en lugar de 0.25rem */
+  }
+}
+

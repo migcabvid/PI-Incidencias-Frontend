@@ -16,13 +16,14 @@
   background-color: #285846;
   color: #fff;
   text-align: center;
-  margin-bottom: 1.5rem;
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
   width: 100%;
   box-sizing: border-box;
   display: block;
+  font-size: 1.25rem; 
+  font-weight: 600;   
 }
 
 /* Fondo de la tarjeta */
@@ -73,7 +74,7 @@
 /* radio de bordes en todo el contenedor */
 .custom-modal-content {
   border-radius: 0.5rem;
-  overflow: hidden; /* para que el borde superior redondeado englobe header y body */
+  overflow: hidden; 
 }
 
 /* header en verde, texto blanco */
@@ -82,7 +83,7 @@
   color: #fff;
   align-items: center;
   justify-content: space-between;
-  border-bottom: none; /* opcional, si quieres quitar la línea */
+  border-bottom: none;
   padding: 0.75rem 1rem;
 }
 
@@ -108,4 +109,12 @@
   font-family: 'Poppins', sans-serif;
   font-size: 16px;
   padding: 1.5rem 1rem;
+}
+
+/* Si el id de tu textarea es “descripcion”: */
+#descripcion {
+  resize: none;       /* impide redimensionar */
+  /* Opcional: puedes forzar anchura/alto concretos */
+  /* width: 100%;    por defecto form-control ya lo lleva */
+  height: 220px;  
 }
