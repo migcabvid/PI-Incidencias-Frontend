@@ -1,7 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+// src/app/components/misIncidencias/misIncidencias.component.ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
 import { AuthService } from '../../auth.service';
+import { Subscription } from 'rxjs';
+
+interface SummaryRow {
+  type: string;
+  count: number;
+}
 
 @Component({
   selector: 'app-mis-incidencias',
@@ -10,150 +17,236 @@ import { AuthService } from '../../auth.service';
   templateUrl: './misIncidencias.component.html',
   styleUrls: ['./misIncidencias.component.css']
 })
-export class MisIncidenciasComponent implements OnInit {
+export class MisIncidenciasComponent implements OnInit, OnDestroy {
   // *** Datos originales y filtrados ***
-  incidentsData: Incidencia[] = [];
-  filteredIncidents: Incidencia[] = [];
+  datosIncidencias: Incidencia[]      = [];
+  incidenciasFiltradas: Incidencia[] = [];
 
   // *** Paginación ***
-  pageSize: number = 7;         // muestra 10 resultados por página
-  currentPage: number = 1;       // página actual (1-based)
-  totalPages: number = 1;        // número total de páginas
-  pagedIncidents: Incidencia[] = []; // subconjunto de filteredIncidents que se renderiza
+  tamPagina: number        = 10;                
+  paginaActual: number     = 1;                
+  totalPaginas: number     = 1;                
+  incidenciasPagina: Incidencia[] = [];
 
+  // *** Información del profesor logueado ***
   dniProfesor: string = '';
-  isLoading: boolean = true;
+  estaCargando: boolean = true;
 
-  showModal = false;
-  showSuccessModal = false;
+  // *** Modales ***
+  mostrarModalEliminar: boolean = false;
+  mostrarModalExito:   boolean = false;
   incidenciaAEliminar: Incidencia | null = null;
 
-  showDetailModal = false;
+  mostrarModalDetalle: boolean = false;
   incidenciaDetalle: Incidencia | null = null;
 
+  // *** Nuevo: rol activo y suscripción ***
+  activeRole: string | null = null;
+  private roleSub!: Subscription;
+
+  // *** Nuevo: datos de resumen para el filtro de fechas ***
+  summaryData: SummaryRow[] = [];
+
   constructor(
-    private incidenciaService: IncidenciaService,
-    private authService: AuthService
-  ) {}
+    private servicioIncidencia: IncidenciaService,
+    private servicioAuth: AuthService
+  ) { }
 
   ngOnInit(): void {
-    // Antes de lanzar la petición, indico que está cargando
-    this.isLoading = true;
+    // 1) Suscribirse a activeRole para saber qué rol está activo en todo momento
+    this.roleSub = this.servicioAuth.activeRole$
+      .subscribe(role => {
+        this.activeRole = role;
+      });
 
-    this.authService.dniProfesor$.subscribe(dni => {
+    // 2) Cargar DNI del profesor y, en cuanto esté disponible, listar todas las incidencias
+    this.estaCargando = true;
+    this.servicioAuth.dniProfesor$.subscribe(dni => {
       this.dniProfesor = dni ?? '';
 
-      // Lanzamos la petición al backend
-      this.incidenciaService.listarTodas().subscribe({
+      this.servicioIncidencia.listarTodas().subscribe({
         next: data => {
-          // Una vez que llegan los datos, desactivo la carga
-          this.isLoading = false;
+          // 3) Ya tenemos TODAS las incidencias en “data”
+          //    Si el rol es “profesor”, se filtran por su propio DNI.
+          //    Si es “coordinadortic” o “equipodirectivo”, se asigna todo el array.
+          if (this.activeRole === 'profesor') {
+            this.datosIncidencias = data.filter(i => i.dniProfesor === this.dniProfesor);
+          } else {
+            // coordinador TIC y equipo directivo ven todo
+            this.datosIncidencias = data;
+          }
 
-          // Filtra solo las incidencias del usuario actual
-          this.incidentsData = data.filter(i => i.dniProfesor === this.dniProfesor);
-          this.filteredIncidents = [...this.incidentsData];
+          // 4) Inicializar incidenciasFiltradas con el array base
+          this.incidenciasFiltradas = [...this.datosIncidencias];
 
-          // Inicializa paginación
-          this.setupPagination();
+          // 5) Desactivar spinner y configurar paginación
+          this.estaCargando = false;
+          this.configurarPaginacion();
         },
         error: err => {
-          // Si hay error, también quitamos el spinner para que no se quede bloqueado
           console.error(err);
-          this.isLoading = false;
-          // Podrías mostrar un mensaje de error aquí si quieres
+          this.estaCargando = false;
         }
       });
     });
   }
 
-  // Llamar a este método cada vez que cambie filteredIncidents (al buscar, al eliminar, etc.)
-  setupPagination(): void {
-    // Calcula número total de páginas
-    this.totalPages = Math.ceil(this.filteredIncidents.length / this.pageSize) || 1;
-
-    // Si currentPage se sale de rango (por ejemplo, tras filtrar deja menos páginas), ajusta:
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
+  ngOnDestroy(): void {
+    // Limpiar suscripción al rol
+    if (this.roleSub) {
+      this.roleSub.unsubscribe();
     }
-    if (this.currentPage < 1) {
-      this.currentPage = 1;
-    }
-
-    // Rellena pagedIncidents con el slice correspondiente a la página actual
-    this.updatePagedIncidents();
   }
 
-  updatePagedIncidents(): void {
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.pagedIncidents = this.filteredIncidents.slice(startIndex, endIndex);
+  // -------------------------------------------------------
+  // Paginación (igual que antes)
+  configurarPaginacion(): void {
+    this.totalPaginas = Math.ceil(this.incidenciasFiltradas.length / this.tamPagina) || 1;
+    if (this.paginaActual > this.totalPaginas) this.paginaActual = this.totalPaginas;
+    if (this.paginaActual < 1) this.paginaActual = 1;
+    this.actualizarIncidenciasPagina();
   }
 
-  // Cambiar de página cuando el usuario pulse una página nueva
-  goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-    this.updatePagedIncidents();
+  actualizarIncidenciasPagina(): void {
+    const indiceInicio = (this.paginaActual - 1) * this.tamPagina;
+    const indiceFin    = indiceInicio + this.tamPagina;
+    this.incidenciasPagina = this.incidenciasFiltradas.slice(indiceInicio, indiceFin);
   }
 
-  // Para el buscador: filtrar y reiniciar paginación
-  filterById(term: string): void {
-    const q = term.trim().toLowerCase();
-    this.filteredIncidents = this.incidentsData.filter(i =>
+  irAPagina(pagina: number): void {
+    if (pagina < 1 || pagina > this.totalPaginas) return;
+    this.paginaActual = pagina;
+    this.actualizarIncidenciasPagina();
+  }
+
+  filtrarPorId(termino: string): void {
+    const q = termino.trim().toLowerCase();
+    this.incidenciasFiltradas = this.datosIncidencias.filter(i =>
       i.idIncidencia.toLowerCase().includes(q)
     );
-    // Tras filtrar, volvemos a configurar (y, por defecto, empezará en página 1)
-    this.currentPage = 1;
-    this.setupPagination();
+    this.paginaActual = 1;
+    this.configurarPaginacion();
   }
 
-  // Lógica de eliminación (idéntico a tu código, sólo que al final volvemos a configurar paginación)
-  openDeleteModal(incidencia: Incidencia): void {
+  // -------------------------------------------------------
+  // Eliminación (igual que antes)
+  abrirModalEliminar(incidencia: Incidencia): void {
     this.incidenciaAEliminar = incidencia;
-    this.showModal = true;
+    this.mostrarModalEliminar = true;
   }
 
-  closeModal(): void {
-    this.showModal = false;
+  cerrarModalEliminar(): void {
+    this.mostrarModalEliminar = false;
     this.incidenciaAEliminar = null;
   }
 
-  confirmDelete(): void {
+  confirmarEliminacion(): void {
     if (!this.incidenciaAEliminar) return;
-    this.incidenciaService.eliminar(
+    this.servicioIncidencia.eliminar(
       this.incidenciaAEliminar.idIncidencia,
       this.incidenciaAEliminar.dniProfesor
     ).subscribe({
       next: () => {
-        // Elimina la incidencia de la lista original y de la filtrada
-        this.incidentsData = this.incidentsData.filter(
+        this.datosIncidencias = this.datosIncidencias.filter(
           inc => inc.idIncidencia !== this.incidenciaAEliminar?.idIncidencia
         );
-        this.filteredIncidents = this.filteredIncidents.filter(
+        this.incidenciasFiltradas = this.incidenciasFiltradas.filter(
           inc => inc.idIncidencia !== this.incidenciaAEliminar?.idIncidencia
         );
-        this.showModal = false;
-        this.showSuccessModal = true;
+        this.mostrarModalEliminar = false;
+        this.mostrarModalExito = true;
         this.incidenciaAEliminar = null;
-        // Tras eliminar, reconfigura paginación
-        this.setupPagination();
-
-        setTimeout(() => this.showSuccessModal = false, 1500);
+        this.configurarPaginacion();
+        setTimeout(() => this.mostrarModalExito = false, 1500);
       },
       error: () => {
-        this.showModal = false;
+        this.mostrarModalEliminar = false;
         this.incidenciaAEliminar = null;
       }
     });
   }
 
-  openDetailModal(incidencia: Incidencia): void {
+  abrirModalDetalle(incidencia: Incidencia): void {
     this.incidenciaDetalle = incidencia;
-    this.showDetailModal = true;
+    this.mostrarModalDetalle = true;
   }
 
-  closeDetailModal(): void {
-    this.showDetailModal = false;
+  cerrarModalDetalle(): void {
+    this.mostrarModalDetalle = false;
     this.incidenciaDetalle = null;
   }
+
+  // -------------------------------------------------------
+  // NUEVO: Filtrado por rango de fechas y generación de “summaryData”
+  /**
+   * Recoge las fechas de los inputs, filtra las incidencias según ese rango
+   * y agrupa por “estado” para rellenar summaryData.
+   *
+   * @param fromInput  – referencia al input de tipo date “from”
+   * @param toInput    – referencia al input de tipo date “to”
+   */
+  filterByDate(fromInput: HTMLInputElement, toInput: HTMLInputElement): void {
+    const fromValue = fromInput.value;
+    const toValue   = toInput.value;
+
+    // Si alguno de los dos está vacío, no hacemos nada
+    if (!fromValue || !toValue) {
+      this.summaryData = [];
+      return;
+    }
+
+    // Convertimos a objetos Date
+    let fechaDesde = new Date(fromValue);
+    let fechaHasta = new Date(toValue);
+
+    // Asegurarnos de que fechaDesde ≤ fechaHasta
+    if (fechaDesde > fechaHasta) {
+      // Intercambiamos si el usuario seleccionó mal
+      [fechaDesde, fechaHasta] = [fechaHasta, fechaDesde];
+    }
+
+    // Filtrar todas las incidencias (o solo las del profesor, según rol)
+    // Pero para coordinador/equipo directivo: usar this.datosIncidencias ya contiene TODAS
+    let rangoFiltrado: Incidencia[] = this.datosIncidencias.filter(inc => {
+      const fechaInc = new Date(inc.fechaIncidencia);
+      return fechaInc >= fechaDesde && fechaInc <= fechaHasta;
+    });
+
+    // Agrupar por estado
+    const mapConteo: Record<string, number> = {};
+    rangoFiltrado.forEach(inc => {
+      const key = inc.estado || 'Sin estado';
+      mapConteo[key] = (mapConteo[key] || 0) + 1;
+    });
+
+    // Convertir a array de SummaryRow
+    this.summaryData = Object.keys(mapConteo).map(k => ({
+      type: k,
+      count: mapConteo[k]
+    }));
+  }
+
+  /**
+   * Al hacer clic en el “+” de una fila de summaryData, recargamos la tabla
+   * original (incidenciasFiltradas) solo con aquellas que tengan el mismo “estado”.
+   *
+   * @param estado  – el estado que hemos pulsado
+   */
+  showByEstado(estado: string): void {
+    // Filtrar en this.datosIncidencias (que ya contiene todo, o solo del profesor)
+    this.incidenciasFiltradas = this.datosIncidencias.filter(inc =>
+      inc.estado === estado
+    );
+    this.paginaActual = 1;
+    this.configurarPaginacion();
+  }
+
+   /**
+   * Getter que devuelve la suma de todos los count de summaryData.
+   * Así podremos mostrarlo en la plantilla.
+   */
+  get summaryTotal(): number {
+    return this.summaryData.reduce((acc, row) => acc + row.count, 0);
+  }
+
 }

@@ -1,3 +1,4 @@
+<!-- src/app/components/misIncidencias/misIncidencias.component.html -->
 <main class="container py-3">
   <div class="row justify-content-center">
     <div class="col-lg-8">
@@ -8,7 +9,67 @@
         </div>
         <div class="card-body">
 
-          <!-- BUSCADOR por ID -->
+          <ng-container *ngIf="activeRole === 'coordinadortic' || activeRole === 'equipodirectivo'">
+            <!-- Filtros: Fecha Desde, Fecha Hasta, Botón Buscar -->
+            <form class="row g-3 mb-4 align-items-end">
+              <div class="col-md-5">
+                <label for="from" class="form-label">Fecha Desde</label>
+                <div class="input-group">
+                  <input #from type="date" id="from" class="form-control">
+                  <span class="input-group-text bg-white">
+                    <i class="bi bi-calendar-event"></i>
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-5">
+                <label for="to" class="form-label">Fecha Hasta</label>
+                <div class="input-group">
+                  <input #to type="date" id="to" class="form-control">
+                  <span class="input-group-text bg-white">
+                    <i class="bi bi-calendar-event"></i>
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-2 d-grid">
+                <button type="button" class="btn btn-success" (click)="filterByDate(from, to)">
+                  <i class="bi bi-search me-1"></i>Buscar
+                </button>
+              </div>
+            </form>
+
+            <!-- Tabla de Resumen: Agrupada por estado -->
+            <div *ngIf="summaryData.length > 0" class="table-responsive rounded-3 border mb-4"
+              style="width: 70%; margin: 0 auto;">
+              <table class="table incidents-table text-center " style="margin: 0px;">
+                <thead>
+                  <tr>
+                    <th>Incidencias</th>
+                    <th>Número</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let s of summaryData">
+                    <td>{{ s.type }}</td>
+                    <td>{{ s.count }}</td>
+                    <td>
+                      <!-- Botón “+” (muestra la tabla original filtrada por estado) -->
+                      <button class="btn btn-sm btn-success me-1" (click)="showByEstado(s.type)"
+                        title="Ver detalles de '{{ s.type }}'">
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                      <!-- Botón de “PDF” (puedes implementar generación de PDF aquí) -->
+                      <button class="btn btn-sm btn-success me-1" title="Generar PDF">
+                        <i class="bi bi-filetype-pdf"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
+
+          <!-- BUSCADOR por ID-->
           <div class="row g-3 mb-4">
             <div class="col-md-12">
               <label for="searchId" class="form-label">Buscar ID</label>
@@ -16,134 +77,137 @@
                 <span class="input-group-text">
                   <i class="bi bi-search"></i>
                 </span>
-                <input
-                  #searchId
-                  type="text"
-                  id="searchId"
-                  class="form-control"
-                  placeholder="Escribe el ID..."
-                  (input)="filterById(searchId.value)"
-                />
+                <input #searchId type="text" id="searchId" class="form-control" placeholder="Escribe el ID..."
+                  (input)="filtrarPorId(searchId.value)" />
               </div>
             </div>
           </div>
 
           <!-- INDICADOR DE CARGA -->
-          <div class="d-flex justify-content-center align-items-center" style="height: 200px;" *ngIf="isLoading">
+          <div class="d-flex justify-content-center align-items-center" style="height: 200px;" *ngIf="estaCargando">
             <div class="spinner-border text-success" role="status">
               <span class="visually-hidden">Cargando...</span>
             </div>
           </div>
 
           <!-- TABLA de Incidencias -->
-          <div *ngIf="!isLoading">
-          <div class="table-responsive rounded-3 border">
-            <table class="table align-middle incidents-table mb-0">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Descripción</th>
-                  <th>Fecha</th>
-                  <th>Estado</th>
-                  <th class="text-center">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Aquí iteramos sólo sobre pagedIncidents -->
-                <tr *ngFor="let inc of pagedIncidents">
-                  <td>{{ inc.idIncidencia }}</td>
-                  <td>{{ inc.descripcion }}</td>
-                  <td>{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
-                  <td>{{ inc.estado }}</td>
+          <div *ngIf="!estaCargando">
+            <div class="table-responsive rounded-3 border">
+              <table class="table align-middle incidents-table mb-0">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
 
-                  <td class="text-center">
-                    <!-- Botones individuales: visibles solo en pantallas ≥ sm (≥576px) -->
-                    <div class="d-none d-sm-inline-flex gap-1">
-                      <button class="btn btn-success btn-sm" (click)="openDetailModal(inc)" title="Ver detalles">
-                        <i class="bi bi-plus"></i>
-                      </button>
-                      <button class="btn btn-danger btn-sm" (click)="openDeleteModal(inc)" title="Eliminar">
-                        <i class="bi bi-trash-fill text-white"></i>
-                      </button>
-                      <!-- Si quieres añadir un tercer botón en sm+, descomenta y edita esto:
-                      <button
-                        class="btn btn-warning btn-sm"
-                        (click)="otraAccion(inc)"
-                        title="Editar"
-                      >
-                        <i class="bi bi-pencil-fill"></i>
-                      </button>
-                      -->
-                    </div>
-                  
-                    <!-- Dropdown de acciones: visible solo en pantallas < sm (<576px) -->
-                    <div class="dropdown d-inline-block d-sm-none">
-                      <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownAcciones{{ inc.idIncidencia }}"
-                        data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
-                        <i class="bi bi-three-dots-vertical"></i>
-                      </button>
-                      <ul class="dropdown-menu dropdown-menu-end" [attr.aria-labelledby]="'dropdownAcciones' + inc.idIncidencia">
-                        <li>
-                          <!-- Fondo verde completo -->
-                          <button class="dropdown-item bg-success text-white" (click)="openDetailModal(inc)">
-                            <i class="bi bi-plus me-2"></i>
-                            Ver detalles
-                          </button>
-                        </li>
-                        <li>
-                          <!-- Fondo rojo completo -->
-                          <button class="dropdown-item bg-danger text-white" (click)="openDeleteModal(inc)">
-                            <i class="bi bi-trash me-2"></i>
-                            Eliminar
-                          </button>
-                        </li>
-                        <!-- Más opciones aquí… -->
-                      </ul>
-                    </div>
+                    <!-- Estado solo para profesor -->
+                    <th *ngIf="activeRole === 'profesor'">Estado</th>
 
-                  </td>
+                    <!-- Profesor para coordinador & equipo directivo -->
+                    <th *ngIf="activeRole === 'coordinadortic' || activeRole === 'equipodirectivo'">
+                      Profesor
+                    </th>
 
-                </tr>
-              </tbody>
-            </table>
+                    <th class="text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let inc of incidenciasPagina">
+                    <td>{{ inc.idIncidencia }}</td>
+                    <td>{{ inc.descripcion }}</td>
+                    <td>{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
+
+                    <!-- Celda Estado (solo para profesor) -->
+                    <td *ngIf="activeRole === 'profesor'">
+                      {{ inc.estado }}
+                    </td>
+
+                    <!-- Celda DNI Profesor (para coordinador o equipo directivo) -->
+                    <td *ngIf="activeRole === 'coordinadortic' || activeRole === 'equipodirectivo'">
+                      {{ inc.dniProfesor }}
+                    </td>
+
+                    <td class="text-center">
+                      <!-- Botones individuales (≥ sm) -->
+                      <div class="d-none d-sm-inline-flex gap-1">
+                        <button class="btn btn-success btn-sm" (click)="abrirModalDetalle(inc)" title="Ver detalles">
+                          <i class="bi bi-plus"></i>
+                        </button>
+                        <button class="dropdown-item bg-success text-white" (click)="abrirModalDetalle(inc)" title="Solucionar">
+                          <i class="bi bi-trash me-2"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="abrirModalEliminar(inc)" title="Eliminar">
+                          <i class="bi bi-trash-fill text-white"></i>
+                        </button>
+                      </div>
+
+                      <!-- Dropdown de acciones (< sm) -->
+                      <div class="dropdown d-inline-block d-sm-none">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button"
+                          id="dropdownAcciones{{ inc.idIncidencia }}" data-bs-toggle="dropdown" aria-expanded="false"
+                          title="Acciones">
+                          <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end"
+                          [attr.aria-labelledby]="'dropdownAcciones' + inc.idIncidencia">
+                          <li>
+                            <button class="dropdown-item bg-success text-white" (click)="abrirModalDetalle(inc)">
+                              <i class="bi bi-plus me-2"></i>
+                              Ver detalles
+                            </button>
+                          </li>
+                          <li>
+                            <button class="dropdown-item bg-success text-white" (click)="abrirModalDetalle(inc)">
+                              <i class="bi bi-trash me-2"></i>
+                              Solucionar
+                            </button>
+                          </li>
+                          <li>
+                            <button class="dropdown-item bg-danger text-white" (click)="abrirModalEliminar(inc)">
+                              <i class="bi bi-trash me-2"></i>
+                              Eliminar
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Paginación de Bootstrap -->
+            <nav aria-label="Paginación de incidencias" class="mt-3">
+              <ul class="pagination justify-content-center mb-0">
+                <!-- Botón “Anterior” -->
+                <li class="page-item" [class.disabled]="paginaActual === 1">
+                  <button class="page-link border-success text-success" [class.bg-success]="paginaActual === 1"
+                    [class.text-white]="paginaActual === 1" (click)="irAPagina(paginaActual - 1)"
+                    [attr.disabled]="paginaActual === 1 ? true : null">
+                    <span aria-hidden="true">&laquo;</span>
+                  </button>
+                </li>
+                <!-- Números de página -->
+                <li class="page-item" *ngFor="let _ of [].constructor(totalPaginas); let i = index"
+                  [class.active]="paginaActual === i + 1">
+                  <button class="page-link" [class.border-success]="paginaActual !== (i + 1)"
+                    [class.text-success]="paginaActual !== (i + 1)" [class.bg-success]="paginaActual === (i + 1)"
+                    [class.text-white]="paginaActual === (i + 1)" (click)="irAPagina(i + 1)">
+                    {{ i + 1 }}
+                  </button>
+                </li>
+                <!-- Botón “Siguiente” -->
+                <li class="page-item" [class.disabled]="paginaActual === totalPaginas">
+                  <button class="page-link border-success text-success"
+                    [class.bg-success]="paginaActual === totalPaginas"
+                    [class.text-white]="paginaActual === totalPaginas" (click)="irAPagina(paginaActual + 1)"
+                    [attr.disabled]="paginaActual === totalPaginas ? true : null">
+                    <span aria-hidden="true">&raquo;</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
           </div>
-
-          <!-- Paginación de Bootstrap -->
-          <nav aria-label="Paginación de incidencias" class="mt-3">
-            <ul class="pagination justify-content-center mb-0">
-          
-              <!-- Botón “Anterior” -->
-              <li class="page-item" [class.disabled]="currentPage === 1">
-                <button class="page-link border-success text-success" [class.bg-success]="currentPage === 1"
-                  [class.text-white]="currentPage === 1" (click)="goToPage(currentPage - 1)" aria-label="Anterior"
-                  [attr.disabled]="currentPage === 1 ? true : null">
-                  <span aria-hidden="true">&laquo;</span>
-                </button>
-              </li>
-          
-              <!-- Números de página -->
-              <li class="page-item" *ngFor="let _ of [].constructor(totalPages); let i = index"
-                [class.active]="currentPage === i + 1">
-                <button class="page-link" [class.border-success]="currentPage !== (i + 1)"
-                  [class.text-success]="currentPage !== (i + 1)" [class.bg-success]="currentPage === (i + 1)"
-                  [class.text-white]="currentPage === (i + 1)" (click)="goToPage(i + 1)">
-                  {{ i + 1 }}
-                </button>
-              </li>
-          
-              <!-- Botón “Siguiente” -->
-              <li class="page-item" [class.disabled]="currentPage === totalPages">
-                <button class="page-link border-success text-success" [class.bg-success]="currentPage === totalPages"
-                  [class.text-white]="currentPage === totalPages" (click)="goToPage(currentPage + 1)" aria-label="Siguiente"
-                  [attr.disabled]="currentPage === totalPages ? true : null">
-                  <span aria-hidden="true">&raquo;</span>
-                </button>
-              </li>
-          
-            </ul>
-          </nav>
-          </div>
-
 
         </div>
       </div>
@@ -152,22 +216,21 @@
 </main>
 
 <!-- Modal confirmación de eliminación -->
-<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="mostrarModalEliminar"
+  (click)="cerrarModalEliminar()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content custom-modal-content">
       <div class="modal-header custom-modal-header">
-        <h5 class="modal-title flex-grow-1 text-center">
-          Eliminación
-        </h5>
+        <h5 class="modal-title flex-grow-1 text-center">Eliminación</h5>
       </div>
       <div class="modal-body text-center custom-modal-body">
         ¿Desea eliminar?
       </div>
       <div class="modal-footer border-0 justify-content-center">
-        <button type="button" class="btn btn-success me-2" (click)="confirmDelete()">
+        <button type="button" class="btn btn-success me-2" (click)="confirmarEliminacion()">
           <i class="bi bi-check-circle-fill me-1"></i> Aceptar
         </button>
-        <button type="button" class="btn btn-danger" (click)="closeModal()">
+        <button type="button" class="btn btn-danger" (click)="cerrarModalEliminar()">
           <i class="bi bi-x-circle-fill me-1"></i> Cancelar
         </button>
       </div>
@@ -176,14 +239,14 @@
 </div>
 
 <!-- Modal de eliminación exitosa -->
-<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="mostrarModalExito"
+  (click)="mostrarModalExito = false">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content custom-modal-content">
       <div class="modal-header custom-modal-header">
-        <h5 class="modal-title flex-grow-1 text-center">
-          Eliminación
-        </h5>
-        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="showSuccessModal = false">
+        <h5 class="modal-title flex-grow-1 text-center">Eliminación</h5>
+        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar"
+          (click)="mostrarModalExito = false">
           <i class="bi bi-x-circle-fill"></i>
         </button>
       </div>
@@ -195,14 +258,13 @@
 </div>
 
 <!-- Modal de detalles de incidencia -->
-<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showDetailModal">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="mostrarModalDetalle"
+  (click)="cerrarModalDetalle()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content custom-modal-content">
       <div class="modal-header custom-modal-header">
-        <h5 class="modal-title flex-grow-1 text-center">
-          Detalles de la Incidencia
-        </h5>
-        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="closeDetailModal()">
+        <h5 class="modal-title flex-grow-1 text-center">Detalles de la Incidencia</h5>
+        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="cerrarModalDetalle()">
           <i class="bi bi-x-circle-fill"></i>
         </button>
       </div>
@@ -216,8 +278,13 @@
           <p><strong>Estado:</strong> {{ incidenciaDetalle.estado }}</p>
           <ng-container *ngIf="incidenciaDetalle.foto">
             <p><strong>Foto:</strong></p>
-            <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia"
-                 style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 0.5rem; border: 1px solid #ccc;" />
+            <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia" style="
+                   max-width: 100%;
+                   max-height: 250px;
+                   object-fit: contain;
+                   border-radius: 0.5rem;
+                   border: 1px solid #ccc;
+                 " />
           </ng-container>
         </div>
       </div>

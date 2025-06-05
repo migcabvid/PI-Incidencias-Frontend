@@ -20,7 +20,6 @@ export class IncidenciaService {
 
   constructor(private http: HttpClient) {}
 
-  /** Nuevo método */
   nextId(): Observable<string> {
     return this.http.get<string>(`${this.apiUrl}/next-id`, { withCredentials: true });
   }
