@@ -1,6 +1,7 @@
 // src/app/components/misIncidencias/misIncidencias.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
 import { AuthService } from '../../auth.service';
 import { Subscription } from 'rxjs';
@@ -13,19 +14,19 @@ interface SummaryRow {
 @Component({
   selector: 'app-mis-incidencias',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './misIncidencias.component.html',
   styleUrls: ['./misIncidencias.component.css']
 })
 export class MisIncidenciasComponent implements OnInit, OnDestroy {
   // *** Datos originales y filtrados ***
-  datosIncidencias: Incidencia[]      = [];
+  datosIncidencias: Incidencia[] = [];
   incidenciasFiltradas: Incidencia[] = [];
 
   // *** Paginación ***
-  tamPagina: number        = 10;                
-  paginaActual: number     = 1;                
-  totalPaginas: number     = 1;                
+  tamPagina: number = 10;
+  paginaActual: number = 1;
+  totalPaginas: number = 1;
   incidenciasPagina: Incidencia[] = [];
 
   // *** Información del profesor logueado ***
@@ -34,18 +35,24 @@ export class MisIncidenciasComponent implements OnInit, OnDestroy {
 
   // *** Modales ***
   mostrarModalEliminar: boolean = false;
-  mostrarModalExito:   boolean = false;
+  mostrarModalExito: boolean = false;
   incidenciaAEliminar: Incidencia | null = null;
 
   mostrarModalDetalle: boolean = false;
   incidenciaDetalle: Incidencia | null = null;
 
-  // *** Nuevo: rol activo y suscripción ***
+  // *** Modal “Solución” ***
+  mostrarModalSolucion: boolean = false;
+  incidenciaAResolver: Incidencia | null = null;
+  resolucion: string = '';
+
+  // *** Rol activo y suscripción ***
   activeRole: string | null = null;
   private roleSub!: Subscription;
 
-  // *** Nuevo: datos de resumen para el filtro de fechas ***
+  // *** Datos de resumen para el filtro de fechas ***
   summaryData: SummaryRow[] = [];
+  private lastDateRange: Incidencia[] = []; // almacena incidencias filtradas por fecha
 
   constructor(
     private servicioIncidencia: IncidenciaService,
@@ -109,7 +116,7 @@ export class MisIncidenciasComponent implements OnInit, OnDestroy {
 
   actualizarIncidenciasPagina(): void {
     const indiceInicio = (this.paginaActual - 1) * this.tamPagina;
-    const indiceFin    = indiceInicio + this.tamPagina;
+    const indiceFin = indiceInicio + this.tamPagina;
     this.incidenciasPagina = this.incidenciasFiltradas.slice(indiceInicio, indiceFin);
   }
 
@@ -129,7 +136,7 @@ export class MisIncidenciasComponent implements OnInit, OnDestroy {
   }
 
   // -------------------------------------------------------
-  // Eliminación (igual que antes)
+  // Eliminación
   abrirModalEliminar(incidencia: Incidencia): void {
     this.incidenciaAEliminar = incidencia;
     this.mostrarModalEliminar = true;
@@ -166,6 +173,7 @@ export class MisIncidenciasComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Mostrar detalles
   abrirModalDetalle(incidencia: Incidencia): void {
     this.incidenciaDetalle = incidencia;
     this.mostrarModalDetalle = true;
@@ -176,18 +184,10 @@ export class MisIncidenciasComponent implements OnInit, OnDestroy {
     this.incidenciaDetalle = null;
   }
 
-  // -------------------------------------------------------
-  // NUEVO: Filtrado por rango de fechas y generación de “summaryData”
-  /**
-   * Recoge las fechas de los inputs, filtra las incidencias según ese rango
-   * y agrupa por “estado” para rellenar summaryData.
-   *
-   * @param fromInput  – referencia al input de tipo date “from”
-   * @param toInput    – referencia al input de tipo date “to”
-   */
+  // Filtrado por fecha → summaryData
   filterByDate(fromInput: HTMLInputElement, toInput: HTMLInputElement): void {
     const fromValue = fromInput.value;
-    const toValue   = toInput.value;
+    const toValue = toInput.value;
 
     // Si alguno de los dos está vacío, no hacemos nada
     if (!fromValue || !toValue) {
@@ -211,6 +211,7 @@ export class MisIncidenciasComponent implements OnInit, OnDestroy {
       const fechaInc = new Date(inc.fechaIncidencia);
       return fechaInc >= fechaDesde && fechaInc <= fechaHasta;
     });
+    this.lastDateRange = rangoFiltrado;
 
     // Agrupar por estado
     const mapConteo: Record<string, number> = {};
@@ -224,6 +225,13 @@ export class MisIncidenciasComponent implements OnInit, OnDestroy {
       type: k,
       count: mapConteo[k]
     }));
+  }
+
+  // Mostrar todas las incidencias dentro del último rango buscado (sin filtrar)
+  showAllByDate(): void {
+    this.incidenciasFiltradas = [...this.lastDateRange];
+    this.paginaActual = 1;
+    this.configurarPaginacion();
   }
 
   /**
@@ -241,7 +249,7 @@ export class MisIncidenciasComponent implements OnInit, OnDestroy {
     this.configurarPaginacion();
   }
 
-   /**
+  /**
    * Getter que devuelve la suma de todos los count de summaryData.
    * Así podremos mostrarlo en la plantilla.
    */
@@ -249,4 +257,56 @@ export class MisIncidenciasComponent implements OnInit, OnDestroy {
     return this.summaryData.reduce((acc, row) => acc + row.count, 0);
   }
 
+  // -------------------------------------------------------
+  // Modal “Solución”: abrir ventana
+  abrirModalSolucion(incidencia: Incidencia): void {
+    this.incidenciaAResolver = incidencia;
+    this.resolucion = '';
+    this.mostrarModalSolucion = true;
+  }
+
+  cerrarModalSolucion(): void {
+    this.mostrarModalSolucion = false;
+    this.incidenciaAResolver = null;
+    this.resolucion = '';
+  }
+
+  /**
+   * Al pulsar “Aceptar” en el modal de resolución:
+   * - Llama al servicio para actualizar estado y motivo en el backend.
+   * - Si todo va bien, actualiza localmente el objeto y cierra el modal.
+   */
+  enviarResolucion() {
+    if (!this.resolucion || !this.incidenciaAResolver) {
+      console.error('Necesitas seleccionar la incidencia y escribir una resolución.');
+      return;
+    }
+
+    const idIncidencia = this.incidenciaAResolver.idIncidencia;
+    const dniProfesor = this.incidenciaAResolver.dniProfesor;
+    // Asumimos que el coordinador logeado guarda su DNI en this.dniProfesor
+    const dniCoordinador = this.dniProfesor;
+
+    this.servicioIncidencia.resolverIncidencia(
+      idIncidencia,
+      dniProfesor,
+      dniCoordinador,
+      this.resolucion
+    ).subscribe({
+      next: () => {
+        // Actualizar estado y resolución localmente
+        this.incidenciaAResolver!.estado = 'Solucionada';
+        this.incidenciaAResolver!.resolucion = this.resolucion;
+
+        // Limpiar UI y cerrar modal
+        this.resolucion = '';
+        this.mostrarModalSolucion = false;
+
+        console.log('Incidencia resuelta correctamente.');
+      },
+      error: err => {
+        console.error('Error al resolver la incidencia:', err);
+      }
+    });
+  }
 }

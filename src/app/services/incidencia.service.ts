@@ -1,4 +1,3 @@
-// src/app/services/incidencia.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -12,13 +11,14 @@ export interface Incidencia {
   dniProfesor: string;
   estado?: string;
   foto?: string;
+  resolucion?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class IncidenciaService {
   private apiUrl = `${environment.apiBaseUrl}/incidencias`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   nextId(): Observable<string> {
     return this.http.get<string>(`${this.apiUrl}/next-id`, { withCredentials: true });
@@ -58,4 +58,24 @@ export class IncidenciaService {
       { withCredentials: true }
     );
   }
+
+  resolverIncidencia(
+    idIncidencia: string,
+    dniProfesor: string,
+    dniCoordinador: string,
+    resolucion: string
+  ): Observable<Incidencia> {
+    const url = `${this.apiUrl}/${idIncidencia}/${dniProfesor}/resolver`;
+
+    // Usamos application/x-www-form-urlencoded porque el controlador Spring espera @RequestParam
+    const body = new URLSearchParams();
+    body.set('dniCoordinador', dniCoordinador);
+    body.set('resolucion', resolucion);
+    body.set('estado', 'Solucionada');
+
+    return this.http.put<Incidencia>(url, body.toString(), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+  }
+
 }

@@ -1,4 +1,3 @@
-// src/app/login.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,9 +23,9 @@ export class LoginComponent {
 
   // Opciones de rol para el desplegable
   availableRoles: RoleOption[] = [
-    { value: 'Profesor',        label: 'Profesor' },
-    { value: 'CoordinadorTic',  label: 'Coordinador Tic' },
-    { value: 'EquipoDirectivo', label: 'Equipo Directivo' }
+    { value: 'profesor',        label: 'Profesor' },
+    { value: 'coordinadortic',  label: 'Coordinador Tic' },
+    { value: 'equipodirectivo', label: 'Equipo Directivo' }
   ];
 
   // Estado del desplegable
