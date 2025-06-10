@@ -40,9 +40,13 @@ export class GestionIncidenciasComponent implements OnInit {
   showModal = false;
   showSuccessModal = false;
   showDetailModal = false;
+  mostrarModalSolucion = false;
 
   incidenciaAEliminar: Incident | null = null;
   incidenciaDetalle: Incident | null = null;
+  incidenciaAResolver: Incident | null = null;
+
+  resolucion: string = '';
 
   ngOnInit(): void {
     this.filteredIncidents = [...this.incidentsData];
@@ -78,6 +82,27 @@ export class GestionIncidenciasComponent implements OnInit {
   closeDetailModal(): void {
     this.showDetailModal = false;
     this.incidenciaDetalle = null;
+  }
+
+  abrirModalSolucion(inc: Incident): void {
+    this.incidenciaAResolver = inc;
+    this.resolucion = '';
+    this.mostrarModalSolucion = true;
+  }
+
+  cerrarModalSolucion(): void {
+    this.mostrarModalSolucion = false;
+    this.incidenciaAResolver = null;
+    this.resolucion = '';
+  }
+
+  enviarResolucion(): void {
+    if (!this.resolucion || !this.incidenciaAResolver) return;
+    // Simula la resolución localmente
+    this.incidenciaAResolver.status = 'Resuelta';
+    // Puedes guardar la resolución si lo deseas
+    (this.incidenciaAResolver as any).resolucion = this.resolucion;
+    this.cerrarModalSolucion();
   }
 
   filterById(term: string): void {
