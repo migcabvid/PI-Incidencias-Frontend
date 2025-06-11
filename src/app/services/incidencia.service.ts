@@ -59,4 +59,19 @@ export class IncidenciaService {
       { withCredentials: true }
     );
   }
+
+  resolverIncidencia(idIncidencia: string, dniProfesor: string, dniCoordinador: string, resolucion: string): Observable<Incidencia> {
+    return this.http.put<Incidencia>(
+      `${this.apiUrl}/${idIncidencia}/${dniProfesor}/resolver`,
+      null,
+      {
+        params: {
+          dniCoordinador,
+          resolucion,
+          estado: 'Resuelta'
+        },
+        withCredentials: true
+      }
+    );
+  }
 }

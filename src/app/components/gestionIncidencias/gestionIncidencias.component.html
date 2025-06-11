@@ -13,18 +13,12 @@
               <label for="from" class="form-label">Fecha Desde</label>
               <div class="input-group">
                 <input #from type="date" id="from" class="form-control">
-                <span class="input-group-text bg-white">
-                  <i class="bi bi-calendar-event"></i>
-                </span>
               </div>
             </div>
             <div class="col-md-5">
               <label for="to" class="form-label">Fecha Hasta</label>
               <div class="input-group">
                 <input #to type="date" id="to" class="form-control">
-                <span class="input-group-text bg-white">
-                  <i class="bi bi-calendar-event"></i>
-                </span>
               </div>
             </div>
             <div class="col-md-2 d-grid">
@@ -35,8 +29,8 @@
           </form>
 
           <!-- Tabla de Resumen (centrada y con ancho máximo) -->
-          <div class="table-responsive mb-4 mx-auto summary-wrap">
-            <table class="table text-center mb-0 summary-table">
+          <div class="table-responsive mb-4 mx-auto summary-wrap" *ngIf="filtroFechaActivo">
+            <table class="table text-center mb-0 incidents-table" style="max-width: 500px; min-width: 320px; margin: 0 auto;">
               <thead>
                 <tr>
                   <th>Incidencias</th>
@@ -88,7 +82,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let inc of filteredIncidents">
+                <tr *ngFor="let inc of pagedIncidents">
                   <td>{{ inc.idIncidencia }}</td>
                   <td>{{ inc.descripcion }}</td>
                   <td>{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
@@ -140,6 +134,37 @@
               </div>
             </div>
           </div>
+
+                    <!-- Navegación por páginas -->
+          <nav aria-label="Paginación de incidencias" class="mt-3">
+            <ul class="pagination justify-content-center mb-0">
+              <!-- Botón “Anterior” -->
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link border-success text-success" [class.bg-success]="currentPage === 1"
+                  [class.text-white]="currentPage === 1" (click)="goToPage(currentPage - 1)" aria-label="Anterior"
+                  [attr.disabled]="currentPage === 1 ? true : null">
+                  <span aria-hidden="true">&laquo;</span>
+                </button>
+              </li>
+              <!-- Números de página -->
+              <li class="page-item" *ngFor="let _ of [].constructor(totalPages); let i = index"
+                [class.active]="currentPage === i + 1">
+                <button class="page-link" [class.border-success]="currentPage !== (i + 1)"
+                  [class.text-success]="currentPage !== (i + 1)" [class.bg-success]="currentPage === (i + 1)"
+                  [class.text-white]="currentPage === (i + 1)" (click)="goToPage(i + 1)">
+                  {{ i + 1 }}
+                </button>
+              </li>
+              <!-- Botón “Siguiente” -->
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link border-success text-success" [class.bg-success]="currentPage === totalPages"
+                  [class.text-white]="currentPage === totalPages" (click)="goToPage(currentPage + 1)" aria-label="Siguiente"
+                  [attr.disabled]="currentPage === totalPages ? true : null">
+                  <span aria-hidden="true">&raquo;</span>
+                </button>
+              </li>
+            </ul>
+          </nav>
 
           <!-- Modal confirmación de eliminación -->
           <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal">

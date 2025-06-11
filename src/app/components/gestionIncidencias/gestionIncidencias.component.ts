@@ -31,6 +31,13 @@ export class GestionIncidenciasComponent implements OnInit {
 
   resolucion: string = '';
 
+  filtroFechaActivo = false;
+
+  pageSize: number = 7;
+  currentPage: number = 1;
+  totalPages: number = 1;
+  pagedIncidents: Incidencia[] = [];
+
   constructor(private incidenciaService: IncidenciaService) {}
 
   ngOnInit(): void {
@@ -38,6 +45,7 @@ export class GestionIncidenciasComponent implements OnInit {
       next: data => {
         this.incidentsData = data;
         this.filteredIncidents = [...data];
+        this.setupPagination();
         this.updateSummary();
       },
       error: err => {
@@ -48,10 +56,29 @@ export class GestionIncidenciasComponent implements OnInit {
 
   updateSummary(): void {
     this.summaryData = [
-      { type: 'Resueltas', count: this.incidentsData.filter(i => i.estado?.toLowerCase() === 'resuelta').length },
-      { type: 'Pendientes', count: this.incidentsData.filter(i => i.estado?.toLowerCase() !== 'resuelta').length },
-      { type: 'Totales', count: this.incidentsData.length }
+      { type: 'Resueltas', count: this.filteredIncidents.filter(i => i.estado?.toLowerCase() === 'resuelta').length },
+      { type: 'Pendientes', count: this.filteredIncidents.filter(i => i.estado?.toLowerCase() !== 'resuelta').length },
+      { type: 'Totales', count: this.filteredIncidents.length }
     ];
+  }
+
+  setupPagination(): void {
+    this.totalPages = Math.ceil(this.filteredIncidents.length / this.pageSize) || 1;
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+    if (this.currentPage < 1) this.currentPage = 1;
+    this.updatePagedIncidents();
+  }
+
+  updatePagedIncidents(): void {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.pagedIncidents = this.filteredIncidents.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.updatePagedIncidents();
   }
 
   openDeleteModal(inc: Incidencia): void {
@@ -80,6 +107,7 @@ export class GestionIncidenciasComponent implements OnInit {
         this.showModal = false;
         this.showSuccessModal = true;
         this.incidenciaAEliminar = null;
+        this.setupPagination();
         this.updateSummary();
         setTimeout(() => this.showSuccessModal = false, 1500);
       },
@@ -127,16 +155,22 @@ export class GestionIncidenciasComponent implements OnInit {
     this.filteredIncidents = this.incidentsData.filter(i =>
       i.idIncidencia.toLowerCase().includes(q)
     );
+    this.currentPage = 1;
+    this.setupPagination();
   }
 
   filterByDate(from: HTMLInputElement, to: HTMLInputElement): void {
     const start = from.value;
     const end = to.value;
+    this.filtroFechaActivo = !!start || !!end;
     this.filteredIncidents = this.incidentsData.filter(i => {
       const fecha = i.fechaIncidencia?.toString().slice(0, 10); // yyyy-MM-dd
       const after = start ? fecha >= start : true;
       const before = end ? fecha <= end : true;
       return after && before;
     });
+    this.currentPage = 1;
+    this.setupPagination();
+    this.updateSummary();
   }
 }

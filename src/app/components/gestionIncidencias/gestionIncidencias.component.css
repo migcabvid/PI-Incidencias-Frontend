@@ -85,3 +85,42 @@
   box-shadow: 0 0 0 0.2rem rgba(40,168,69, .25);
   outline: none;
 }
+
+/* Estilos de encabezado de la tabla de incidencias */
+.incidents-table th {
+  background-color: #285846;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Bordes redondeados y sombra en la tabla de incidencias */
+.incidents-table {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* Alineación vertical de celdas */
+.incidents-table td {
+  vertical-align: middle;
+}
+
+/* Ajuste de botones en la tabla de incidencias */
+.incidents-table .btn {
+  font-size: 0.9rem;
+}
+
+/* Paginación igual que mis incidencias */
+.pagination .page-link:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  color: #28a745 !important;
+  border-color: #28a745 !important;
+}
+.pagination .page-item.active .page-link:focus,
+.pagination .page-item.active .page-link {
+  background-color: #28a745 !important;
+  border-color:     #28a745 !important;
+  color:            #fff    !important;
+}
