@@ -83,16 +83,16 @@
                   <th>ID</th>
                   <th>Descripción</th>
                   <th>Fecha</th>
-                  <th>Estado</th>
+                  <th>Profesor</th>
                   <th class="text-center">Acción</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let inc of filteredIncidents">
-                  <td>{{ inc.id }}</td>
-                  <td>{{ inc.description }}</td>
-                  <td>{{ inc.date }}</td>
-                  <td>{{ inc.status }}</td>
+                  <td>{{ inc.idIncidencia }}</td>
+                  <td>{{ inc.descripcion }}</td>
+                  <td>{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
+                  <td>{{ inc.dniProfesor }}</td>
                   <td class="text-center">
                     <button class="btn btn-sm btn-success me-1" (click)="openDetailModal(inc)">
                       <i class="bi bi-plus-lg"></i>
@@ -103,7 +103,6 @@
                     <button class="btn btn-sm btn-danger" (click)="openDeleteModal(inc)">
                       <i class="bi bi-trash-fill"></i>
                     </button>
-                    
                   </td>
                 </tr>
               </tbody>
@@ -125,14 +124,15 @@
                 </div>
                 <div class="modal-body custom-modal-body">
                   <div *ngIf="incidenciaDetalle">
-                    <p><strong>ID:</strong> {{ incidenciaDetalle.id }}</p>
-                    <p><strong>Fecha:</strong> {{ incidenciaDetalle.date }}</p>
-                    <p><strong>Tipo:</strong> {{ incidenciaDetalle.type }}</p>
-                    <p><strong>Descripción:</strong> {{ incidenciaDetalle.description }}</p>
-                    <p><strong>Estado:</strong> {{ incidenciaDetalle.status }}</p>
-                    <ng-container *ngIf="incidenciaDetalle.photo">
+                    <p><strong>ID:</strong> {{ incidenciaDetalle.idIncidencia }}</p>
+                    <p><strong>Fecha:</strong> {{ incidenciaDetalle.fechaIncidencia | date:'yyyy-MM-dd' }}</p>
+                    <p><strong>Tipo:</strong> {{ incidenciaDetalle.tipoIncidencia }}</p>
+                    <p><strong>Descripción:</strong> {{ incidenciaDetalle.descripcion }}</p>
+                    <p><strong>DNI Profesor:</strong> {{ incidenciaDetalle.dniProfesor }}</p>
+                    <p><strong>Estado:</strong> {{ incidenciaDetalle.estado }}</p>
+                    <ng-container *ngIf="incidenciaDetalle.foto">
                       <p><strong>Foto:</strong></p>
-                      <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.photo" alt="Foto de la incidencia"
+                      <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia"
                         style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 0.5rem; border: 1px solid #ccc;" />
                     </ng-container>
                   </div>
