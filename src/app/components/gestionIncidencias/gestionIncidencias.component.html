@@ -7,6 +7,7 @@
         </div>
         <div class="card-body">
 
+          
           <!-- Filtros: Fecha Desde, Fecha Hasta, Botón Buscar -->
           <form class="row g-3 mb-4 align-items-end">
             <div class="col-md-5">
@@ -69,6 +70,14 @@
             </div>
           </div>
 
+           <!-- 1) Spinner mientras carga -->
+          <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 200px;">
+            <div class="spinner-border text-success" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          
+          <ng-container *ngIf="!isLoading">
           <!-- Tabla principal de incidencias -->
           <div class="table-responsive">
             <table class="table align-middle mb-0 incidents-table">
@@ -237,6 +246,7 @@
               </div>
             </div>
           </div>
+          </ng-container>
 
         </div>
       </div>

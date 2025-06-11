@@ -11,6 +11,7 @@ import { IncidenciaService, Incidencia } from '../../services/incidencia.service
   styleUrls: ['./gestionIncidencias.component.css']
 })
 export class GestionIncidenciasComponent implements OnInit {
+  isLoading = true;
   summaryData = [
     { type: 'Resueltas', count: 0 },
     { type: 'Pendientes', count: 0 },
@@ -41,8 +42,11 @@ export class GestionIncidenciasComponent implements OnInit {
   constructor(private incidenciaService: IncidenciaService) {}
 
   ngOnInit(): void {
+    this.isLoading = true;
+
     this.incidenciaService.listarTodas().subscribe({
       next: data => {
+        this.isLoading = false;
         this.incidentsData = data;
         this.filteredIncidents = [...data];
         this.setupPagination();
@@ -50,6 +54,7 @@ export class GestionIncidenciasComponent implements OnInit {
       },
       error: err => {
         console.error(err);
+        this.isLoading = false;
       }
     });
   }
