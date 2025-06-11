@@ -19,6 +19,7 @@ export class NavbarComponent implements OnInit {
 
   isMisIncidencias  = false;
   isCrearIncidencia = false;
+  isGestionRole = false;
 
   public roleDisplayMap: Record<string,string> = {
     profesor:        'Profesor',
@@ -34,7 +35,13 @@ export class NavbarComponent implements OnInit {
   ngOnInit() {
     // 1) Suscribir roles y rol activo
     this.auth.roles$.subscribe(roles => this.allRoles = roles);
-    this.auth.activeRole$.subscribe(role => this.activeRole = role);
+
+    // 2) Suscribir rol activo y calcular isGestionRole
+    this.auth.activeRole$.subscribe(role => {
+      this.activeRole = role;
+      const key = role ? role.toLowerCase() : '';
+      this.isGestionRole = ['equipodirectivo', 'coordinadortic'].includes(key);
+    });
 
     // 2) Actualizar banderas en cuanto arranca la navegación
     this.router.events.subscribe(ev => {
@@ -78,7 +85,13 @@ export class NavbarComponent implements OnInit {
   selectOption(r: string, event: MouseEvent) {
     event.preventDefault();
     this.auth.setActiveRole(r);
-    this.router.navigate(['/crearIncidencia']);
+
+    const key = r.toLowerCase();
+    if (key === 'profesor') {
+      this.router.navigate(['/crearIncidencia']);
+    } else {
+      this.router.navigate(['/gestionIncidencias']);
+    }
   }
 
   logout() {
