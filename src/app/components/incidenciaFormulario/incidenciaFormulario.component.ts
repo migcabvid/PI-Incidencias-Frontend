@@ -144,6 +144,7 @@ export class IncidenciaFormularioComponent implements OnInit {
       switchMap((inc: Incidencia) => {
         // Mostrar modal en vez de toast
         this.showModal = true;
+        setTimeout(() => this.showModal = false, 2000);
         return this.incService.nextId();
       })
     ).subscribe({
