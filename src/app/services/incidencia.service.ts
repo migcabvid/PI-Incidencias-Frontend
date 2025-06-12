@@ -74,4 +74,17 @@ export class IncidenciaService {
       }
     );
   }
+
+filtrarPorFechas(desde?: string, hasta?: string): Observable<Incidencia[]> {
+    let params: string[] = [];
+    if (desde) params.push(`desde=${desde}`);
+    if (hasta) params.push(`hasta=${hasta}`);
+    const query = params.length ? '?' + params.join('&') : '';
+    
+    return this.http.get<Incidencia[]>(
+        `${this.apiUrl}/filtrar${query}`,
+        { withCredentials: true }
+    );
+}
+
 }

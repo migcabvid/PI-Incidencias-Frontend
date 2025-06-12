@@ -11,6 +11,7 @@ import { IncidenciaService, Incidencia } from '../../services/incidencia.service
   styleUrls: ['./gestionIncidencias.component.css']
 })
 export class GestionIncidenciasComponent implements OnInit {
+  summaryBaseData: Incidencia[] = []; // Solo filtrado por fecha, no por estado
   isDateDesc = true;
   isLoading = true;
   summaryData = [
@@ -44,7 +45,6 @@ export class GestionIncidenciasComponent implements OnInit {
 
   ngOnInit(): void {
     this.isLoading = true;
-
     this.incidenciaService.listarTodas().subscribe({
       next: data => {
         this.isLoading = false;
@@ -56,8 +56,8 @@ export class GestionIncidenciasComponent implements OnInit {
           return Number(b.idIncidencia) - Number(a.idIncidencia);
         });
         this.incidentsData = sorted;
-
         this.filteredIncidents = [...sorted];
+        this.summaryBaseData = [...sorted];
         this.setupPagination();
         this.updateSummary();
       },
@@ -70,9 +70,9 @@ export class GestionIncidenciasComponent implements OnInit {
 
   updateSummary(): void {
     this.summaryData = [
-      { type: 'Resueltas', count: this.incidentsData.filter(i => i.estado?.toLowerCase() === 'resuelta').length },
-      { type: 'Pendientes', count: this.incidentsData.filter(i => i.estado?.toLowerCase() !== 'resuelta').length },
-      { type: 'Totales', count: this.incidentsData.length }
+      { type: 'Resueltas', count: this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'resuelta').length },
+      { type: 'Pendientes', count: this.summaryBaseData.filter(i => i.estado?.toLowerCase() !== 'resuelta').length },
+      { type: 'Totales', count: this.summaryBaseData.length }
     ];
   }
 
@@ -175,15 +175,21 @@ export class GestionIncidenciasComponent implements OnInit {
     const start = from.value;
     const end = to.value;
     this.filtroFechaActivo = !!start || !!end;
-    this.filteredIncidents = this.incidentsData.filter(i => {
-      const fecha = i.fechaIncidencia?.toString().slice(0, 10);
-      const after = start ? fecha >= start : true;
-      const before = end ? fecha <= end : true;
-      return after && before;
+    this.isLoading = true;
+    this.incidenciaService.filtrarPorFechas(start, end).subscribe({
+      next: data => {
+        this.summaryBaseData = data;
+        this.filteredIncidents = data;
+        this.currentPage = 1;
+        this.setupPagination();
+        this.updateSummary();
+        this.isLoading = false;
+      },
+      error: err => {
+        console.error(err);
+        this.isLoading = false;
+      }
     });
-    this.currentPage = 1;
-    this.setupPagination();
-    this.updateSummary();
   }
 
   toggleDateSort(): void {
@@ -210,14 +216,13 @@ export class GestionIncidenciasComponent implements OnInit {
 
   filtrarPorEstado(estado: string): void {
     if (estado === 'Totales') {
-      this.filteredIncidents = [...this.incidentsData];
+      this.filteredIncidents = [...this.summaryBaseData];
     } else if (estado === 'Resueltas') {
-      this.filteredIncidents = this.incidentsData.filter(i => i.estado?.toLowerCase() === 'resuelta');
+      this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'resuelta');
     } else if (estado === 'Pendientes') {
-      this.filteredIncidents = this.incidentsData.filter(i => i.estado?.toLowerCase() !== 'resuelta');
+      this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() !== 'resuelta');
     }
     this.currentPage = 1;
     this.setupPagination();
-    this.updateSummary();
   }
 }
