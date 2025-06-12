@@ -71,7 +71,6 @@ export class MisIncidenciasComponent implements OnInit {
           // Si hay error, también quitamos el spinner para que no se quede bloqueado
           console.error(err);
           this.isLoading = false;
-          // Podrías mostrar un mensaje de error aquí si quieres
         }
       });
     });
@@ -118,7 +117,6 @@ export class MisIncidenciasComponent implements OnInit {
     this.setupPagination();
   }
 
-  // Lógica de eliminación (idéntico a tu código, sólo que al final volvemos a configurar paginación)
   openDeleteModal(incidencia: Incidencia): void {
     this.incidenciaAEliminar = incidencia;
     this.showModal = true;

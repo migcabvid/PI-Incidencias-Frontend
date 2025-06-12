@@ -85,7 +85,9 @@
                 <tr>
                   <th>ID</th>
                   <th>Descripción</th>
-                  <th>Fecha</th>
+                  <th class="sortable-header" (click)="toggleDateSort()">
+                    Fecha
+                  </th>
                   <th>Profesor</th>
                   <th class="text-center">Acción</th>
                 </tr>
@@ -100,7 +102,7 @@
                     <button class="btn btn-sm btn-success me-1" (click)="openDetailModal(inc)">
                       <i class="bi bi-plus-lg"></i>
                     </button>
-                    <button class="btn btn-primary btn-sm" (click)="abrirModalSolucion(inc)">
+                    <button class="btn btn-primary btn-sm me-1" (click)="abrirModalSolucion(inc)">
                       <i class="bi bi-check2"></i>
                     </button>
                     <button class="btn btn-sm btn-danger" (click)="openDeleteModal(inc)">

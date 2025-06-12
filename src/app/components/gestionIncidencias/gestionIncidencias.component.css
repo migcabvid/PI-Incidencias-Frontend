@@ -124,3 +124,17 @@
   border-color:     #28a745 !important;
   color:            #fff    !important;
 }
+
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s;
+}
+
+.sortable-header:hover {
+  text-decoration-color: #fff;
+}
