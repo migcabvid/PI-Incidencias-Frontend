@@ -1,10 +1,12 @@
 // src/app/components/navbar/navbar.component.ts
-import { Component, OnInit }       from '@angular/core';
-import { CommonModule }            from '@angular/common';
-import { Router, RouterModule,
-         NavigationStart,
-         NavigationEnd }           from '@angular/router';
-import { AuthService }             from '../../auth.service';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  Router, RouterModule,
+  NavigationStart,
+  NavigationEnd
+} from '@angular/router';
+import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -14,23 +16,23 @@ import { AuthService }             from '../../auth.service';
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent implements OnInit {
-  allRoles: string[]           = [];
-  activeRole: string | null    = null;
+  allRoles: string[] = [];
+  activeRole: string | null = null;
 
-  isMisIncidencias  = false;
+  isMisIncidencias = false;
   isCrearIncidencia = false;
   isGestionRole = false;
 
-  public roleDisplayMap: Record<string,string> = {
-    profesor:        'Profesor',
-    coordinadortic:  'Coordinador Tic',
+  public roleDisplayMap: Record<string, string> = {
+    profesor: 'Profesor',
+    coordinadortic: 'Coordinador Tic',
     equipodirectivo: 'Equipo Directivo'
   };
 
   constructor(
-    private auth:   AuthService,
+    private auth: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     // 1) Suscribir roles y rol activo
@@ -59,7 +61,7 @@ export class NavbarComponent implements OnInit {
   }
 
   private setFlags(url: string) {
-    this.isMisIncidencias  = url.includes('misIncidencias');
+    this.isMisIncidencias = url.includes('misIncidencias');
     this.isCrearIncidencia = url.includes('crearIncidencia');
   }
 

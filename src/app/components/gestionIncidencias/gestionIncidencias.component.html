@@ -7,7 +7,6 @@
         </div>
         <div class="card-body">
 
-          
           <!-- Filtros: Fecha Desde, Fecha Hasta, Botón Buscar -->
           <form class="row g-3 mb-4 align-items-end">
             <div class="col-md-5">
@@ -29,9 +28,10 @@
             </div>
           </form>
 
-          <!-- Tabla de Resumen (centrada y con ancho máximo) -->
+          <!-- Tabla de Resumen -->
           <div class="table-responsive mb-4 mx-auto summary-wrap" *ngIf="filtroFechaActivo">
-            <table class="table text-center mb-0 incidents-table" style="max-width: 500px; min-width: 320px; margin: 0 auto;">
+            <table class="table text-center mb-0 incidents-table"
+              style="max-width: 500px; min-width: 320px; margin: 0 auto;">
               <thead>
                 <tr>
                   <th>Incidencias</th>
@@ -70,184 +70,181 @@
             </div>
           </div>
 
-           <!-- 1) Spinner mientras carga -->
+          <!-- Spinner mientras carga -->
           <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 200px;">
             <div class="spinner-border text-success" role="status">
               <span class="visually-hidden">Cargando...</span>
             </div>
           </div>
-          
-          <ng-container *ngIf="!isLoading">
-          <!-- Tabla principal de incidencias -->
-          <div class="table-responsive">
-            <table class="table align-middle mb-0 incidents-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Descripción</th>
-                  <th class="sortable-header" (click)="toggleDateSort()">
-                    Fecha
-                  </th>
-                  <th>Profesor</th>
-                  <th class="text-center">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let inc of pagedIncidents">
-                  <td>{{ inc.idIncidencia }}</td>
-                  <td>{{ inc.descripcion }}</td>
-                  <td>{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
-                  <td>{{ inc.dniProfesor }}</td>
-                  <td class="text-center">
-                    <button class="btn btn-sm btn-success me-1" (click)="openDetailModal(inc)">
-                      <i class="bi bi-plus-lg"></i>
-                    </button>
-                    <button class="btn btn-primary btn-sm me-1" (click)="abrirModalSolucion(inc)">
-                      <i class="bi bi-check2"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger" (click)="openDeleteModal(inc)">
-                      <i class="bi bi-trash-fill"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
 
-          <!-- Modal de detalles -->
-          <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showDetailModal">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content custom-modal-content">
-                <div class="modal-header custom-modal-header">
-                  <h5 class="modal-title flex-grow-1 text-center">
-                    Detalles de la Incidencia
-                  </h5>
-                  <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar"
-                    (click)="closeDetailModal()">
-                    <i class="bi bi-x-circle-fill"></i>
-                  </button>
-                </div>
-                <div class="modal-body custom-modal-body">
-                  <div *ngIf="incidenciaDetalle">
-                    <p><strong>ID:</strong> {{ incidenciaDetalle.idIncidencia }}</p>
-                    <p><strong>Fecha:</strong> {{ incidenciaDetalle.fechaIncidencia | date:'yyyy-MM-dd' }}</p>
-                    <p><strong>Tipo:</strong> {{ incidenciaDetalle.tipoIncidencia }}</p>
-                    <p><strong>Descripción:</strong> {{ incidenciaDetalle.descripcion }}</p>
-                    <p><strong>DNI Profesor:</strong> {{ incidenciaDetalle.dniProfesor }}</p>
-                    <p><strong>Estado:</strong> {{ incidenciaDetalle.estado }}</p>
-                    <ng-container *ngIf="incidenciaDetalle.foto">
-                      <p><strong>Foto:</strong></p>
-                      <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia"
-                        style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 0.5rem; border: 1px solid #ccc;" />
-                    </ng-container>
+          <ng-container *ngIf="!isLoading">
+            <!-- Tabla principal de incidencias -->
+            <div class="table-responsive">
+              <table class="table align-middle mb-0 incidents-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th class="sortable-header" (click)="toggleDateSort()">
+                      Fecha
+                    </th>
+                    <th>Profesor</th>
+                    <th class="text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let inc of pagedIncidents">
+                    <td>{{ inc.idIncidencia }}</td>
+                    <td>{{ inc.descripcion }}</td>
+                    <td>{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
+                    <td>{{ inc.nombreProfesor }}</td> <!-- Cambiado -->
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-success me-1" (click)="openDetailModal(inc)">
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                      <button class="btn btn-primary btn-sm me-1" (click)="abrirModalSolucion(inc)">
+                        <i class="bi bi-check2"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger" (click)="openDeleteModal(inc)">
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Modal de detalles -->
+            <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showDetailModal">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content custom-modal-content">
+                  <div class="modal-header custom-modal-header">
+                    <h5 class="modal-title flex-grow-1 text-center">
+                      Detalles de la Incidencia
+                    </h5>
+                    <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar"
+                      (click)="closeDetailModal()">
+                      <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                  </div>
+                  <div class="modal-body custom-modal-body">
+                    <div *ngIf="incidenciaDetalle">
+                      <p><strong>ID:</strong> {{ incidenciaDetalle.idIncidencia }}</p>
+                      <p><strong>Fecha:</strong> {{ incidenciaDetalle.fechaIncidencia | date:'yyyy-MM-dd' }}</p>
+                      <p><strong>Tipo:</strong> {{ incidenciaDetalle.tipoIncidencia }}</p>
+                      <p><strong>Descripción:</strong> {{ incidenciaDetalle.descripcion }}</p>
+                      <p><strong>Profesor:</strong> {{ incidenciaDetalle.nombreProfesor }}</p> <!-- Cambiado -->
+                      <p><strong>Estado:</strong> {{ incidenciaDetalle.estado }}</p>
+                      <ng-container *ngIf="incidenciaDetalle.foto">
+                        <p><strong>Foto:</strong></p>
+                        <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia"
+                          style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 0.5rem; border: 1px solid #ccc;" />
+                      </ng-container>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-                    <!-- Navegación por páginas -->
-          <nav aria-label="Paginación de incidencias" class="mt-3">
-            <ul class="pagination justify-content-center mb-0">
-              <!-- Botón “Anterior” -->
-              <li class="page-item" [class.disabled]="currentPage === 1">
-                <button class="page-link border-success text-success" [class.bg-success]="currentPage === 1"
-                  [class.text-white]="currentPage === 1" (click)="goToPage(currentPage - 1)" aria-label="Anterior"
-                  [attr.disabled]="currentPage === 1 ? true : null">
-                  <span aria-hidden="true">&laquo;</span>
-                </button>
-              </li>
-              <!-- Números de página -->
-              <li class="page-item" *ngFor="let _ of [].constructor(totalPages); let i = index"
-                [class.active]="currentPage === i + 1">
-                <button class="page-link" [class.border-success]="currentPage !== (i + 1)"
-                  [class.text-success]="currentPage !== (i + 1)" [class.bg-success]="currentPage === (i + 1)"
-                  [class.text-white]="currentPage === (i + 1)" (click)="goToPage(i + 1)">
-                  {{ i + 1 }}
-                </button>
-              </li>
-              <!-- Botón “Siguiente” -->
-              <li class="page-item" [class.disabled]="currentPage === totalPages">
-                <button class="page-link border-success text-success" [class.bg-success]="currentPage === totalPages"
-                  [class.text-white]="currentPage === totalPages" (click)="goToPage(currentPage + 1)" aria-label="Siguiente"
-                  [attr.disabled]="currentPage === totalPages ? true : null">
-                  <span aria-hidden="true">&raquo;</span>
-                </button>
-              </li>
-            </ul>
-          </nav>
+            <!-- Navegación por páginas -->
+            <nav aria-label="Paginación de incidencias" class="mt-3">
+              <ul class="pagination justify-content-center mb-0">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <button class="page-link border-success text-success" [class.bg-success]="currentPage === 1"
+                    [class.text-white]="currentPage === 1" (click)="goToPage(currentPage - 1)" aria-label="Anterior"
+                    [attr.disabled]="currentPage === 1 ? true : null">
+                    <span aria-hidden="true">&laquo;</span>
+                  </button>
+                </li>
+                <li class="page-item" *ngFor="let _ of [].constructor(totalPages); let i = index"
+                  [class.active]="currentPage === i + 1">
+                  <button class="page-link" [class.border-success]="currentPage !== (i + 1)"
+                    [class.text-success]="currentPage !== (i + 1)" [class.bg-success]="currentPage === (i + 1)"
+                    [class.text-white]="currentPage === (i + 1)" (click)="goToPage(i + 1)">
+                    {{ i + 1 }}
+                  </button>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                  <button class="page-link border-success text-success" [class.bg-success]="currentPage === totalPages"
+                    [class.text-white]="currentPage === totalPages" (click)="goToPage(currentPage + 1)"
+                    aria-label="Siguiente" [attr.disabled]="currentPage === totalPages ? true : null">
+                    <span aria-hidden="true">&raquo;</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
 
-          <!-- Modal confirmación de eliminación -->
-          <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content custom-modal-content">
-                <div class="modal-header custom-modal-header">
-                  <h5 class="modal-title flex-grow-1 text-center">
-                    Eliminación
-                  </h5>
-                </div>
-                <div class="modal-body text-center custom-modal-body">
-                  ¿Desea eliminar?
-                </div>
-                <div class="modal-footer border-0 justify-content-center">
-                  <button type="button" class="btn btn-success me-2" (click)="confirmDelete()">
-                    <i class="bi bi-check-circle-fill me-1"></i> Aceptar
-                  </button>
-                  <button type="button" class="btn btn-danger" (click)="closeModal()">
-                    <i class="bi bi-x-circle-fill me-1"></i> Cancelar
-                  </button>
+            <!-- Modal confirmación de eliminación -->
+            <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content custom-modal-content">
+                  <div class="modal-header custom-modal-header">
+                    <h5 class="modal-title flex-grow-1 text-center">
+                      Eliminación
+                    </h5>
+                  </div>
+                  <div class="modal-body text-center custom-modal-body">
+                    ¿Desea eliminar?
+                  </div>
+                  <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-success me-2" (click)="confirmDelete()">
+                      <i class="bi bi-check-circle-fill me-1"></i> Aceptar
+                    </button>
+                    <button type="button" class="btn btn-danger" (click)="closeModal()">
+                      <i class="bi bi-x-circle-fill me-1"></i> Cancelar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Modal de eliminación exitosa -->
-          <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content custom-modal-content">
-                <div class="modal-header custom-modal-header">
-                  <h5 class="modal-title flex-grow-1 text-center">
-                    Eliminación
-                  </h5>
-                  <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar"
-                    (click)="showSuccessModal = false">
-                    <i class="bi bi-x-circle-fill"></i>
-                  </button>
-                </div>
-                <div class="modal-body text-center custom-modal-body">
-                  Eliminado correctamente.
+            <!-- Modal de eliminación exitosa -->
+            <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content custom-modal-content">
+                  <div class="modal-header custom-modal-header">
+                    <h5 class="modal-title flex-grow-1 text-center">
+                      Eliminación
+                    </h5>
+                    <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar"
+                      (click)="showSuccessModal = false">
+                      <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                  </div>
+                  <div class="modal-body text-center custom-modal-body">
+                    Eliminado correctamente.
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Modal de “¿Cómo lo has resuelto?” -->
-          <div class="modal fade show d-block custom-modal-backdrop solucion-modal" tabindex="-1" *ngIf="mostrarModalSolucion"
-            (click)="cerrarModalSolucion()">
-            <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
-              <div class="modal-content custom-modal-content">
-                <div class="modal-header custom-modal-header">
-                  <h5 class="modal-title flex-grow-1 text-center">¿Cómo lo has resuelto?</h5>
-                  <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="cerrarModalSolucion()">
-                    <i class="bi bi-x-circle-fill"></i>
-                  </button>
-                </div>
-                <div class="modal-body custom-modal-body">
-                  <!-- Textarea enlazado a la variable "resolucion" -->
-                  <textarea [(ngModel)]="resolucion" placeholder="Escribe el motivo de la resolución..."
-                    class="form-control"></textarea>
-                </div>
-                <div class="modal-footer border-0 justify-content-center">
-                  <button type="button" class="btn btn-success me-2" (click)="enviarResolucion()">
-                    <i class="bi bi-check-circle-fill me-1"></i> Enviar
-                  </button>
-                  <button type="button" class="btn btn-danger" (click)="cerrarModalSolucion()">
-                    <i class="bi bi-x-circle-fill me-1"></i> Cancelar
-                  </button>
+            <!-- Modal de “¿Cómo lo has resuelto?” -->
+            <div class="modal fade show d-block custom-modal-backdrop solucion-modal" tabindex="-1"
+              *ngIf="mostrarModalSolucion" (click)="cerrarModalSolucion()">
+              <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+                <div class="modal-content custom-modal-content">
+                  <div class="modal-header custom-modal-header">
+                    <h5 class="modal-title flex-grow-1 text-center">¿Cómo lo has resuelto?</h5>
+                    <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar"
+                      (click)="cerrarModalSolucion()">
+                      <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                  </div>
+                  <div class="modal-body custom-modal-body">
+                    <textarea [(ngModel)]="resolucion" placeholder="Escribe el motivo de la resolución..."
+                      class="form-control"></textarea>
+                  </div>
+                  <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-success me-2" (click)="enviarResolucion()">
+                      <i class="bi bi-check-circle-fill me-1"></i> Enviar
+                    </button>
+                    <button type="button" class="btn btn-danger" (click)="cerrarModalSolucion()">
+                      <i class="bi bi-x-circle-fill me-1"></i> Cancelar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           </ng-container>
 
         </div>

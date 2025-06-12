@@ -11,12 +11,12 @@ import { IncidenciaService, Incidencia } from '../../services/incidencia.service
   styleUrls: ['./gestionIncidencias.component.css']
 })
 export class GestionIncidenciasComponent implements OnInit {
-  summaryBaseData: Incidencia[] = []; // Solo filtrado por fecha, no por estado
+  summaryBaseData: Incidencia[] = []; // Solo filtrado por fecha EN PROCESO
   isDateDesc = true;
   isLoading = true;
   summaryData = [
+    { type: 'En proceso', count: 0 },
     { type: 'Resueltas', count: 0 },
-    { type: 'Pendientes', count: 0 },
     { type: 'Totales', count: 0 }
   ];
 
@@ -41,14 +41,14 @@ export class GestionIncidenciasComponent implements OnInit {
   totalPages: number = 1;
   pagedIncidents: Incidencia[] = [];
 
-  constructor(private incidenciaService: IncidenciaService) {}
+  constructor(private incidenciaService: IncidenciaService) { }
 
   ngOnInit(): void {
     this.isLoading = true;
-    this.incidenciaService.listarTodas().subscribe({
+    // Cargamos solo incidencias EN PROCESO al iniciar
+    this.incidenciaService.listarEnProceso().subscribe({
       next: data => {
         this.isLoading = false;
-
         const sorted = data.sort((a, b) => {
           const tA = new Date(a.fechaIncidencia).getTime();
           const tB = new Date(b.fechaIncidencia).getTime();
@@ -69,9 +69,12 @@ export class GestionIncidenciasComponent implements OnInit {
   }
 
   updateSummary(): void {
+    // Contar EN PROCESO y Resueltas dentro de summaryBaseData
+    const enProcesoCount = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'en proceso').length;
+    const resueltasCount = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'resuelta').length;
     this.summaryData = [
-      { type: 'Resueltas', count: this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'resuelta').length },
-      { type: 'Pendientes', count: this.summaryBaseData.filter(i => i.estado?.toLowerCase() !== 'resuelta').length },
+      { type: 'En proceso', count: enProcesoCount },
+      { type: 'Resueltas', count: resueltasCount },
       { type: 'Totales', count: this.summaryBaseData.length }
     ];
   }
@@ -156,10 +159,34 @@ export class GestionIncidenciasComponent implements OnInit {
 
   enviarResolucion(): void {
     if (!this.resolucion || !this.incidenciaAResolver) return;
-    this.incidenciaAResolver.estado = 'Resuelta';
-    (this.incidenciaAResolver as any).resolucion = this.resolucion;
-    this.cerrarModalSolucion();
-    this.updateSummary();
+    this.incidenciaService.resolverIncidencia(
+      this.incidenciaAResolver.idIncidencia,
+      this.incidenciaAResolver.dniProfesor,
+      // Aquí debes pasar el DNI del coordinador actual; supongamos que lo tomas de sesión o similar.
+      // Por simplicidad, por ahora lo dejamos fijo o en otra variable:
+      'DNI_COORDINADOR_DE_SESSION',
+      this.resolucion
+    ).subscribe({
+      next: updated => {
+        // Actualizar localmente el estado y resolución
+        this.incidenciaAResolver!.estado = updated.estado;
+        this.incidenciaAResolver!.resolucion = updated.resolucion;
+        // Remover de la lista de EN PROCESO si ahora es Resuelta
+        this.summaryBaseData = this.summaryBaseData.filter(i =>
+          !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
+        );
+        this.filteredIncidents = this.filteredIncidents.filter(i =>
+          !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
+        );
+        this.setupPagination();
+        this.updateSummary();
+        this.cerrarModalSolucion();
+      },
+      error: err => {
+        console.error(err);
+        this.cerrarModalSolucion();
+      }
+    });
   }
 
   filterById(term: string): void {
@@ -176,10 +203,12 @@ export class GestionIncidenciasComponent implements OnInit {
     const end = to.value;
     this.filtroFechaActivo = !!start || !!end;
     this.isLoading = true;
-    this.incidenciaService.filtrarPorFechas(start, end).subscribe({
+    this.incidenciaService.filtrarPorFechasEnProceso(start, end).subscribe({
       next: data => {
+        // data ya contiene solo EN PROCESO en el rango
         this.summaryBaseData = data;
-        this.filteredIncidents = data;
+        this.incidentsData = data; // Si quieres recargar también incidentsData
+        this.filteredIncidents = [...data];
         this.currentPage = 1;
         this.setupPagination();
         this.updateSummary();
@@ -202,7 +231,6 @@ export class GestionIncidenciasComponent implements OnInit {
           ? tB - tA  // descendente
           : tA - tB; // ascendente
       }
-      // mismo día → desempata por ID
       const idA = Number(a.idIncidencia);
       const idB = Number(b.idIncidencia);
       return this.isDateDesc
@@ -215,12 +243,13 @@ export class GestionIncidenciasComponent implements OnInit {
   }
 
   filtrarPorEstado(estado: string): void {
+    // Si implementas filtrado extra en UI: por ahora solo “En proceso”, “Resueltas”, “Totales”
     if (estado === 'Totales') {
       this.filteredIncidents = [...this.summaryBaseData];
     } else if (estado === 'Resueltas') {
       this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'resuelta');
-    } else if (estado === 'Pendientes') {
-      this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() !== 'resuelta');
+    } else if (estado.toLowerCase() === 'en proceso') {
+      this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'en proceso');
     }
     this.currentPage = 1;
     this.setupPagination();
