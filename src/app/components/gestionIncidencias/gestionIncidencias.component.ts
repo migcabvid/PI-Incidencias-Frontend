@@ -70,9 +70,9 @@ export class GestionIncidenciasComponent implements OnInit {
 
   updateSummary(): void {
     this.summaryData = [
-      { type: 'Resueltas', count: this.filteredIncidents.filter(i => i.estado?.toLowerCase() === 'resuelta').length },
-      { type: 'Pendientes', count: this.filteredIncidents.filter(i => i.estado?.toLowerCase() !== 'resuelta').length },
-      { type: 'Totales', count: this.filteredIncidents.length }
+      { type: 'Resueltas', count: this.incidentsData.filter(i => i.estado?.toLowerCase() === 'resuelta').length },
+      { type: 'Pendientes', count: this.incidentsData.filter(i => i.estado?.toLowerCase() !== 'resuelta').length },
+      { type: 'Totales', count: this.incidentsData.length }
     ];
   }
 
@@ -203,6 +203,19 @@ export class GestionIncidenciasComponent implements OnInit {
         ? idB - idA
         : idA - idB;
     });
+    this.currentPage = 1;
+    this.setupPagination();
+    this.updateSummary();
+  }
+
+  filtrarPorEstado(estado: string): void {
+    if (estado === 'Totales') {
+      this.filteredIncidents = [...this.incidentsData];
+    } else if (estado === 'Resueltas') {
+      this.filteredIncidents = this.incidentsData.filter(i => i.estado?.toLowerCase() === 'resuelta');
+    } else if (estado === 'Pendientes') {
+      this.filteredIncidents = this.incidentsData.filter(i => i.estado?.toLowerCase() !== 'resuelta');
+    }
     this.currentPage = 1;
     this.setupPagination();
     this.updateSummary();
