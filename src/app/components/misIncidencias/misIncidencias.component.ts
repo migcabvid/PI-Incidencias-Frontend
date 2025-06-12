@@ -11,15 +11,16 @@ import { AuthService } from '../../auth.service';
   styleUrls: ['./misIncidencias.component.css']
 })
 export class MisIncidenciasComponent implements OnInit {
+  isDateDesc = true;
   // *** Datos originales y filtrados ***
   incidentsData: Incidencia[] = [];
   filteredIncidents: Incidencia[] = [];
 
   // *** Paginación ***
-  pageSize: number = 7;         // muestra 10 resultados por página
-  currentPage: number = 1;       // página actual (1-based)
-  totalPages: number = 1;        // número total de páginas
-  pagedIncidents: Incidencia[] = []; // subconjunto de filteredIncidents que se renderiza
+  pageSize: number = 7;
+  currentPage: number = 1;
+  totalPages: number = 1;
+  pagedIncidents: Incidencia[] = [];
 
   dniProfesor: string = '';
   isLoading: boolean = true;
@@ -49,11 +50,21 @@ export class MisIncidenciasComponent implements OnInit {
           // Una vez que llegan los datos, desactivo la carga
           this.isLoading = false;
 
-          // Filtra solo las incidencias del usuario actual
-          this.incidentsData = data.filter(i => i.dniProfesor === this.dniProfesor);
+          const sorted = data.sort((a, b) => {
+            const tA = new Date(a.fechaIncidencia).getTime();
+            const tB = new Date(b.fechaIncidencia).getTime();
+            if (tA !== tB) {
+              // asumimos orden descendente inicial
+              return tB - tA;
+            }
+            // fechas iguales → ID descendente
+            return Number(b.idIncidencia) - Number(a.idIncidencia);
+          });
+
+          // 2) Filtra solo las del profesor y asigna
+          this.incidentsData = sorted.filter(i => i.dniProfesor === this.dniProfesor);
           this.filteredIncidents = [...this.incidentsData];
 
-          // Inicializa paginación
           this.setupPagination();
         },
         error: err => {
@@ -156,4 +167,29 @@ export class MisIncidenciasComponent implements OnInit {
     this.showDetailModal = false;
     this.incidenciaDetalle = null;
   }
+
+  toggleDateSort(): void {
+  this.isDateDesc = !this.isDateDesc;
+
+  this.filteredIncidents.sort((a, b) => {
+    // 1) Compara fechas
+    const tA = new Date(a.fechaIncidencia).getTime();
+    const tB = new Date(b.fechaIncidencia).getTime();
+    if (tA !== tB) {
+      return this.isDateDesc
+        ? tB - tA   // descendente por fecha
+        : tA - tB;  // ascendente por fecha
+    }
+
+    // 2) Si la fecha es idéntica, compara numéricamente el ID
+    const idA = Number(a.idIncidencia);
+    const idB = Number(b.idIncidencia);
+    return this.isDateDesc
+      ? idB - idA  // dentro de la misma fecha, IDs descendentes
+      : idA - idB; // o IDs ascendentes
+  });
+
+  this.currentPage = 1;
+  this.setupPagination();
+}
 }
