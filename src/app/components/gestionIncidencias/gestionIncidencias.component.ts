@@ -11,6 +11,7 @@ import { IncidenciaService, Incidencia } from '../../services/incidencia.service
   styleUrls: ['./gestionIncidencias.component.css']
 })
 export class GestionIncidenciasComponent implements OnInit {
+  isDateDesc = true;
   isLoading = true;
   summaryData = [
     { type: 'Resueltas', count: 0 },
@@ -47,8 +48,16 @@ export class GestionIncidenciasComponent implements OnInit {
     this.incidenciaService.listarTodas().subscribe({
       next: data => {
         this.isLoading = false;
-        this.incidentsData = data;
-        this.filteredIncidents = [...data];
+
+        const sorted = data.sort((a, b) => {
+          const tA = new Date(a.fechaIncidencia).getTime();
+          const tB = new Date(b.fechaIncidencia).getTime();
+          if (tA !== tB) return tB - tA;
+          return Number(b.idIncidencia) - Number(a.idIncidencia);
+        });
+        this.incidentsData = sorted;
+
+        this.filteredIncidents = [...sorted];
         this.setupPagination();
         this.updateSummary();
       },
@@ -147,8 +156,6 @@ export class GestionIncidenciasComponent implements OnInit {
 
   enviarResolucion(): void {
     if (!this.resolucion || !this.incidenciaAResolver) return;
-    // Aquí deberías llamar al endpoint de resolución si existe
-    // Por ahora, solo actualizamos localmente:
     this.incidenciaAResolver.estado = 'Resuelta';
     (this.incidenciaAResolver as any).resolucion = this.resolucion;
     this.cerrarModalSolucion();
@@ -169,10 +176,32 @@ export class GestionIncidenciasComponent implements OnInit {
     const end = to.value;
     this.filtroFechaActivo = !!start || !!end;
     this.filteredIncidents = this.incidentsData.filter(i => {
-      const fecha = i.fechaIncidencia?.toString().slice(0, 10); // yyyy-MM-dd
+      const fecha = i.fechaIncidencia?.toString().slice(0, 10);
       const after = start ? fecha >= start : true;
       const before = end ? fecha <= end : true;
       return after && before;
+    });
+    this.currentPage = 1;
+    this.setupPagination();
+    this.updateSummary();
+  }
+
+  toggleDateSort(): void {
+    this.isDateDesc = !this.isDateDesc;
+    this.filteredIncidents.sort((a, b) => {
+      const tA = new Date(a.fechaIncidencia).getTime();
+      const tB = new Date(b.fechaIncidencia).getTime();
+      if (tA !== tB) {
+        return this.isDateDesc
+          ? tB - tA  // descendente
+          : tA - tB; // ascendente
+      }
+      // mismo día → desempata por ID
+      const idA = Number(a.idIncidencia);
+      const idB = Number(b.idIncidencia);
+      return this.isDateDesc
+        ? idB - idA
+        : idA - idB;
     });
     this.currentPage = 1;
     this.setupPagination();
