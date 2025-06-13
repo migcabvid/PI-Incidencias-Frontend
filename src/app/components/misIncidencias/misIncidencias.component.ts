@@ -140,6 +140,7 @@ export class MisIncidenciasComponent implements OnInit {
   }
 
   openDetailModal(incidencia: Incidencia): void {
+    console.log(incidencia);
     this.incidenciaDetalle = incidencia;
     this.showDetailModal = true;
   }

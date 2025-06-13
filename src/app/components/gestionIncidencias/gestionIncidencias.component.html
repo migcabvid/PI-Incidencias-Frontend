@@ -133,7 +133,7 @@
                       <p><strong>Fecha:</strong> {{ incidenciaDetalle.fechaIncidencia | date:'yyyy-MM-dd' }}</p>
                       <p><strong>Tipo:</strong> {{ incidenciaDetalle.tipoIncidencia }}</p>
                       <p><strong>Descripción:</strong> {{ incidenciaDetalle.descripcion }}</p>
-                      <p><strong>Profesor:</strong> {{ incidenciaDetalle.nombreProfesor }}</p> <!-- Cambiado -->
+                      <p><strong>Profesor:</strong> {{ incidenciaDetalle.dniProfesor }}</p>
                       <p><strong>Estado:</strong> {{ incidenciaDetalle.estado }}</p>
                       <ng-container *ngIf="incidenciaDetalle.foto">
                         <p><strong>Foto:</strong></p>

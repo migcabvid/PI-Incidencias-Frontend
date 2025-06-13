@@ -136,6 +136,7 @@ export class GestionIncidenciasComponent implements OnInit {
   }
 
   openDetailModal(inc: Incidencia): void {
+    console.log(inc);
     this.incidenciaDetalle = inc;
     this.showDetailModal = true;
   }
