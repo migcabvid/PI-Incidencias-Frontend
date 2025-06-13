@@ -1,4 +1,3 @@
-// src/app/components/navbar/navbar.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -7,6 +6,8 @@ import {
   NavigationEnd
 } from '@angular/router';
 import { AuthService } from '../../auth.service';
+import { IncidenciaService } from '../../services/incidencia.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
@@ -29,8 +30,12 @@ export class NavbarComponent implements OnInit {
     equipodirectivo: 'Equipo Directivo'
   };
 
+  // Nuevo campo para el conteo de “En proceso”
+  countEnProceso: number = 0;
+
   constructor(
     private auth: AuthService,
+    private incidenciaService: IncidenciaService,
     private router: Router
   ) { }
 
@@ -38,31 +43,52 @@ export class NavbarComponent implements OnInit {
     // 1) Suscribir roles y rol activo
     this.auth.roles$.subscribe(roles => this.allRoles = roles);
 
-    // 2) Suscribir rol activo y calcular isGestionRole
     this.auth.activeRole$.subscribe(role => {
       this.activeRole = role;
       const key = role ? role.toLowerCase() : '';
       this.isGestionRole = ['equipodirectivo', 'coordinadortic'].includes(key);
-    });
-
-    // 2) Actualizar banderas en cuanto arranca la navegación
-    this.router.events.subscribe(ev => {
-      if (ev instanceof NavigationStart) {
-        this.setFlags(ev.url);
-      }
-      // opcionalmente, también al terminar
-      if (ev instanceof NavigationEnd) {
-        this.setFlags(ev.urlAfterRedirects);
+      // Si es rol de gestión, obtener conteo inmediatamente
+      if (this.isGestionRole) {
+        this.fetchCountEnProceso();
+      } else {
+        // Si no es gestión, opcionalmente limpiar conteo
+        this.countEnProceso = 0;
       }
     });
 
-    // 3) Inicializa con la URL actual
+    // 2) Suscribir eventos de navegación para recargar conteo al entrar en ruta de gestión
+    this.router.events.pipe(
+      filter(ev => ev instanceof NavigationEnd)
+    ).subscribe((ev: any) => {
+      const url = ev.urlAfterRedirects;
+      this.setFlags(url);
+      if (this.isGestionRole && url.includes('gestionIncidencias')) {
+        this.fetchCountEnProceso();
+      }
+    });
+
+    // 3) Inicializar banderas y conteo con la URL actual
     this.setFlags(this.router.url);
+    if (this.isGestionRole && this.router.url.includes('gestionIncidencias')) {
+      this.fetchCountEnProceso();
+    }
+  }
+
+  /** Invoca el servicio para obtener el conteo de incidencias “En proceso” */
+  private fetchCountEnProceso(): void {
+    this.incidenciaService.countEnProceso().subscribe({
+      next: cnt => this.countEnProceso = cnt,
+      error: err => {
+        console.error('Error al obtener conteo de incidencias en proceso:', err);
+        this.countEnProceso = 0;
+      }
+    });
   }
 
   private setFlags(url: string) {
     this.isMisIncidencias = url.includes('misIncidencias');
     this.isCrearIncidencia = url.includes('crearIncidencia');
+    // isGestionRole se calcula en subscription de activeRole
   }
 
   get displayActiveRole(): string {

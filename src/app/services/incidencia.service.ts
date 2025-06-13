@@ -8,10 +8,10 @@ export interface Incidencia {
   fechaIncidencia: string;   // Formato yyyy-MM-dd
   tipoIncidencia: string;
   descripcion: string;
-  dniProfesor: string;       // Se mantiene si lo necesitas, aunque mostraremos nombreProfesor
+  dniProfesor: string;
   estado?: string;
-  foto?: string;             // Base64 si el backend lo envía así; si no, ignóralo
-  nombreProfesor?: string;   // Nuevo campo para el nombre completo
+  foto?: string;
+  nombreProfesor?: string;
   dniCoordinador?: string;
   nombreCoordinador?: string;
   resolucion?: string;
@@ -127,4 +127,10 @@ export class IncidenciaService {
       { withCredentials: true }
     );
   }
+
+  /** Obtener el conteo de incidencias en estado “En proceso” */
+  countEnProceso(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/count/en-proceso`, { withCredentials: true });
+  }
+
 }

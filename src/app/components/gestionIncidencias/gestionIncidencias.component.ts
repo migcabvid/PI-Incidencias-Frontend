@@ -199,27 +199,45 @@ export class GestionIncidenciasComponent implements OnInit {
   }
 
   filterByDate(from: HTMLInputElement, to: HTMLInputElement): void {
-    const start = from.value;
-    const end = to.value;
-    this.filtroFechaActivo = !!start || !!end;
-    this.isLoading = true;
-    this.incidenciaService.filtrarPorFechasEnProceso(start, end).subscribe({
-      next: data => {
-        // data ya contiene solo EN PROCESO en el rango
-        this.summaryBaseData = data;
-        this.incidentsData = data; // Si quieres recargar también incidentsData
-        this.filteredIncidents = [...data];
-        this.currentPage = 1;
-        this.setupPagination();
-        this.updateSummary();
-        this.isLoading = false;
-      },
-      error: err => {
-        console.error(err);
-        this.isLoading = false;
-      }
-    });
+  let start = from.value;
+  let end = to.value;
+
+  // Si ambas fechas están definidas, comprobamos el orden
+  if (start && end) {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (startDate > endDate) {
+      // Intercambiamos para que start <= end
+      const tmp = start;
+      start = end;
+      end = tmp;
+      // También actualizamos visualmente los inputs:
+      from.value = start;
+      to.value = end;
+    }
   }
+
+  this.filtroFechaActivo = !!start || !!end;
+  this.isLoading = true;
+
+  // Llamada al servicio: en tu caso filtrarPorFechasEnProceso
+  this.incidenciaService.filtrarPorFechasEnProceso(start, end).subscribe({
+    next: data => {
+      // data ya contiene solo EN PROCESO en el rango corregido
+      this.summaryBaseData = data;
+      this.incidentsData = data; // si quieres recargar incidentsData también
+      this.filteredIncidents = [...data];
+      this.currentPage = 1;
+      this.setupPagination();
+      this.updateSummary();
+      this.isLoading = false;
+    },
+    error: err => {
+      console.error(err);
+      this.isLoading = false;
+    }
+  });
+}
 
   toggleDateSort(): void {
     this.isDateDesc = !this.isDateDesc;

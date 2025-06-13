@@ -60,10 +60,12 @@
             <a class="nav-link" [routerLink]="['/gestionIncidencias']">
               <i class="bi bi-clipboard2-data"></i>
               <span>Gestión Incidencias</span>
-              <span class="badge badge-pill badge-danger rojo">99999</span>
+              <!-- Badge boostrap dinámico: -->
+              <span class="badge badge-pill badge-danger rojo">{{ countEnProceso }}</span>
             </a>
           </li>
         </ng-container>
+
       </ul>
 
       <!-- SEGUNDA LISTA -->
