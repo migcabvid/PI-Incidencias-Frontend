@@ -208,10 +208,39 @@
   }
   /* Ajuste específico para columna Acción: que los botones estén a la derecha */
   .incidents-table td[data-label="Acción"] {
-    text-align: right;
+    text-align: left !important;
   }
   /* Pequeño margen superior en botones dentro de tarjetas */
   .incidents-table td .btn {
     margin-top: 0.25rem;
+  }
+
+  .incidents-table td[data-label="Acción"] .btn {
+     /* --> Botón algo más grande */
+    font-size: 1rem;          /* antes 0.9rem */
+    padding: 0.45rem 0.9rem;  /* alto y ancho mayores */
+    line-height: 1;           /* evita que crezca más de la cuenta */
+  }
+}
+
+/*  ▶︎  De 577 px a 768 px (aprox.)
+    – en este rango la cabecera está visible,
+      los botones se apilan y queremos hueco vertical */
+@media (min-width: 577px) and (max-width: 768px) {
+
+  /* Quitamos el margen horizontal que aporta la clase .me-1   */
+  .incidents-table td[data-label="Acción"] .btn {
+    margin-right: 0 !important;
+  }
+
+  /* Añadimos un pequeño margen inferior SOLO a partir del segundo botón */
+  .incidents-table td[data-label="Acción"] .btn + .btn {
+    margin-top: 0.25rem;   /* ≈ 4 px de separación vertical */
+  }
+
+  .incidents-table td[data-label="Acción"] .btn {
+    font-size: 1rem;          /* mismo tamaño que en móvil */
+    padding: 0.45rem 0.9rem;
+    line-height: 1;
   }
 }
