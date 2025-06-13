@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Subject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 export interface Incidencia {
   idIncidencia: string;
@@ -20,6 +22,10 @@ export interface Incidencia {
 @Injectable({ providedIn: 'root' })
 export class IncidenciaService {
   private apiUrl = `${environment.apiBaseUrl}/incidencias`;
+
+  /** Stream que notifica altas, bajas o cambios de estado */
+  private cambiosSubject = new Subject<void>();
+  cambios$ = this.cambiosSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
@@ -73,20 +79,26 @@ export class IncidenciaService {
   }
 
   /** Eliminar */
-  eliminar(idIncidencia: string, dniProfesor: string): Observable<void> {
+  eliminar(idIncidencia: string, dniProfesor: string) {
     return this.http.delete<void>(
       `${this.apiUrl}/${idIncidencia}/${dniProfesor}`,
       { withCredentials: true }
+    ).pipe(
+      tap(() => this.cambiosSubject.next())   // ← dispara la señal
     );
   }
 
-  /** Resolver incidencia */
-  resolverIncidencia(idIncidencia: string, dniProfesor: string, resolucion: string): Observable<Incidencia> {
+  /** Resolver */
+  resolverIncidencia(idIncidencia: string,
+                     dniProfesor: string,
+                     resolucion: string) {
     const params = new HttpParams().set('resolucion', resolucion);
     return this.http.put<Incidencia>(
       `${this.apiUrl}/${idIncidencia}/${dniProfesor}/resolver`,
       null,
       { params, withCredentials: true }
+    ).pipe(
+      tap(() => this.cambiosSubject.next())   // ← dispara la señal
     );
   }
 
@@ -122,5 +134,7 @@ export class IncidenciaService {
   countEnProceso(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/count/en-proceso`, { withCredentials: true });
   }
+
+  
 
 }

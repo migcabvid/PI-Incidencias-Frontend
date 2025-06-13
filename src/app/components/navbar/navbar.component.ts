@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   Router, RouterModule,
@@ -9,6 +9,9 @@ import { AuthService } from '../../auth.service';
 import { IncidenciaService } from '../../services/incidencia.service';
 import { filter } from 'rxjs/operators';
 
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -16,13 +19,15 @@ import { filter } from 'rxjs/operators';
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   allRoles: string[] = [];
   activeRole: string | null = null;
 
   isMisIncidencias = false;
   isCrearIncidencia = false;
   isGestionRole = false;
+
+  private destroy$ = new Subject<void>();
 
   public roleDisplayMap: Record<string, string> = {
     profesor: 'Profesor',
@@ -72,6 +77,19 @@ export class NavbarComponent implements OnInit {
     if (this.isGestionRole && this.router.url.includes('gestionIncidencias')) {
       this.fetchCountEnProceso();
     }
+
+    this.incidenciaService.cambios$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.isGestionRole) {          // solo interesa a roles de gestión
+          this.fetchCountEnProceso();
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /** Invoca el servicio para obtener el conteo de incidencias “En proceso” */
