@@ -11,11 +11,12 @@ import { IncidenciaService, Incidencia } from '../../services/incidencia.service
   styleUrls: ['./gestionIncidencias.component.css']
 })
 export class GestionIncidenciasComponent implements OnInit {
+  summaryBaseData: Incidencia[] = []; // Solo filtrado por fecha EN PROCESO
   isDateDesc = true;
   isLoading = true;
   summaryData = [
-    { type: 'Resueltas', count: 0 },
-    { type: 'Pendientes', count: 0 },
+    { type: 'En proceso', count: 0 },
+    { type: 'Solucionada', count: 0 },
     { type: 'Totales', count: 0 }
   ];
 
@@ -26,6 +27,8 @@ export class GestionIncidenciasComponent implements OnInit {
   showSuccessModal = false;
   showDetailModal = false;
   mostrarModalSolucion = false;
+
+  showResolveModal = false;
 
   incidenciaAEliminar: Incidencia | null = null;
   incidenciaDetalle: Incidencia | null = null;
@@ -40,26 +43,32 @@ export class GestionIncidenciasComponent implements OnInit {
   totalPages: number = 1;
   pagedIncidents: Incidencia[] = [];
 
-  constructor(private incidenciaService: IncidenciaService) {}
+  constructor(private incidenciaService: IncidenciaService) { }
 
   ngOnInit(): void {
     this.isLoading = true;
-
+    // 1) Cargar TODAS las incidencias (DTO) para el resumen
     this.incidenciaService.listarTodas().subscribe({
       next: data => {
         this.isLoading = false;
-
-        const sorted = data.sort((a, b) => {
+        // data: array con todas las incidencias del backend
+        // Ordenamos por fecha descendente e ID descendente si fechas iguales:
+        const sortedAll = data.sort((a, b) => {
           const tA = new Date(a.fechaIncidencia).getTime();
           const tB = new Date(b.fechaIncidencia).getTime();
           if (tA !== tB) return tB - tA;
           return Number(b.idIncidencia) - Number(a.idIncidencia);
         });
-        this.incidentsData = sorted;
-
-        this.filteredIncidents = [...sorted];
-        this.setupPagination();
+        // summaryBaseData para el conteo: todas las incidencias
+        this.summaryBaseData = [...sortedAll];
+        console.log(this.summaryBaseData);
         this.updateSummary();
+
+        // 2) Para la tabla de incidencias inicialmente, mostrar solo "En proceso"
+        this.incidentsData = sortedAll.filter(i => i.estado?.toLowerCase() === 'en proceso');
+        this.filteredIncidents = [...this.incidentsData];
+        this.setupPagination();
+
       },
       error: err => {
         console.error(err);
@@ -68,13 +77,20 @@ export class GestionIncidenciasComponent implements OnInit {
     });
   }
 
+
   updateSummary(): void {
+    const enProcesoCount = this.summaryBaseData.filter(
+      i => i.estado?.toLowerCase() === 'en proceso').length;
+    const solucionadaCount = this.summaryBaseData.filter(
+      i => i.estado?.toLowerCase() === 'solucionada').length;
     this.summaryData = [
-      { type: 'Resueltas', count: this.filteredIncidents.filter(i => i.estado?.toLowerCase() === 'resuelta').length },
-      { type: 'Pendientes', count: this.filteredIncidents.filter(i => i.estado?.toLowerCase() !== 'resuelta').length },
-      { type: 'Totales', count: this.filteredIncidents.length }
+      { type: 'En proceso', count: enProcesoCount },
+      { type: 'Solucionada', count: solucionadaCount },
+      { type: 'Totales', count: this.summaryBaseData.length }
     ];
   }
+
+
 
   setupPagination(): void {
     this.totalPages = Math.ceil(this.filteredIncidents.length / this.pageSize) || 1;
@@ -133,6 +149,7 @@ export class GestionIncidenciasComponent implements OnInit {
   }
 
   openDetailModal(inc: Incidencia): void {
+    console.log(inc);
     this.incidenciaDetalle = inc;
     this.showDetailModal = true;
   }
@@ -156,10 +173,35 @@ export class GestionIncidenciasComponent implements OnInit {
 
   enviarResolucion(): void {
     if (!this.resolucion || !this.incidenciaAResolver) return;
-    this.incidenciaAResolver.estado = 'Resuelta';
-    (this.incidenciaAResolver as any).resolucion = this.resolucion;
-    this.cerrarModalSolucion();
-    this.updateSummary();
+    this.incidenciaService.resolverIncidencia(
+      this.incidenciaAResolver.idIncidencia,
+      this.incidenciaAResolver.dniProfesor,
+      this.resolucion
+    ).subscribe({
+      next: updated => {
+        // Actualizar localmente estado y resolución
+        this.incidenciaAResolver!.estado = updated.estado;
+        this.incidenciaAResolver!.resolucion = updated.resolucion;
+        // Si está en summaryBaseData (solo incidencias en proceso), al estar resuelta deberíamos quitarla:
+        this.summaryBaseData = this.summaryBaseData.filter(i =>
+          !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
+        );
+        this.filteredIncidents = this.filteredIncidents.filter(i =>
+          !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
+        );
+
+        this.showResolveModal = true;     // ← lo mostramos
+        setTimeout(() => this.showResolveModal = false, 1500);
+
+        this.setupPagination();
+        this.updateSummary();
+        this.cerrarModalSolucion();
+      },
+      error: err => {
+        console.error('Error al resolver incidencia:', err);
+        this.cerrarModalSolucion();
+      }
+    });
   }
 
   filterById(term: string): void {
@@ -172,19 +214,41 @@ export class GestionIncidenciasComponent implements OnInit {
   }
 
   filterByDate(from: HTMLInputElement, to: HTMLInputElement): void {
-    const start = from.value;
-    const end = to.value;
-    this.filtroFechaActivo = !!start || !!end;
-    this.filteredIncidents = this.incidentsData.filter(i => {
-      const fecha = i.fechaIncidencia?.toString().slice(0, 10);
-      const after = start ? fecha >= start : true;
-      const before = end ? fecha <= end : true;
-      return after && before;
-    });
-    this.currentPage = 1;
-    this.setupPagination();
-    this.updateSummary();
+  let start = from.value;
+  let end = to.value;
+  if (start && end) {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (startDate > endDate) {
+      [start, end] = [end, start];
+      from.value = start;
+      to.value = end;
+    }
   }
+  this.filtroFechaActivo = !!start || !!end;
+  this.isLoading = true;
+  // Llamada al servicio: suponiendo que filtrarPorFechas devuelve todas las incidencias en el rango (no solo En proceso)
+  this.incidenciaService.filtrarPorFechas(start, end).subscribe({
+    next: data => {
+      console.log(data);
+      // data: array de incidencias en el rango de fechas
+      this.isLoading = false;
+      // Actualizar summaryBaseData para ese rango
+      this.summaryBaseData = data;
+      this.updateSummary();
+      // Para la tabla inferior, quizás inicialmente mostrar solo En proceso en el rango
+      this.incidentsData = data.filter(i => i.estado?.toLowerCase() === 'en proceso');
+      this.filteredIncidents = [...this.incidentsData];
+      this.currentPage = 1;
+      this.setupPagination();
+    },
+    error: err => {
+      console.error(err);
+      this.isLoading = false;
+    }
+  });
+}
+
 
   toggleDateSort(): void {
     this.isDateDesc = !this.isDateDesc;
@@ -196,7 +260,6 @@ export class GestionIncidenciasComponent implements OnInit {
           ? tB - tA  // descendente
           : tA - tB; // ascendente
       }
-      // mismo día → desempata por ID
       const idA = Number(a.idIncidencia);
       const idB = Number(b.idIncidencia);
       return this.isDateDesc
@@ -207,4 +270,22 @@ export class GestionIncidenciasComponent implements OnInit {
     this.setupPagination();
     this.updateSummary();
   }
+
+  filtrarPorEstado(estado: string): void {
+    if (estado === 'Totales') {
+      this.filteredIncidents = [...this.summaryBaseData];
+    } else if (estado === 'Solucionada') {
+      this.filteredIncidents = this.summaryBaseData.filter(
+        i => i.estado?.toLowerCase() === 'solucionada');
+    } else if (estado === 'En proceso') {
+      this.filteredIncidents = this.summaryBaseData.filter(
+        i => i.estado?.toLowerCase() === 'en proceso');
+    } else {
+      this.filteredIncidents = [];
+    }
+    this.currentPage = 1;
+    this.setupPagination();
+  }
+
+
 }

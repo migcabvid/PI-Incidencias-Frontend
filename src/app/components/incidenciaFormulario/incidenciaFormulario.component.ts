@@ -46,7 +46,7 @@ export class IncidenciaFormularioComponent implements OnInit {
   tipos = [
     { value: '', label: 'Selecciona un tipo' },
     { value: 'T.I.C.', label: 'T.I.C.' },
-    { value: 'Centro', label: 'Centro' }
+    { value: 'Mantenimiento', label: 'Mantenimiento' }
   ];
 
   @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
