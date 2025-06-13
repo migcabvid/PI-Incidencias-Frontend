@@ -31,71 +31,36 @@
 
           <!-- TABLA de Incidencias -->
           <div *ngIf="!isLoading">
-            <div class="table-responsive rounded-3 border">
-              <table class="table align-middle incidents-table mb-0">
+            <div class="incidents-container">
+              <table class="table align-middle mb-0 incidents-table">
                 <thead>
                   <tr>
                     <th>ID</th>
                     <th>Descripción</th>
-                    <th class="sortable-header" (click)="toggleDateSort()">
-                      Fecha
-                    </th>
+                    <th class="sortable-header" (click)="toggleDateSort()">Fecha</th>
                     <th>Estado</th>
                     <th class="text-center">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <!-- Aquí iteramos sólo sobre pagedIncidents -->
                   <tr *ngFor="let inc of pagedIncidents">
-                    <td>{{ inc.idIncidencia }}</td>
-                    <td>{{ inc.descripcion }}</td>
-                    <td>{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
-                    <td>{{ inc.estado }}</td>
-
-                    <td class="text-center">
-                      <!-- Botones individuales: visibles solo en pantallas ≥ sm (≥576px) -->
-                      <div class="d-none d-sm-inline-flex gap-1">
-                        <button class="btn btn-success btn-sm" (click)="openDetailModal(inc)" title="Ver detalles">
-                          <i class="bi bi-plus"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" (click)="openDeleteModal(inc)" title="Eliminar">
-                          <i class="bi bi-trash-fill text-white"></i>
-                        </button>
-                      </div>
-
-                      <!-- Dropdown de acciones: visible solo en pantallas < sm (<576px) -->
-                      <div class="dropdown d-inline-block d-sm-none">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button"
-                          id="dropdownAcciones{{ inc.idIncidencia }}" data-bs-toggle="dropdown" aria-expanded="false"
-                          title="Acciones">
-                          <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end"
-                          [attr.aria-labelledby]="'dropdownAcciones' + inc.idIncidencia">
-                          <li>
-                            <!-- Fondo verde completo -->
-                            <button class="dropdown-item bg-success text-white" (click)="openDetailModal(inc)">
-                              <i class="bi bi-plus me-2"></i>
-                              Ver detalles
-                            </button>
-                          </li>
-                          <li>
-                            <!-- Fondo rojo completo -->
-                            <button class="dropdown-item bg-danger text-white" (click)="openDeleteModal(inc)">
-                              <i class="bi bi-trash me-2"></i>
-                              Eliminar
-                            </button>
-                          </li>
-                          <!-- Más opciones aquí… -->
-                        </ul>
-                      </div>
-
+                    <td data-label="ID">{{ inc.idIncidencia }}</td>
+                    <td data-label="Descripción">{{ inc.descripcion }}</td>
+                    <td data-label="Fecha">{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
+                    <td data-label="Estado">{{ inc.estado }}</td>
+                    <td data-label="Acción" class="text-center">
+                      <button class="btn btn-sm btn-success me-1" (click)="openDetailModal(inc)" title="Ver detalles">
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger me-1" (click)="openDeleteModal(inc)" title="Eliminar">
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
                     </td>
-
                   </tr>
                 </tbody>
               </table>
             </div>
+
 
             <!-- Paginación de Bootstrap -->
             <nav aria-label="Paginación de incidencias" class="mt-3">

@@ -86,6 +86,30 @@
   outline: none;
 }
 
+/* Estilos de encabezado de la tabla resumen */
+.incidents-table-r th {
+  background-color: #285846;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Bordes redondeados y sombra en la tabla de incidencias */
+.incidents-table-r {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* Alineación vertical de celdas */
+.incidents-table-r td {
+  vertical-align: middle;
+}
+
+/* Ajuste de botones en la tabla de incidencias */
+.incidents-table-r .btn {
+  font-size: 0.9rem;
+}
+
 /* Estilos de encabezado de la tabla de incidencias */
 .incidents-table th {
   background-color: #285846;
@@ -137,4 +161,57 @@
 
 .sortable-header:hover {
   text-decoration-color: #fff;
+}
+
+/* ============================= */
+/* Estilos responsivos para móvil */
+/* Convierte cada fila de .incidents-table en bloque-tarjeta */
+/* ============================= */
+
+/* Aplica en pantallas pequeñas (hasta 576px de ancho) */
+@media (max-width: 576px) {
+  /* Ocultar la cabecera */
+  .incidents-table thead {
+    display: none;
+  }
+  /* Forzar que la tabla, tbody, tr y td sean bloques de ancho completo */
+  .incidents-table,
+  .incidents-table tbody,
+  .incidents-table tr,
+  .incidents-table td {
+    display: block;
+    width: 100%;
+  }
+  /* Espaciado y estilo de “tarjeta” para cada fila */
+  .incidents-table tr {
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    background-color: #fff;
+  }
+  /* Cada celda como bloque con padding */
+  .incidents-table td {
+    padding: 0.5rem;
+    position: relative;
+    text-align: left;
+    /* Evitar que se mezclen valores largos */
+    word-break: break-word;
+  }
+  /* Mostrar etiqueta mediante data-label */
+  .incidents-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    display: inline-block;
+    width: 35%;
+    /* Si quieres que el valor empiece en siguiente línea, podrías usar display: block; */
+  }
+  /* Ajuste específico para columna Acción: que los botones estén a la derecha */
+  .incidents-table td[data-label="Acción"] {
+    text-align: right;
+  }
+  /* Pequeño margen superior en botones dentro de tarjetas */
+  .incidents-table td .btn {
+    margin-top: 0.25rem;
+  }
 }

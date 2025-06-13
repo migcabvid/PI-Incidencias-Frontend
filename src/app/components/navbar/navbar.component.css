@@ -32,3 +32,11 @@ nav.navbar {
 .rojo{
   color: firebrick;
 }
+
+.custom-dropdown {
+  background-color: #285846 !important;
+}
+.custom-dropdown .dropdown-item {
+  background-color: #285846;
+  color: #fff;
+}

@@ -59,6 +59,7 @@ export class GestionIncidenciasComponent implements OnInit {
         });
         // summaryBaseData para el conteo: todas las incidencias
         this.summaryBaseData = [...sortedAll];
+        console.log(this.summaryBaseData);
         this.updateSummary();
 
         // 2) Para la tabla de incidencias inicialmente, mostrar solo "En proceso"
@@ -66,8 +67,6 @@ export class GestionIncidenciasComponent implements OnInit {
         this.filteredIncidents = [...this.incidentsData];
         this.setupPagination();
 
-        // 3) Mostrar la tabla de resumen desde el inicio (si eso deseas)
-        this.filtroFechaActivo = true;
       },
       error: err => {
         console.error(err);
@@ -225,6 +224,7 @@ export class GestionIncidenciasComponent implements OnInit {
   // Llamada al servicio: suponiendo que filtrarPorFechas devuelve todas las incidencias en el rango (no solo En proceso)
   this.incidenciaService.filtrarPorFechas(start, end).subscribe({
     next: data => {
+      console.log(data);
       // data: array de incidencias en el rango de fechas
       this.isLoading = false;
       // Actualizar summaryBaseData para ese rango
