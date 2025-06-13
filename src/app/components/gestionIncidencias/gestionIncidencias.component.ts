@@ -28,6 +28,8 @@ export class GestionIncidenciasComponent implements OnInit {
   showDetailModal = false;
   mostrarModalSolucion = false;
 
+  showResolveModal = false;
+
   incidenciaAEliminar: Incidencia | null = null;
   incidenciaDetalle: Incidencia | null = null;
   incidenciaAResolver: Incidencia | null = null;
@@ -187,6 +189,10 @@ export class GestionIncidenciasComponent implements OnInit {
         this.filteredIncidents = this.filteredIncidents.filter(i =>
           !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
         );
+
+        this.showResolveModal = true;     // ← lo mostramos
+        setTimeout(() => this.showResolveModal = false, 1500);
+
         this.setupPagination();
         this.updateSummary();
         this.cerrarModalSolucion();

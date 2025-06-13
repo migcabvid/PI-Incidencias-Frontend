@@ -310,6 +310,24 @@
                 </div>
               </div>
             </div>
+
+            <!-- Modal de resolución exitosa -->
+            <div *ngIf="showResolveModal" class="modal fade show d-block custom-modal-backdrop" (click)="showResolveModal = false">
+              <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+                <div class="modal-content custom-modal-content">
+                  <div class="modal-header custom-modal-header">
+                    <h5 class="modal-title flex-grow-1 text-center">Resolución</h5>
+                    <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="showResolveModal = false">
+                      <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                  </div>
+                  <div class="modal-body text-center custom-modal-body">
+                    Incidencia resuelta correctamente.
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </ng-container>
 
         </div>
