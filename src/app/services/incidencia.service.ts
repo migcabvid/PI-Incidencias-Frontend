@@ -81,25 +81,15 @@ export class IncidenciaService {
   }
 
   /** Resolver incidencia */
-  resolverIncidencia(
-    idIncidencia: string,
-    dniProfesor: string,
-    dniCoordinador: string,
-    resolucion: string
-  ): Observable<Incidencia> {
+  resolverIncidencia(idIncidencia: string, dniProfesor: string, resolucion: string): Observable<Incidencia> {
+    const params = new HttpParams().set('resolucion', resolucion);
     return this.http.put<Incidencia>(
       `${this.apiUrl}/${idIncidencia}/${dniProfesor}/resolver`,
       null,
-      {
-        params: {
-          dniCoordinador,
-          resolucion,
-          estado: 'Resuelta'
-        },
-        withCredentials: true
-      }
+      { params, withCredentials: true }
     );
   }
+
 
   /** Filtrar solo “En proceso” por fechas */
   filtrarPorFechasEnProceso(desde?: string, hasta?: string): Observable<Incidencia[]> {

@@ -16,14 +16,8 @@
                 <span class="input-group-text">
                   <i class="bi bi-search"></i>
                 </span>
-                <input
-                  #searchId
-                  type="text"
-                  id="searchId"
-                  class="form-control"
-                  placeholder="Escribe el ID..."
-                  (input)="filterById(searchId.value)"
-                />
+                <input #searchId type="text" id="searchId" class="form-control" placeholder="Escribe el ID..."
+                  (input)="filterById(searchId.value)" />
               </div>
             </div>
           </div>
@@ -37,104 +31,106 @@
 
           <!-- TABLA de Incidencias -->
           <div *ngIf="!isLoading">
-          <div class="table-responsive rounded-3 border">
-            <table class="table align-middle incidents-table mb-0">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Descripción</th>
-                  <th class="sortable-header" (click)="toggleDateSort()">
-                    Fecha
-                  </th>
-                  <th>Estado</th>
-                  <th class="text-center">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Aquí iteramos sólo sobre pagedIncidents -->
-                <tr *ngFor="let inc of pagedIncidents">
-                  <td>{{ inc.idIncidencia }}</td>
-                  <td>{{ inc.descripcion }}</td>
-                  <td>{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
-                  <td>{{ inc.estado }}</td>
+            <div class="table-responsive rounded-3 border">
+              <table class="table align-middle incidents-table mb-0">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th class="sortable-header" (click)="toggleDateSort()">
+                      Fecha
+                    </th>
+                    <th>Estado</th>
+                    <th class="text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Aquí iteramos sólo sobre pagedIncidents -->
+                  <tr *ngFor="let inc of pagedIncidents">
+                    <td>{{ inc.idIncidencia }}</td>
+                    <td>{{ inc.descripcion }}</td>
+                    <td>{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
+                    <td>{{ inc.estado }}</td>
 
-                  <td class="text-center">
-                    <!-- Botones individuales: visibles solo en pantallas ≥ sm (≥576px) -->
-                    <div class="d-none d-sm-inline-flex gap-1">
-                      <button class="btn btn-success btn-sm" (click)="openDetailModal(inc)" title="Ver detalles">
-                        <i class="bi bi-plus"></i>
-                      </button>
-                      <button class="btn btn-danger btn-sm" (click)="openDeleteModal(inc)" title="Eliminar">
-                        <i class="bi bi-trash-fill text-white"></i>
-                      </button>
-                    </div>
-                  
-                    <!-- Dropdown de acciones: visible solo en pantallas < sm (<576px) -->
-                    <div class="dropdown d-inline-block d-sm-none">
-                      <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownAcciones{{ inc.idIncidencia }}"
-                        data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
-                        <i class="bi bi-three-dots-vertical"></i>
-                      </button>
-                      <ul class="dropdown-menu dropdown-menu-end" [attr.aria-labelledby]="'dropdownAcciones' + inc.idIncidencia">
-                        <li>
-                          <!-- Fondo verde completo -->
-                          <button class="dropdown-item bg-success text-white" (click)="openDetailModal(inc)">
-                            <i class="bi bi-plus me-2"></i>
-                            Ver detalles
-                          </button>
-                        </li>
-                        <li>
-                          <!-- Fondo rojo completo -->
-                          <button class="dropdown-item bg-danger text-white" (click)="openDeleteModal(inc)">
-                            <i class="bi bi-trash me-2"></i>
-                            Eliminar
-                          </button>
-                        </li>
-                        <!-- Más opciones aquí… -->
-                      </ul>
-                    </div>
+                    <td class="text-center">
+                      <!-- Botones individuales: visibles solo en pantallas ≥ sm (≥576px) -->
+                      <div class="d-none d-sm-inline-flex gap-1">
+                        <button class="btn btn-success btn-sm" (click)="openDetailModal(inc)" title="Ver detalles">
+                          <i class="bi bi-plus"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="openDeleteModal(inc)" title="Eliminar">
+                          <i class="bi bi-trash-fill text-white"></i>
+                        </button>
+                      </div>
 
-                  </td>
+                      <!-- Dropdown de acciones: visible solo en pantallas < sm (<576px) -->
+                      <div class="dropdown d-inline-block d-sm-none">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button"
+                          id="dropdownAcciones{{ inc.idIncidencia }}" data-bs-toggle="dropdown" aria-expanded="false"
+                          title="Acciones">
+                          <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end"
+                          [attr.aria-labelledby]="'dropdownAcciones' + inc.idIncidencia">
+                          <li>
+                            <!-- Fondo verde completo -->
+                            <button class="dropdown-item bg-success text-white" (click)="openDetailModal(inc)">
+                              <i class="bi bi-plus me-2"></i>
+                              Ver detalles
+                            </button>
+                          </li>
+                          <li>
+                            <!-- Fondo rojo completo -->
+                            <button class="dropdown-item bg-danger text-white" (click)="openDeleteModal(inc)">
+                              <i class="bi bi-trash me-2"></i>
+                              Eliminar
+                            </button>
+                          </li>
+                          <!-- Más opciones aquí… -->
+                        </ul>
+                      </div>
 
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                    </td>
 
-          <!-- Paginación de Bootstrap -->
-          <nav aria-label="Paginación de incidencias" class="mt-3">
-            <ul class="pagination justify-content-center mb-0">
-          
-              <!-- Botón “Anterior” -->
-              <li class="page-item" [class.disabled]="currentPage === 1">
-                <button class="page-link border-success text-success" [class.bg-success]="currentPage === 1"
-                  [class.text-white]="currentPage === 1" (click)="goToPage(currentPage - 1)" aria-label="Anterior"
-                  [attr.disabled]="currentPage === 1 ? true : null">
-                  <span aria-hidden="true">&laquo;</span>
-                </button>
-              </li>
-          
-              <!-- Números de página -->
-              <li class="page-item" *ngFor="let _ of [].constructor(totalPages); let i = index"
-                [class.active]="currentPage === i + 1">
-                <button class="page-link" [class.border-success]="currentPage !== (i + 1)"
-                  [class.text-success]="currentPage !== (i + 1)" [class.bg-success]="currentPage === (i + 1)"
-                  [class.text-white]="currentPage === (i + 1)" (click)="goToPage(i + 1)">
-                  {{ i + 1 }}
-                </button>
-              </li>
-          
-              <!-- Botón “Siguiente” -->
-              <li class="page-item" [class.disabled]="currentPage === totalPages">
-                <button class="page-link border-success text-success" [class.bg-success]="currentPage === totalPages"
-                  [class.text-white]="currentPage === totalPages" (click)="goToPage(currentPage + 1)" aria-label="Siguiente"
-                  [attr.disabled]="currentPage === totalPages ? true : null">
-                  <span aria-hidden="true">&raquo;</span>
-                </button>
-              </li>
-          
-            </ul>
-          </nav>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Paginación de Bootstrap -->
+            <nav aria-label="Paginación de incidencias" class="mt-3">
+              <ul class="pagination justify-content-center mb-0">
+
+                <!-- Botón “Anterior” -->
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <button class="page-link border-success text-success" [class.bg-success]="currentPage === 1"
+                    [class.text-white]="currentPage === 1" (click)="goToPage(currentPage - 1)" aria-label="Anterior"
+                    [attr.disabled]="currentPage === 1 ? true : null">
+                    <span aria-hidden="true">&laquo;</span>
+                  </button>
+                </li>
+
+                <!-- Números de página -->
+                <li class="page-item" *ngFor="let _ of [].constructor(totalPages); let i = index"
+                  [class.active]="currentPage === i + 1">
+                  <button class="page-link" [class.border-success]="currentPage !== (i + 1)"
+                    [class.text-success]="currentPage !== (i + 1)" [class.bg-success]="currentPage === (i + 1)"
+                    [class.text-white]="currentPage === (i + 1)" (click)="goToPage(i + 1)">
+                    {{ i + 1 }}
+                  </button>
+                </li>
+
+                <!-- Botón “Siguiente” -->
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                  <button class="page-link border-success text-success" [class.bg-success]="currentPage === totalPages"
+                    [class.text-white]="currentPage === totalPages" (click)="goToPage(currentPage + 1)"
+                    aria-label="Siguiente" [attr.disabled]="currentPage === totalPages ? true : null">
+                    <span aria-hidden="true">&raquo;</span>
+                  </button>
+                </li>
+
+              </ul>
+            </nav>
           </div>
 
 
@@ -145,8 +141,8 @@
 </main>
 
 <!-- Modal confirmación de eliminación -->
-<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content custom-modal-content">
       <div class="modal-header custom-modal-header">
         <h5 class="modal-title flex-grow-1 text-center">
@@ -169,8 +165,9 @@
 </div>
 
 <!-- Modal de eliminación exitosa -->
-<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal"
+  (click)="showSuccessModal = false">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content custom-modal-content">
       <div class="modal-header custom-modal-header">
         <h5 class="modal-title flex-grow-1 text-center">
@@ -188,8 +185,9 @@
 </div>
 
 <!-- Modal de detalles de incidencia -->
-<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showDetailModal">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showDetailModal"
+  (click)="closeDetailModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content custom-modal-content">
       <div class="modal-header custom-modal-header">
         <h5 class="modal-title flex-grow-1 text-center">
@@ -200,18 +198,57 @@
         </button>
       </div>
       <div class="modal-body custom-modal-body">
-        <div *ngIf="incidenciaDetalle">
-          <p><strong>ID:</strong> {{ incidenciaDetalle.idIncidencia }}</p>
-          <p><strong>Fecha:</strong> {{ incidenciaDetalle.fechaIncidencia | date:'yyyy-MM-dd' }}</p>
-          <p><strong>Tipo:</strong> {{ incidenciaDetalle.tipoIncidencia }}</p>
-          <p><strong>Descripción:</strong> {{ incidenciaDetalle.descripcion }}</p>
-          <p><strong>DNI Profesor:</strong> {{ incidenciaDetalle.dniProfesor }}</p>
-          <p><strong>Estado:</strong> {{ incidenciaDetalle.estado }}</p>
-          <ng-container *ngIf="incidenciaDetalle.foto">
-            <p><strong>Foto:</strong></p>
-            <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia"
-                 style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 0.5rem; border: 1px solid #ccc;" />
-          </ng-container>
+        <div *ngIf="incidenciaDetalle" class="container-fluid">
+          <div class="row">
+            <!-- Columna izquierda -->
+            <div class="col-12 col-md-6">
+              <!-- IdIncidencia -->
+              <div class="mb-3">
+                <div><strong>ID Incidencia:</strong></div>
+                <div>{{ incidenciaDetalle.idIncidencia }}</div>
+              </div>
+              <!-- Tipo -->
+              <div class="mb-3">
+                <div><strong>Tipo:</strong></div>
+                <div>{{ incidenciaDetalle.tipoIncidencia }}</div>
+              </div>
+              <!-- Descripción -->
+              <div class="mb-3">
+                <div><strong>Descripción:</strong></div>
+                <div style="white-space: pre-wrap;">{{ incidenciaDetalle.descripcion }}</div>
+              </div>
+              <!-- Foto -->
+              <div class="mb-3">
+                <div><strong>Foto:</strong></div>
+                <ng-container *ngIf="incidenciaDetalle.foto">
+                  <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia"
+                    style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 0.5rem; border: 1px solid #ccc;" />
+                </ng-container>
+                <div *ngIf="!incidenciaDetalle.foto" class="text-muted">
+                  No hay foto disponible.
+                </div>
+              </div>
+            </div>
+
+            <!-- Columna derecha -->
+            <div class="col-12 col-md-6">
+              <!-- Fecha -->
+              <div class="mb-3">
+                <div><strong>Fecha</strong></div>
+                <div>{{ incidenciaDetalle.fechaIncidencia | date:'yyyy-MM-dd' }}</div>
+              </div>
+              <!-- Estado -->
+              <div class="mb-3">
+                <div><strong>Estado</strong></div>
+                <div>{{ incidenciaDetalle.estado }}</div>
+              </div>
+              <!-- Nombre Profesor -->
+              <div class="mb-3">
+                <div><strong>Nombre Profesor</strong></div>
+                <div>{{ incidenciaDetalle.nombreProfesor }}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

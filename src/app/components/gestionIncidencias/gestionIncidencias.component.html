@@ -52,6 +52,7 @@
                     </button>
                   </td>
                 </tr>
+
               </tbody>
             </table>
           </div>
@@ -114,9 +115,10 @@
               </table>
             </div>
 
-            <!-- Modal de detalles -->
-            <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showDetailModal">
-              <div class="modal-dialog modal-dialog-centered">
+            <!-- Modal de detalles de incidencia -->
+            <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showDetailModal"
+              (click)="closeDetailModal()">
+              <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
                 <div class="modal-content custom-modal-content">
                   <div class="modal-header custom-modal-header">
                     <h5 class="modal-title flex-grow-1 text-center">
@@ -128,18 +130,78 @@
                     </button>
                   </div>
                   <div class="modal-body custom-modal-body">
-                    <div *ngIf="incidenciaDetalle">
-                      <p><strong>ID:</strong> {{ incidenciaDetalle.idIncidencia }}</p>
-                      <p><strong>Fecha:</strong> {{ incidenciaDetalle.fechaIncidencia | date:'yyyy-MM-dd' }}</p>
-                      <p><strong>Tipo:</strong> {{ incidenciaDetalle.tipoIncidencia }}</p>
-                      <p><strong>Descripción:</strong> {{ incidenciaDetalle.descripcion }}</p>
-                      <p><strong>Profesor:</strong> {{ incidenciaDetalle.dniProfesor }}</p>
-                      <p><strong>Estado:</strong> {{ incidenciaDetalle.estado }}</p>
-                      <ng-container *ngIf="incidenciaDetalle.foto">
-                        <p><strong>Foto:</strong></p>
-                        <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia"
-                          style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 0.5rem; border: 1px solid #ccc;" />
-                      </ng-container>
+                    <div *ngIf="incidenciaDetalle" class="container-fluid">
+                      <div class="row">
+                        <!-- Columna izquierda -->
+                        <div class="col-12 col-md-6">
+                          <!-- IdIncidencia -->
+                          <div class="mb-3">
+                            <div><strong>ID Incidencia:</strong></div>
+                            <div>{{ incidenciaDetalle.idIncidencia }}</div>
+                          </div>
+                          <!-- Tipo -->
+                          <div class="mb-3">
+                            <div><strong>Tipo:</strong></div>
+                            <div>{{ incidenciaDetalle.tipoIncidencia }}</div>
+                          </div>
+                          <!-- Descripción -->
+                          <div class="mb-3">
+                            <div><strong>Descripción:</strong></div>
+                            <div style="white-space: pre-wrap;">{{ incidenciaDetalle.descripcion }}</div>
+                          </div>
+                          <!-- Foto -->
+                          <div class="mb-3">
+                            <div><strong>Foto:</strong></div>
+                            <ng-container *ngIf="incidenciaDetalle.foto">
+                              <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto"
+                                alt="Foto de la incidencia"
+                                style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 0.5rem; border: 1px solid #ccc;" />
+                            </ng-container>
+                            <div *ngIf="!incidenciaDetalle.foto" class="text-muted">
+                              <span>No hay foto disponible.</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Columna derecha -->
+                        <div class="col-12 col-md-6">
+                          <!-- Fecha -->
+                          <div class="mb-3">
+                            <div><strong>Fecha</strong></div>
+                            <div>{{ incidenciaDetalle.fechaIncidencia | date:'yyyy-MM-dd' }}</div>
+                          </div>
+                          <!-- Estado -->
+                          <div class="mb-3">
+                            <div><strong>Estado</strong></div>
+                            <div>{{ incidenciaDetalle.estado }}</div>
+                          </div>
+                          <!-- Resolucion -->
+                          <div class="mb-3">
+                            <div><strong>Solucion:</strong></div>
+                            <ng-container *ngIf="incidenciaDetalle.resolucion">
+                              <div>{{ incidenciaDetalle.resolucion }}</div>
+                            </ng-container>
+                            <div *ngIf="!incidenciaDetalle.resolucion" class="text-muted">
+                              <span>No se ha solucionado la incidencia.</span>
+                            </div>
+                          </div>
+                          <!-- Nombre Profesor -->
+                          <div class="mb-3">
+                            <div><strong>Nombre Profesor</strong></div>
+                            <div>{{ incidenciaDetalle.nombreProfesor }}</div>
+                          </div>
+                          <!-- Nombre Coordinador -->
+                          <div class="mb-3">
+                            <div><strong>Nombre Coordinador:</strong></div>
+                            <ng-container *ngIf="incidenciaDetalle.resolucion">
+                              <div>{{ incidenciaDetalle.nombreProfesor }}</div>
+                            </ng-container>
+                            <div *ngIf="!incidenciaDetalle.resolucion" class="text-muted">
+                              <span>No se ha solucionado la incidencia.</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -175,8 +237,9 @@
             </nav>
 
             <!-- Modal confirmación de eliminación -->
-            <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal">
-              <div class="modal-dialog modal-dialog-centered">
+            <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal"
+              (click)="closeModal()">
+              <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
                 <div class="modal-content custom-modal-content">
                   <div class="modal-header custom-modal-header">
                     <h5 class="modal-title flex-grow-1 text-center">
@@ -199,8 +262,9 @@
             </div>
 
             <!-- Modal de eliminación exitosa -->
-            <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal">
-              <div class="modal-dialog modal-dialog-centered">
+            <div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal"
+              (click)="showSuccessModal = false">
+              <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
                 <div class="modal-content custom-modal-content">
                   <div class="modal-header custom-modal-header">
                     <h5 class="modal-title flex-grow-1 text-center">
@@ -217,6 +281,7 @@
                 </div>
               </div>
             </div>
+
 
             <!-- Modal de “¿Cómo lo has resuelto?” -->
             <div class="modal fade show d-block custom-modal-backdrop solucion-modal" tabindex="-1"
