@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
@@ -10,7 +11,7 @@ import { IncidenciaService, Incidencia } from '../../services/incidencia.service
   templateUrl: './gestionIncidencias.component.html',
   styleUrls: ['./gestionIncidencias.component.css']
 })
-export class GestionIncidenciasComponent implements OnInit {
+export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
   summaryBaseData: Incidencia[] = []; // Solo filtrado por fecha EN PROCESO
   isDateDesc = true;
   isLoading = true;
@@ -42,6 +43,13 @@ export class GestionIncidenciasComponent implements OnInit {
   currentPage: number = 1;
   totalPages: number = 1;
   pagedIncidents: Incidencia[] = [];
+
+  @ViewChild('paginationList', { static: true })
+  paginationList!: ElementRef<HTMLUListElement>;
+
+  maxPageLinks = 5;
+  currentChunk = 0;
+  totalChunks = 1;
 
   constructor(private incidenciaService: IncidenciaService) { }
 
@@ -93,11 +101,12 @@ export class GestionIncidenciasComponent implements OnInit {
 
 
   setupPagination(): void {
-    this.totalPages = Math.ceil(this.filteredIncidents.length / this.pageSize) || 1;
-    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
-    if (this.currentPage < 1) this.currentPage = 1;
-    this.updatePagedIncidents();
-  }
+  this.totalPages = Math.ceil(this.filteredIncidents.length / this.pageSize) || 1;
+  this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
+  this.currentChunk = 0;
+  this.updateChunks();
+  this.updatePagedIncidents();
+}
 
   updatePagedIncidents(): void {
     const startIndex = (this.currentPage - 1) * this.pageSize;
@@ -106,10 +115,14 @@ export class GestionIncidenciasComponent implements OnInit {
   }
 
   goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-    this.updatePagedIncidents();
+  if (page < 1 || page > this.totalPages) return;
+  this.currentPage = page;
+  const newChunk = Math.floor((page - 1) / this.maxPageLinks);
+  if (newChunk !== this.currentChunk) {
+    this.currentChunk = newChunk;
   }
+  this.updatePagedIncidents();
+}
 
   openDeleteModal(inc: Incidencia): void {
     this.incidenciaAEliminar = inc;
@@ -286,6 +299,42 @@ export class GestionIncidenciasComponent implements OnInit {
     this.currentPage = 1;
     this.setupPagination();
   }
+
+  ngAfterViewInit(): void {
+  this.calculateMaxLinks();
+}
+
+@HostListener('window:resize')
+onResize(): void {
+  this.calculateMaxLinks();
+}
+
+private calculateMaxLinks(): void {
+  const available = this.paginationList.nativeElement.clientWidth;
+  const approxLi = 40;
+  this.maxPageLinks = Math.max(1, Math.floor(available / approxLi) - 2);
+  this.updateChunks();
+}
+
+private updateChunks(): void {
+  this.totalChunks = Math.ceil(this.totalPages / this.maxPageLinks);
+  this.currentChunk = Math.min(this.currentChunk, this.totalChunks - 1);
+  if (this.currentChunk < 0) this.currentChunk = 0;
+}
+
+public getVisiblePages(): number[] {
+  const start = this.currentChunk * this.maxPageLinks;
+  const end = Math.min(start + this.maxPageLinks, this.totalPages);
+  return Array.from({ length: end - start }, (_, i) => start + i + 1);
+}
+
+prevChunk(): void {
+  if (this.currentChunk > 0) this.currentChunk--;
+}
+
+nextChunk(): void {
+  if (this.currentChunk < this.totalChunks - 1) this.currentChunk++;
+}
 
 
 }
