@@ -198,6 +198,7 @@ export class MisIncidenciasComponent implements OnInit, AfterViewInit {
   }
 
   openDetailModal(incidencia: Incidencia): void {
+    this.zoomImageUrl = null;
     this.incidenciaDetalle = incidencia;
     this.showDetailModal = true;
   }
@@ -205,6 +206,7 @@ export class MisIncidenciasComponent implements OnInit, AfterViewInit {
   closeDetailModal(): void {
     this.showDetailModal = false;
     this.incidenciaDetalle = null;
+    this.zoomImageUrl = null;
   }
 
   toggleDateSort(): void {
@@ -221,5 +223,18 @@ export class MisIncidenciasComponent implements OnInit, AfterViewInit {
     });
     this.currentPage = 1;
     this.setupPagination();
+  }
+
+  /** URL (o base64) de la imagen ampliada; null = nada abierto */
+  zoomImageUrl: string | null = null;
+
+  /** Abre la imagen en grande */
+  zoomImage(fotoBase64: string) {
+    this.zoomImageUrl = 'data:image/jpeg;base64,' + fotoBase64;
+  }
+
+  /** Cierra el overlay */
+  closeZoom() {
+    this.zoomImageUrl = null;
   }
 }
