@@ -273,25 +273,36 @@
 
 /* Botón “X” de cerrar */
 .zoom-close-btn {
+  /* réplica de .custom-btn-close */
+  background: none !important;
+  border: none !important;
+  color: #fff !important;
+  font-size: 2.5rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+
+  /* posicionamiento absoluto dentro de .zoom-container */
   position: absolute;
-  top:    1rem;
-  right:  1rem;
-  width:  2.5rem;
-  height: 2.5rem;
-  background: rgba(0,0,0,0.6);
-  border:     none;
-  border-radius: 50%;
-  font-size:  1.5rem;
-  color:      #fff;
-  cursor:     pointer;      /* muestra la mano al pasar */
-  z-index:    2001;
-  display:    flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;     /* asegúrate que acepta eventos */
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2001;
 }
 
 /* Evita que la imagen bloquee el botón */
 .zoomed-image {
   pointer-events: none;
+}
+
+.zoom-container { position: relative; }
+
+.zoom-close-btn {
+  /* lo de arriba… */
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(0,0,0,0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
