@@ -61,44 +61,53 @@
               </table>
             </div>
 
-
             <!-- Paginación de Bootstrap -->
             <nav aria-label="Paginación de incidencias" class="mt-3">
-              <ul class="pagination justify-content-center mb-0">
+              <ul #paginationList class="pagination justify-content-center mb-0">
 
-                <!-- Botón “Anterior” -->
+                <!-- Botón grupo anterior -->
+                <li class="page-item" [class.disabled]="currentChunk === 0">
+                  <button class="page-link border-success text-success" (click)="prevChunk()"
+                    [attr.disabled]="currentChunk === 0 ? true : null">
+                    ‹‹
+                  </button>
+                </li>
+
+                <!-- Botón “Anterior” página -->
                 <li class="page-item" [class.disabled]="currentPage === 1">
-                  <button class="page-link border-success text-success" [class.bg-success]="currentPage === 1"
-                    [class.text-white]="currentPage === 1" (click)="goToPage(currentPage - 1)" aria-label="Anterior"
+                  <button class="page-link border-success text-success" (click)="goToPage(currentPage - 1)"
                     [attr.disabled]="currentPage === 1 ? true : null">
-                    <span aria-hidden="true">&laquo;</span>
+                    &laquo;
                   </button>
                 </li>
 
-                <!-- Números de página -->
-                <li class="page-item" *ngFor="let _ of [].constructor(totalPages); let i = index"
-                  [class.active]="currentPage === i + 1">
-                  <button class="page-link" [class.border-success]="currentPage !== (i + 1)"
-                    [class.text-success]="currentPage !== (i + 1)" [class.bg-success]="currentPage === (i + 1)"
-                    [class.text-white]="currentPage === (i + 1)" (click)="goToPage(i + 1)">
-                    {{ i + 1 }}
+                <!-- Números de página VISIBLES -->
+                <li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
+                  <button class="page-link" [class.border-success]="currentPage !== p"
+                    [class.text-success]="currentPage !== p" [class.bg-success]="currentPage === p"
+                    [class.text-white]="currentPage === p" (click)="goToPage(p)">
+                    {{ p }}
                   </button>
                 </li>
 
-                <!-- Botón “Siguiente” -->
+                <!-- Botón “Siguiente” página -->
                 <li class="page-item" [class.disabled]="currentPage === totalPages">
-                  <button class="page-link border-success text-success" [class.bg-success]="currentPage === totalPages"
-                    [class.text-white]="currentPage === totalPages" (click)="goToPage(currentPage + 1)"
-                    aria-label="Siguiente" [attr.disabled]="currentPage === totalPages ? true : null">
-                    <span aria-hidden="true">&raquo;</span>
+                  <button class="page-link border-success text-success" (click)="goToPage(currentPage + 1)"
+                    [attr.disabled]="currentPage === totalPages ? true : null">
+                    &raquo;
                   </button>
                 </li>
 
+                <!-- Botón grupo siguiente -->
+                <li class="page-item" [class.disabled]="currentChunk >= totalChunks - 1">
+                  <button class="page-link border-success text-success" (click)="nextChunk()"
+                    [attr.disabled]="currentChunk >= totalChunks - 1 ? true : null">
+                    ››
+                  </button>
+                </li>
               </ul>
             </nav>
           </div>
-
-
         </div>
       </div>
     </div>
@@ -186,8 +195,8 @@
               <div class="mb-3">
                 <div><strong>Foto:</strong></div>
                 <ng-container *ngIf="incidenciaDetalle.foto">
-                  <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia"
-                    style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 0.5rem; border: 1px solid #ccc;" />
+                  <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia" class="incidence-thumb"
+                    (click)="zoomImage(incidenciaDetalle.foto)" />
                 </ng-container>
                 <div *ngIf="!incidenciaDetalle.foto" class="text-muted">
                   No hay foto disponible.
@@ -207,6 +216,20 @@
                 <div><strong>Estado</strong></div>
                 <div>{{ incidenciaDetalle.estado }}</div>
               </div>
+              <!-- Resolución (solo si existe) -->
+              <div class="mb-3" *ngIf="incidenciaDetalle.resolucion; else noResu">
+                <div><strong>Resolución</strong></div>
+                <div style="white-space: pre-wrap;">
+                  {{ incidenciaDetalle.resolucion }}
+                </div>
+              </div>
+              <!-- Mensaje alternativo si no hay resolución -->
+              <ng-template #noResu>
+                <div class="mb-3">
+                  <div><strong>Resolución</strong></div>
+                  <div class="text-muted">Aún no hay resolución.</div>
+                </div>
+              </ng-template>
               <!-- Nombre Profesor -->
               <div class="mb-3">
                 <div><strong>Nombre Profesor</strong></div>
@@ -217,5 +240,20 @@
         </div>
       </div>
     </div>
-  </div>
+
+<!-- Overlay para imagen ampliada -->
+<div
+  class="image-zoom-backdrop"
+  *ngIf="zoomImageUrl"
+>
+  <!-- Botón “X” de cerrar -->
+  <button class="zoom-close-btn" (click)="closeZoom()">
+    &times;
+  </button>
+
+  <img
+    [src]="zoomImageUrl"
+    class="zoomed-image"
+    (click)="$event.stopPropagation()"
+  />
 </div>
