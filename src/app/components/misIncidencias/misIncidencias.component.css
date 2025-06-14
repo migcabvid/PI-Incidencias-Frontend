@@ -224,3 +224,10 @@
     line-height: 1;
   }
 }
+
+
+/* Forzar verde en el texto de paginación incluso antes de que Angular calcule clases */
+.pagination .page-link {
+  color: #28a745 !important;
+  transition: none !important; /* opcional: desactiva cualquier animación de color */
+}
