@@ -51,6 +51,8 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
   currentChunk = 0;
   totalChunks = 1;
 
+  zoomImageUrl: string | null = null;
+
   constructor(private incidenciaService: IncidenciaService) { }
 
   ngOnInit(): void {
@@ -163,6 +165,7 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
 
   openDetailModal(inc: Incidencia): void {
     console.log(inc);
+    this.zoomImageUrl = null;
     this.incidenciaDetalle = inc;
     this.showDetailModal = true;
   }
@@ -170,6 +173,7 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
   closeDetailModal(): void {
     this.showDetailModal = false;
     this.incidenciaDetalle = null;
+    this.zoomImageUrl = null;
   }
 
   abrirModalSolucion(inc: Incidencia): void {
@@ -336,5 +340,14 @@ nextChunk(): void {
   if (this.currentChunk < this.totalChunks - 1) this.currentChunk++;
 }
 
+/** Abre la imagen en grande */
+zoomImage(fotoBase64: string) {
+  this.zoomImageUrl = 'data:image/jpeg;base64,' + fotoBase64;
+}
+
+/** Cierra el overlay */
+closeZoom() {
+  this.zoomImageUrl = null;
+}
 
 }

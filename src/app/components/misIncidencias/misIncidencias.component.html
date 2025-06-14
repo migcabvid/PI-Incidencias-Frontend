@@ -195,8 +195,8 @@
               <div class="mb-3">
                 <div><strong>Foto:</strong></div>
                 <ng-container *ngIf="incidenciaDetalle.foto">
-                  <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia" class="incidence-thumb"
-                    (click)="zoomImage(incidenciaDetalle.foto)" />
+                  <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia"
+                    class="incidence-thumb" (click)="zoomImage(incidenciaDetalle.foto)" />
                 </ng-container>
                 <div *ngIf="!incidenciaDetalle.foto" class="text-muted">
                   No hay foto disponible.
@@ -240,20 +240,12 @@
         </div>
       </div>
     </div>
-
-<!-- Overlay para imagen ampliada -->
-<div
-  class="image-zoom-backdrop"
-  *ngIf="zoomImageUrl"
->
-  <!-- Botón “X” de cerrar -->
-  <button class="zoom-close-btn" (click)="closeZoom()">
-    &times;
-  </button>
-
-  <img
-    [src]="zoomImageUrl"
-    class="zoomed-image"
-    (click)="$event.stopPropagation()"
-  />
+    <!-- Overlay para imagen ampliada -->
+    <div class="image-zoom-backdrop" *ngIf="zoomImageUrl">
+      <div class="zoom-container">
+        <button class="zoom-close-btn" (click)="closeZoom()">&times;</button>
+        <img [src]="zoomImageUrl" class="zoomed-image" (click)="$event.stopPropagation()" />
+      </div>
+    </div>
+  </div>
 </div>

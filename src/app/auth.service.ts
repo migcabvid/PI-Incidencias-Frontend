@@ -111,4 +111,8 @@ export class AuthService {
   get dniProfesor(): string | null {
     return this.dniSubject.getValue();
   }
+
+  get activeRole(): string | null {
+  return this.activeRoleSubject.getValue();
+}
 }

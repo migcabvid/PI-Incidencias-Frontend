@@ -153,9 +153,8 @@
                           <div class="mb-3">
                             <div><strong>Foto:</strong></div>
                             <ng-container *ngIf="incidenciaDetalle.foto">
-                              <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto"
-                                alt="Foto de la incidencia"
-                                style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 0.5rem; border: 1px solid #ccc;" />
+                              <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia" class="incidence-thumb"
+                                (click)="zoomImage(incidenciaDetalle.foto)" />
                             </ng-container>
                             <div *ngIf="!incidenciaDetalle.foto" class="text-muted">
                               <span>Esta incidencia no contiene foto.</span>
@@ -205,8 +204,16 @@
                     </div>
                   </div>
                 </div>
-              </div>
+                <!-- Overlay para imagen ampliada -->
+                <div class="image-zoom-backdrop" *ngIf="zoomImageUrl">
+                  <div class="zoom-container">
+                    <button class="zoom-close-btn" (click)="closeZoom()">&times;</button>
+                    <img [src]="zoomImageUrl" class="zoomed-image" (click)="$event.stopPropagation()" />
+                  </div>
+                </div>
             </div>
+              </div>
+              
 
             <!-- Navegación por páginas -->
             <nav aria-label="Paginación de incidencias" class="mt-3">
