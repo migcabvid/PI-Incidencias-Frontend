@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
+import { PdfService } from '../pdf/pdf.service'; // ← Importar el servicio
 
 @Component({
   selector: 'app-gestion-incidencias',
@@ -43,7 +44,18 @@ export class GestionIncidenciasComponent implements OnInit {
   totalPages: number = 1;
   pagedIncidents: Incidencia[] = [];
 
-  constructor(private incidenciaService: IncidenciaService) { }
+  // Nueva propiedad para rastrear el filtro actual
+  filtroActual: string = 'En proceso';
+  fechaDesdeActual: string = '';
+  fechaHastaActual: string = '';
+
+  // Nueva propiedad para rastrear qué tipo de PDF se quiere generar
+  tipoReporteActivo: string = 'En proceso';
+
+  constructor(
+    private incidenciaService: IncidenciaService,
+    private pdfService: PdfService // ← Inyectar el servicio PDF
+  ) { }
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -204,6 +216,140 @@ export class GestionIncidenciasComponent implements OnInit {
     });
   }
 
+  /**
+   * Método para generar PDF de un tipo específico desde el resumen
+   */
+  generarPDFPorTipo(tipoReporte: string): void {
+    // Obtener los datos correspondientes al tipo de reporte
+    let datosParaPdf: Incidencia[] = [];
+
+    if (tipoReporte === 'Totales') {
+      datosParaPdf = [...this.summaryBaseData];
+    } else if (tipoReporte === 'Solucionada') {
+      datosParaPdf = this.summaryBaseData.filter(
+        i => i.estado?.toLowerCase() === 'solucionada'
+      );
+    } else if (tipoReporte === 'En proceso') {
+      datosParaPdf = this.summaryBaseData.filter(
+        i => i.estado?.toLowerCase() === 'en proceso'
+      );
+    }
+
+    // Determinar el tipo de reporte con información de fechas si aplica
+    let tipoReporteConFecha = tipoReporte;
+    if (this.filtroFechaActivo) {
+      tipoReporteConFecha += ' (Filtrado por fecha)';
+    }
+
+    // Formatear fechas para el PDF si hay filtro activo
+    const fechaDesdeFormateada = this.fechaDesdeActual ?
+      new Date(this.fechaDesdeActual).toLocaleDateString('es-ES') : undefined;
+    const fechaHastaFormateada = this.fechaHastaActual ?
+      new Date(this.fechaHastaActual).toLocaleDateString('es-ES') : undefined;
+
+    // Generar el PDF
+    this.pdfService.generarPdfIncidencias(
+      datosParaPdf,
+      tipoReporteConFecha,
+      fechaDesdeFormateada,
+      fechaHastaFormateada
+    );
+  }
+
+  /**
+   * Método actualizado para generar PDF de los datos actualmente mostrados en la tabla
+   */
+  generarPDF(): void {
+    // Este método ahora genera PDF de lo que está en la tabla de abajo
+    const datosParaPdf = [...this.filteredIncidents];
+
+    let tipoReporte = `Tabla filtrada (${this.tipoReporteActivo})`;
+    if (this.filtroFechaActivo) {
+      tipoReporte += ' - Con filtro de fecha';
+    }
+
+    const fechaDesdeFormateada = this.fechaDesdeActual ?
+      new Date(this.fechaDesdeActual).toLocaleDateString('es-ES') : undefined;
+    const fechaHastaFormateada = this.fechaHastaActual ?
+      new Date(this.fechaHastaActual).toLocaleDateString('es-ES') : undefined;
+
+    this.pdfService.generarPdfIncidencias(
+      datosParaPdf,
+      tipoReporte,
+      fechaDesdeFormateada,
+      fechaHastaFormateada
+    );
+  }
+
+  /**
+   * Método actualizado filtrarPorEstado para rastrear el tipo activo
+   */
+  filtrarPorEstado(estado: string): void {
+    this.tipoReporteActivo = estado; // Rastrear el tipo activo
+
+    if (estado === 'Totales') {
+      this.filteredIncidents = [...this.summaryBaseData];
+    } else if (estado === 'Solucionada') {
+      this.filteredIncidents = this.summaryBaseData.filter(
+        i => i.estado?.toLowerCase() === 'solucionada'
+      );
+    } else if (estado === 'En proceso') {
+      this.filteredIncidents = this.summaryBaseData.filter(
+        i => i.estado?.toLowerCase() === 'en proceso'
+      );
+    } else {
+      this.filteredIncidents = [];
+    }
+
+    this.currentPage = 1;
+    this.setupPagination();
+  }
+
+  /**
+   * Filtrar por fecha - ÚNICA VERSIÓN
+   */
+  filterByDate(from: HTMLInputElement, to: HTMLInputElement): void {
+    let start = from.value;
+    let end = to.value;
+
+    // Guardar las fechas actuales para el PDF
+    this.fechaDesdeActual = start;
+    this.fechaHastaActual = end;
+
+    if (start && end) {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      if (startDate > endDate) {
+        [start, end] = [end, start];
+        from.value = start;
+        to.value = end;
+        this.fechaDesdeActual = start;
+        this.fechaHastaActual = end;
+      }
+    }
+
+    this.filtroFechaActivo = !!start || !!end;
+    this.isLoading = true;
+
+    this.incidenciaService.filtrarPorFechas(start, end).subscribe({
+      next: data => {
+        this.isLoading = false;
+        this.summaryBaseData = data;
+        this.updateSummary();
+
+        // Aplicar automáticamente el filtro que estaba activo
+        this.filtrarPorEstado(this.tipoReporteActivo);
+      },
+      error: err => {
+        console.error(err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  /**
+   * Filtrar por ID - ÚNICA VERSIÓN
+   */
   filterById(term: string): void {
     const q = term.trim().toLowerCase();
     this.filteredIncidents = this.incidentsData.filter(i =>
@@ -213,79 +359,23 @@ export class GestionIncidenciasComponent implements OnInit {
     this.setupPagination();
   }
 
-  filterByDate(from: HTMLInputElement, to: HTMLInputElement): void {
-  let start = from.value;
-  let end = to.value;
-  if (start && end) {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    if (startDate > endDate) {
-      [start, end] = [end, start];
-      from.value = start;
-      to.value = end;
-    }
-  }
-  this.filtroFechaActivo = !!start || !!end;
-  this.isLoading = true;
-  // Llamada al servicio: suponiendo que filtrarPorFechas devuelve todas las incidencias en el rango (no solo En proceso)
-  this.incidenciaService.filtrarPorFechas(start, end).subscribe({
-    next: data => {
-      console.log(data);
-      // data: array de incidencias en el rango de fechas
-      this.isLoading = false;
-      // Actualizar summaryBaseData para ese rango
-      this.summaryBaseData = data;
-      this.updateSummary();
-      // Para la tabla inferior, quizás inicialmente mostrar solo En proceso en el rango
-      this.incidentsData = data.filter(i => i.estado?.toLowerCase() === 'en proceso');
-      this.filteredIncidents = [...this.incidentsData];
-      this.currentPage = 1;
-      this.setupPagination();
-    },
-    error: err => {
-      console.error(err);
-      this.isLoading = false;
-    }
-  });
-}
-
 
   toggleDateSort(): void {
     this.isDateDesc = !this.isDateDesc;
+
     this.filteredIncidents.sort((a, b) => {
       const tA = new Date(a.fechaIncidencia).getTime();
       const tB = new Date(b.fechaIncidencia).getTime();
+
       if (tA !== tB) {
-        return this.isDateDesc
-          ? tB - tA  // descendente
-          : tA - tB; // ascendente
+        return this.isDateDesc ? tB - tA : tA - tB;
       }
-      const idA = Number(a.idIncidencia);
-      const idB = Number(b.idIncidencia);
+
       return this.isDateDesc
-        ? idB - idA
-        : idA - idB;
+        ? Number(b.idIncidencia) - Number(a.idIncidencia)
+        : Number(a.idIncidencia) - Number(b.idIncidencia);
     });
-    this.currentPage = 1;
-    this.setupPagination();
-    this.updateSummary();
-  }
 
-  filtrarPorEstado(estado: string): void {
-    if (estado === 'Totales') {
-      this.filteredIncidents = [...this.summaryBaseData];
-    } else if (estado === 'Solucionada') {
-      this.filteredIncidents = this.summaryBaseData.filter(
-        i => i.estado?.toLowerCase() === 'solucionada');
-    } else if (estado === 'En proceso') {
-      this.filteredIncidents = this.summaryBaseData.filter(
-        i => i.estado?.toLowerCase() === 'en proceso');
-    } else {
-      this.filteredIncidents = [];
-    }
-    this.currentPage = 1;
     this.setupPagination();
   }
-
-
 }
