@@ -1,12 +1,10 @@
-<!-- src/app/app.component.html -->
-
 <ng-container *ngIf="showLayout(); else loginContent">
   <!-- Mostramos navbar solo con sesión iniciada -->
   <app-navbar></app-navbar>
 
   <!-- Toasts de notificación -->
   <app-toaster></app-toaster>
-  
+
   <!-- Outlet principal para todas las rutas protegidas -->
   <router-outlet></router-outlet>
 

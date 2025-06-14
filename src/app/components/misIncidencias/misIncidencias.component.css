@@ -231,3 +231,78 @@
   color: #28a745 !important;
   transition: none !important; /* opcional: desactiva cualquier animación de color */
 }
+
+/* Miniatura en el modal: cursor “zoom” */
+.incidence-thumb {
+  max-width: 100%;
+  max-height: 250px;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  cursor: zoom-in;
+}
+
+/* Fondo oscuro y centrado para la imagen ampliada */
+.image-zoom-backdrop {
+  position: fixed;
+  top:   0;
+  left:  0;
+  width: 100%;
+  height:100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000; /* por encima de todo */
+}
+
+/* Imagen ampliada: máximo 90% de ancho y alto */
+.zoomed-image {
+  max-width:  90%;
+  max-height: 90%;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  cursor: zoom-out;
+}
+
+/* Asegúrate de que el backdrop deje pasar clicks al botón */
+.image-zoom-backdrop {
+  pointer-events: auto; /* asegura que los hijos reciban clicks */
+}
+
+/* Botón “X” de cerrar */
+.zoom-close-btn {
+  /* réplica de .custom-btn-close */
+  background: none !important;
+  border: none !important;
+  color: #fff !important;
+  font-size: 2.5rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+
+  /* posicionamiento absoluto dentro de .zoom-container */
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2001;
+}
+
+/* Evita que la imagen bloquee el botón */
+.zoomed-image {
+  pointer-events: none;
+}
+
+.zoom-container { position: relative; }
+
+.zoom-close-btn {
+  /* lo de arriba… */
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(0,0,0,0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
