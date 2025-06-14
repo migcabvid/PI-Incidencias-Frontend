@@ -139,13 +139,13 @@
   outline: none !important;
   box-shadow: none !important;
   background-color: transparent !important;
-  color: #28a745 !important;
-  border-color: #28a745 !important;
+  color: #285846 !important;
+  border-color: #285846 !important;
 }
 .pagination .page-item.active .page-link:focus,
 .pagination .page-item.active .page-link {
-  background-color: #28a745 !important;
-  border-color:     #28a745 !important;
+  background-color: #285846 !important;
+  border-color:     #285846 !important;
   color:            #fff    !important;
 }
 
@@ -247,8 +247,9 @@
 
 /* Forzar verde en el texto de paginación incluso antes de que Angular calcule clases */
 .pagination .page-link {
-  color: #28a745 !important;
+  color: #285846 !important;
   transition: none !important; /* opcional: desactiva cualquier animación de color */
+  border-color: #285846 !important;
 }
 
 /* Miniatura en el modal: cursor “zoom” */
@@ -320,4 +321,28 @@
 
   /* opcional: ligero sombreado para que se vea en fondos claros */
   text-shadow: 0 0 6px rgba(0,0,0,.7);
+}
+
+@media (min-width: 576.98px) {
+
+  /* ▶︎ tabla principal */
+  .incidents-table {
+    border-collapse: collapse;   /* fusiona bordes interiores */
+    border: 2px solid #285846;;      /* marco exterior */
+    border-radius: .5rem;        /* esquinas */
+    overflow: hidden;            /* recorta lo que sobresalga */
+  }
+
+  /* ▶︎ celdas */
+  .incidents-table th,
+  .incidents-table td {
+    border: 1px solid #285846;;   /* líneas internas finas */
+  }
+
+  /* cabecera verde (repetido por claridad; mantiene prioridad) */
+  .incidents-table th {
+    background: #285846;
+    color: #fff;
+    font-weight: 500;
+  }
 }
