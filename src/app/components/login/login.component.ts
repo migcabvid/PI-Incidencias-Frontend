@@ -94,12 +94,16 @@ closeOptions(event: MouseEvent) {
     const req: LoginRequest = {
       username: this.usuario,
       password: this.password,
-      rol:      this.selectedRoleValue
+      rol: this.selectedRoleValue
     };
 
     this.auth.login(req).subscribe({
-      next: () => {
-        this.router.navigate(['/crearIncidencia']);
+      next: (resp) => {
+        const key = resp.activeRole.toLowerCase();
+        const destino = key === 'profesor'
+          ? '/crearIncidencia'
+          : '/gestionIncidencias';
+        this.router.navigate([destino]);
       },
       error: err => {
         if (err.status === 401 || err.status === 403) {

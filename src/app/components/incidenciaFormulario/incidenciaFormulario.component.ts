@@ -50,6 +50,7 @@ export class IncidenciaFormularioComponent implements OnInit {
   ];
 
   @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
+  @ViewChild('cameraInput') cameraInputRef!: ElementRef<HTMLInputElement>;
 
   constructor(
     private toast: ToastService,
@@ -88,13 +89,31 @@ export class IncidenciaFormularioComponent implements OnInit {
     if (this.fileInputRef) {
       this.fileInputRef.nativeElement.value = '';
     }
+    if (this.cameraInputRef) {
+      this.cameraInputRef.nativeElement.value = '';
+    }
   }
 
   triggerFileInput(): void {
     this.fileInputRef.nativeElement.click();
   }
 
+  triggerCameraInput(): void {
+    this.cameraInputRef.nativeElement.click();
+  }
+
   onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      const file = input.files[0];
+      this.formData.fotoFile = file;
+      const reader = new FileReader();
+      reader.onload = () => this.imagePreview = reader.result;
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onCameraSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
       const file = input.files[0];
@@ -125,6 +144,7 @@ export class IncidenciaFormularioComponent implements OnInit {
       switchMap((inc: Incidencia) => {
         // Mostrar modal en vez de toast
         this.showModal = true;
+        setTimeout(() => this.showModal = false, 2000);
         return this.incService.nextId();
       })
     ).subscribe({

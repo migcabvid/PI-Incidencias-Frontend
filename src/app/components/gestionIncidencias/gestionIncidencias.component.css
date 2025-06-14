@@ -1,14 +1,29 @@
-/* Fuente y color general para tarjetas, formularios, tablas y botones */
+/* Fuente y color general para el formulario */
 .card,
 .card label,
 .card input,
 .card select,
+.card textarea,
 .card .form-label,
 .card .form-control,
-.card .btn,
-.table {
+.card .btn {
   font-family: 'Poppins', sans-serif;
   font-size: 16px;
+}
+
+/* Título del formulario */
+.titulo-formulario {
+  background-color: #285846;
+  color: #fff;
+  text-align: center;
+  padding: 0.75rem 0;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  font-size: 1.25rem; 
+  font-weight: 600;   
 }
 
 /* Fondo de la tarjeta */
@@ -16,35 +31,6 @@
   background-color: #EDF1EF;
   border-radius: 0.5rem;
   overflow: hidden;
-}
-
-/* Título del componente (idéntico al formulario anterior) */
-.titulo-formulario {
-  background-color: #285846;
-  color: #fff;
-  text-align: center;
-  padding: 0.75rem 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-}
-
-/* Estilos de encabezado de la tabla de incidencias */
-.incidents-table th {
-  background-color: #285846;
-  color: #fff;
-  font-weight: 500;
-}
-
-/* Alineación vertical de celdas */
-.incidents-table td {
-  vertical-align: middle;
-}
-
-/* Ajuste de botones en la tabla de incidencias */
-.incidents-table .btn {
-  font-size: 0.9rem;
 }
 
 /* Modal backdrop */
@@ -96,61 +82,93 @@
 .form-control:focus,
 .form-select:focus {
   border-color: #28a745;
-  box-shadow: 0 0 0 0.2rem rgba(40, 168, 69, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(40,168,69, .25);
   outline: none;
 }
 
+/* Estilos de encabezado de la tabla resumen */
+.incidents-table-r th {
+  background-color: #285846;
+  color: #fff;
+  font-weight: 500;
+}
 
+/* Bordes redondeados y sombra en la tabla de incidencias */
+.incidents-table-r {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+}
 
-/* 1. Al recibir foco, quitamos outline y box-shadow azul; 
-   pero NO le ponemos fondo verde a los inactivos */
+/* Alineación vertical de celdas */
+.incidents-table-r td {
+  vertical-align: middle;
+}
+
+/* Ajuste de botones en la tabla de incidencias */
+.incidents-table-r .btn {
+  font-size: 0.9rem;
+}
+
+/* Estilos de encabezado de la tabla de incidencias */
+.incidents-table th {
+  background-color: #285846;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Bordes redondeados y sombra en la tabla de incidencias */
+.incidents-table {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* Alineación vertical de celdas */
+.incidents-table td {
+  vertical-align: middle;
+}
+
+/* Ajuste de botones en la tabla de incidencias */
+.incidents-table .btn {
+  font-size: 0.9rem;
+}
+
+/* Paginación igual que mis incidencias */
 .pagination .page-link:focus {
   outline: none !important;
   box-shadow: none !important;
   background-color: transparent !important;
-  color: #28a745 !important;       /* obligamos el texto verde en el caso inactivo */
-  border-color: #28a745 !important; /* borde verde */
+  color: #28a745 !important;
+  border-color: #28a745 !important;
 }
-
-/* 2. SOLO si el <li> padre está activo, queremos que el fondo verde permanezca en focus */
-.pagination .page-item.active .page-link:focus {
-  background-color: #28a745 !important; /* verde */
-  border-color:     #28a745 !important; /* verde */
-  color:            #fff    !important; /* texto blanco */
-}
-
-/* 3. Aseguramos también que, aunque pierda el foco, la página activa se vea siempre en verde */
+.pagination .page-item.active .page-link:focus,
 .pagination .page-item.active .page-link {
-  background-color: #28a745 !important; /* verde */
-  border-color:     #28a745 !important; /* verde */
-  color:            #fff    !important; /* texto blanco */
+  background-color: #28a745 !important;
+  border-color:     #28a745 !important;
+  color:            #fff    !important;
 }
 
 .sortable-header {
   cursor: pointer;
   user-select: none;
-  /* Ocultamos la línea cuando no está hover */
   text-decoration: underline;
   text-decoration-color: transparent;
-  /* Ajustes de grosor y separación */
-  text-decoration-thickness: 3px;   /* grosor de 3px */
-  text-underline-offset: 4px;       /* separación de 4px */
-  transition:
-    text-decoration-color 0.2s,
-    text-underline-offset 0.2s;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s;
 }
 
 .sortable-header:hover {
-  /* Color blanco sólo al pasar el ratón */
   text-decoration-color: #fff;
-  /* Opcionalmente puedes jugar con offset al hover:
-  text-underline-offset: 6px;
-  */
 }
 
 /* ============================= */
-/* Estilos responsivos estilo “tarjeta” para .incidents-table en móvil */
+/* Estilos responsivos para móvil */
+/* Convierte cada fila de .incidents-table en bloque-tarjeta */
 /* ============================= */
+
+/* Aplica en pantallas pequeñas (hasta 576px de ancho) */
 @media (max-width: 576px) {
   /* Ocultar la cabecera */
   .incidents-table thead {
@@ -177,6 +195,7 @@
     padding: 0.5rem;
     position: relative;
     text-align: left;
+    /* Evitar que se mezclen valores largos */
     word-break: break-word;
   }
   /* Mostrar etiqueta mediante data-label */
@@ -185,6 +204,7 @@
     font-weight: 600;
     display: inline-block;
     width: 35%;
+    /* Si quieres que el valor empiece en siguiente línea, podrías usar display: block; */
   }
   /* Ajuste específico para columna Acción: que los botones estén a la derecha */
   .incidents-table td[data-label="Acción"] {
@@ -223,11 +243,4 @@
     padding: 0.45rem 0.9rem;
     line-height: 1;
   }
-}
-
-
-/* Forzar verde en el texto de paginación incluso antes de que Angular calcule clases */
-.pagination .page-link {
-  color: #28a745 !important;
-  transition: none !important; /* opcional: desactiva cualquier animación de color */
 }

@@ -24,6 +24,6 @@ export class ToastService {
     setTimeout(() => {
       this.toasts = this.toasts.filter(t => t !== newToast);
       this.toastsSubject.next(this.toasts);
-    }, 5000);
+    }, 3000);
   }
 }
