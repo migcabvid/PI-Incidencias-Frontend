@@ -1,14 +1,64 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Incidencia } from '../../services/incidencia.service';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PdfService {
+  private logoBase64: string | null = null;
 
-  constructor() { }
+  constructor(private http: HttpClient) {
+    this.cargarLogo();
+  }
+
+  private cargarLogo(): void {
+    this.http.get('assets/images/logo.png', { responseType: 'blob' })
+      .subscribe({
+        next: (blob) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            this.logoBase64 = reader.result as string;
+          };
+          reader.readAsDataURL(blob);
+        },
+        error: (error) => {
+          console.warn('No se pudo cargar el logo:', error);
+          this.logoBase64 = null;
+        }
+      });
+  }
+
+  private obtenerLogoBase64(): Observable<string> {
+    return new Observable(observer => {
+      if (this.logoBase64) {
+        observer.next(this.logoBase64);
+        observer.complete();
+      } else {
+        this.http.get('assets/images/logo.png', { responseType: 'blob' })
+          .subscribe({
+            next: (blob) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const base64 = reader.result as string;
+                this.logoBase64 = base64;
+                observer.next(base64);
+                observer.complete();
+              };
+              reader.readAsDataURL(blob);
+            },
+            error: (error) => {
+              console.warn('No se pudo cargar el logo:', error);
+              observer.next('');
+              observer.complete();
+            }
+          });
+      }
+    });
+  }
 
   generarPdfIncidencias(
     incidencias: Incidencia[], 
@@ -16,106 +66,128 @@ export class PdfService {
     fechaDesde?: string, 
     fechaHasta?: string
   ): void {
+    this.obtenerLogoBase64().subscribe(logoBase64 => {
+      this.crearPDF(incidencias, tipoReporte, fechaDesde, fechaHasta, logoBase64);
+    });
+  }
+
+  private crearPDF(
+    incidencias: Incidencia[], 
+    tipoReporte: string, 
+    fechaDesde?: string, 
+    fechaHasta?: string,
+    logoBase64?: string
+  ): void {
     const doc = new jsPDF();
     
-    // Configurar fuentes
-    doc.setFont('helvetica');
+    // Agregar logo en la esquina superior izquierda
+    if (logoBase64) {
+      try {
+        doc.addImage(logoBase64, 'PNG', 15, 15, 25, 25);
+      } catch (error) {
+        console.warn('Error al añadir logo:', error);
+        this.dibujarLogoSimulado(doc);
+      }
+    } else {
+      this.dibujarLogoSimulado(doc);
+    }
     
-    // Logo/Encabezado (simulado - ajusta según tu logo)
-    this.agregarEncabezado(doc);
-    
-    // Título principal
-    doc.setFontSize(16);
+    // Título principal centrado
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('INCIDENCIAS', 105, 60, { align: 'center' });
+    doc.text('INCIDENCIAS', 105, 30, { align: 'center' });
     
-    // Subtítulo
-    doc.setFontSize(12);
-    doc.text('REGISTRO DE INCIDENCIAS (ESTADO)', 20, 75);
+    // Subtítulo dinámico con el estado específico
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
     
-    // Información de fechas
+    // CAMBIO: Usar el tipoReporte dinámicamente
+    let estadoTexto = tipoReporte;
+    // Limpiar el texto para obtener solo el estado principal
+    if (tipoReporte.includes('(Filtrado por fecha)')) {
+      estadoTexto = tipoReporte.replace(' (Filtrado por fecha)', '');
+    }
+    if (tipoReporte.includes('Tabla filtrada')) {
+      estadoTexto = tipoReporte.split('(')[1]?.split(')')[0] || tipoReporte;
+    }
+    
+    doc.text(`REGISTRO DE INCIDENCIAS (${estadoTexto.toUpperCase()})`, 20, 45);
+    
+    // Información de fechas en la misma línea
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     const fechaDesdeTexto = fechaDesde || 'dd/MM/yyyy';
     const fechaHastaTexto = fechaHasta || 'dd/MM/yyyy';
-    doc.text(`Fecha desde: ${fechaDesdeTexto}`, 20, 85);
-    doc.text(`Fecha hasta: ${fechaHastaTexto}`, 120, 85);
-    
-    // Información del tipo de reporte
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Tipo de reporte: ${tipoReporte}`, 20, 95);
-    doc.text(`Total de registros: ${incidencias.length}`, 120, 95);
+    doc.text(`Fecha desde: ${fechaDesdeTexto}`, 20, 55);
+    doc.text(`Fecha hasta: ${fechaHastaTexto}`, 120, 55);
     
     // Preparar datos para la tabla
     const tableData = incidencias.map(inc => [
       inc.idIncidencia,
       inc.tipoIncidencia || 'N/A',
       inc.estado || 'N/A',
-      this.truncateText(inc.descripcion, 30),
+      this.truncateText(inc.descripcion, 35),
       this.formatearFecha(inc.fechaIncidencia),
-      this.truncateText(inc.resolucion || 'N/A', 25)
+      this.truncateText(inc.resolucion || 'N/A', 30)
     ]);
     
-    // Crear tabla
+    // Crear tabla con estilo similar a tu imagen
     autoTable(doc, {
       head: [['ID', 'Tipo', 'Estado', 'Descripción', 'Fecha', 'Resolución']],
       body: tableData,
-      startY: 105,
+      startY: 65, // AJUSTAR: Reducir Y porque eliminamos la línea
+      theme: 'grid',
       styles: {
-        fontSize: 8,
-        cellPadding: 3,
+        fontSize: 9,
+        cellPadding: 4,
+        lineColor: [128, 128, 128],
+        lineWidth: 0.5,
       },
       headStyles: {
-        fillColor: [76, 175, 80], // Verde similar al de tu imagen
+        fillColor: [22, 96, 78], // Color #16604E en RGB
         textColor: 255,
-        fontStyle: 'bold'
+        fontStyle: 'bold',
+        fontSize: 10,
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { cellWidth: 25, halign: 'center' },
+        1: { cellWidth: 25, halign: 'center' },
+        2: { cellWidth: 20, halign: 'center' },
+        3: { cellWidth: 50, halign: 'left' },
+        4: { cellWidth: 25, halign: 'center' },
+        5: { cellWidth: 40, halign: 'left' }
       },
       alternateRowStyles: {
         fillColor: [245, 245, 245]
       },
-      columnStyles: {
-        0: { cellWidth: 25 }, // ID
-        1: { cellWidth: 20 }, // Tipo  
-        2: { cellWidth: 20 }, // Estado
-        3: { cellWidth: 50 }, // Descripción
-        4: { cellWidth: 25 }, // Fecha
-        5: { cellWidth: 45 }  // Resolución
-      },
       margin: { left: 15, right: 15 },
-      tableWidth: 'auto'
+      didDrawPage: (data) => {
+        this.agregarPiePagina(doc, data.pageNumber, doc.getNumberOfPages());
+      }
     });
     
-    // Pie de página
-    this.agregarPiePagina(doc);
-    
     // Descargar el PDF
-    const nombreArchivo = `incidencias_${tipoReporte.toLowerCase().replace(' ', '_')}_${this.obtenerFechaActual()}.pdf`;
+    const nombreArchivo = `incidencias_${this.limpiarNombreArchivo(estadoTexto)}_${this.obtenerFechaActual()}.pdf`;
     doc.save(nombreArchivo);
   }
   
-  private agregarEncabezado(doc: jsPDF): void {
-    // Logo simulado (círculo con texto)
-    doc.circle(30, 30, 15);
-    doc.setFontSize(8);
-    doc.text('LOGO', 30, 32, { align: 'center' });
-    
-    // Información institucional (ajusta según tus datos)
-    doc.setFontSize(10);
+  private dibujarLogoSimulado(doc: jsPDF): void {
+    // Logo simulado como fallback - círculo más parecido a tu imagen
+    doc.setDrawColor(100, 100, 100);
+    doc.setLineWidth(1);
+    doc.circle(27.5, 27.5, 12);
+    doc.setFontSize(6);
     doc.setFont('helvetica', 'bold');
-    doc.text('INSTITUCIÓN EDUCATIVA', 55, 25);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text('Sistema de Gestión de Incidencias', 55, 32);
-    doc.text('Generado el: ' + new Date().toLocaleDateString('es-ES'), 55, 38);
+    doc.text('LOGO', 27.5, 29, { align: 'center' });
   }
   
-  private agregarPiePagina(doc: jsPDF): void {
-    const pageCount = doc.getNumberOfPages();
+  private agregarPiePagina(doc: jsPDF, paginaActual: number, totalPaginas: number): void {
     const pageHeight = doc.internal.pageSize.height;
     
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Página 1 de ${pageCount}`, 105, pageHeight - 10, { align: 'center' });
+    doc.text(`Página ${paginaActual} de ${totalPaginas}`, 105, pageHeight - 10, { align: 'center' });
   }
   
   private formatearFecha(fecha: string): string {
@@ -135,5 +207,12 @@ export class PdfService {
   
   private obtenerFechaActual(): string {
     return new Date().toISOString().split('T')[0];
+  }
+  
+  private limpiarNombreArchivo(nombre: string): string {
+    return nombre.toLowerCase()
+      .replace(/[^a-z0-9]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
   }
 }
