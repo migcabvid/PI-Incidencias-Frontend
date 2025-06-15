@@ -54,15 +54,6 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
 
   zoomImageUrl: string | null = null;
 
-  @ViewChild('paginationList', { static: true })
-  paginationList!: ElementRef<HTMLUListElement>;
-
-  maxPageLinks = 5;
-  currentChunk = 0;
-  totalChunks = 1;
-
-  zoomImageUrl: string | null = null;
-
   // Nueva propiedad para rastrear el filtro actual
   filtroActual: string = 'En proceso';
   fechaDesdeActual: string = '';
