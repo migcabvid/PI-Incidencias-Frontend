@@ -1,3 +1,5 @@
+// src/app/services/pdf.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import jsPDF from 'jspdf';
@@ -40,6 +42,7 @@ export class PdfService {
         observer.next(this.logoBase64);
         observer.complete();
       } else {
+        // Si aún no está cargado, intentar cargar de nuevo
         this.http.get('assets/images/logo.png', { responseType: 'blob' })
           .subscribe({
             next: (blob) => {
@@ -62,6 +65,7 @@ export class PdfService {
     });
   }
 
+  /** (Opcional) Método alternativo basado en fetch, no usado si se emplea HttpClient */
   private cargarLogoComoBase64(): Promise<string> {
     return fetch('assets/images/logo.png')
       .then(res => res.blob())
@@ -149,6 +153,7 @@ export class PdfService {
     const tableWidth = 190; // Más grande, casi todo el ancho de la hoja
     const margin = (pageWidth - tableWidth) / 2;
 
+    // Dibujar la tabla sin usar didDrawPage para footer
     autoTable(doc, {
       head: [['ID', 'Tipo', 'Estado', 'Descripción', 'Fecha', 'Resolución']],
       body: tableData,
@@ -182,13 +187,20 @@ export class PdfService {
         fillColor: [245, 245, 245]
       },
       margin: { left: margin, right: margin },
-      tableWidth: tableWidth,
-      didDrawPage: (data) => {
-        this.agregarPiePagina(doc, data.pageNumber, doc.getNumberOfPages());
-      }
+      tableWidth: tableWidth
+      // NO usar didDrawPage aquí
     });
 
-    // Descargar el PDF
+    // Tras dibujar la tabla, conocer el total real de páginas:
+    const totalPages = doc.getNumberOfPages();
+
+    // Insertar pie de página en cada página:
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      this.agregarPiePagina(doc, i, totalPages);
+    }
+
+    // Descargar / abrir el PDF
     const nombreArchivo = `incidencias_${this.limpiarNombreArchivo(estadoTexto)}_${this.obtenerFechaActual()}.pdf`;
     const blobUrl = doc.output('bloburl');
     window.open(blobUrl, '_blank');
@@ -200,8 +212,6 @@ export class PdfService {
 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-
-    // Alinear paginación a la derecha
     doc.text(
       `Página ${paginaActual} de ${totalPaginas}`,
       pageWidth - 15, // X: 15mm desde el borde derecho
