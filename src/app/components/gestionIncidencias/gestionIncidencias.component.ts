@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
-import { PdfService } from '../../services/pdf.service'; // ← Importar el servicio
+import { PdfService } from '../../services/pdf.service';
 
 @Component({
   selector: 'app-gestion-incidencias',
@@ -12,8 +11,8 @@ import { PdfService } from '../../services/pdf.service'; // ← Importar el serv
   templateUrl: './gestionIncidencias.component.html',
   styleUrls: ['./gestionIncidencias.component.css']
 })
-export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
-  summaryBaseData: Incidencia[] = []; // Solo filtrado por fecha EN PROCESO
+export class GestionIncidenciasComponent implements OnInit {
+  summaryBaseData: Incidencia[] = [];
   isDateDesc = true;
   isLoading = true;
   summaryData = [
@@ -29,7 +28,6 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
   showSuccessModal = false;
   showDetailModal = false;
   mostrarModalSolucion = false;
-
   showResolveModal = false;
 
   incidenciaAEliminar: Incidencia | null = null;
@@ -40,57 +38,43 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
 
   filtroFechaActivo = false;
 
-  pageSize: number = 7;
+  pageSize: number = 1;
   currentPage: number = 1;
   totalPages: number = 1;
   pagedIncidents: Incidencia[] = [];
 
-  @ViewChild('paginationList', { static: true })
-  paginationList!: ElementRef<HTMLUListElement>;
-
-  maxPageLinks = 5;
-  currentChunk = 0;
-  totalChunks = 1;
-
   zoomImageUrl: string | null = null;
 
-  // Nueva propiedad para rastrear el filtro actual
+  // Para PDF y filtros
   filtroActual: string = 'En proceso';
   fechaDesdeActual: string = '';
   fechaHastaActual: string = '';
-
-  // Nueva propiedad para rastrear qué tipo de PDF se quiere generar
   tipoReporteActivo: string = 'En proceso';
 
   constructor(
     private incidenciaService: IncidenciaService,
-    private pdfService: PdfService // ← Inyectar el servicio PDF
+    private pdfService: PdfService
   ) { }
 
   ngOnInit(): void {
     this.isLoading = true;
-    // 1) Cargar TODAS las incidencias (DTO) para el resumen
     this.incidenciaService.listarTodas().subscribe({
       next: data => {
         this.isLoading = false;
-        // data: array con todas las incidencias del backend
-        // Ordenamos por fecha descendente e ID descendente si fechas iguales:
+        // Ordena por fecha descendente e ID descendente
         const sortedAll = data.sort((a, b) => {
           const tA = new Date(a.fechaIncidencia).getTime();
           const tB = new Date(b.fechaIncidencia).getTime();
           if (tA !== tB) return tB - tA;
           return Number(b.idIncidencia) - Number(a.idIncidencia);
         });
-        // summaryBaseData para el conteo: todas las incidencias
         this.summaryBaseData = [...sortedAll];
-        console.log(this.summaryBaseData);
         this.updateSummary();
 
-        // 2) Para la tabla de incidencias inicialmente, mostrar solo "En proceso"
+        // Mostrar inicialmente solo "En proceso"
         this.incidentsData = sortedAll.filter(i => i.estado?.toLowerCase() === 'en proceso');
         this.filteredIncidents = [...this.incidentsData];
         this.setupPagination();
-
       },
       error: err => {
         console.error(err);
@@ -99,12 +83,9 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
     });
   }
 
-
   updateSummary(): void {
-    const enProcesoCount = this.summaryBaseData.filter(
-      i => i.estado?.toLowerCase() === 'en proceso').length;
-    const solucionadaCount = this.summaryBaseData.filter(
-      i => i.estado?.toLowerCase() === 'solucionada').length;
+    const enProcesoCount = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'en proceso').length;
+    const solucionadaCount = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'solucionada').length;
     this.summaryData = [
       { type: 'En proceso', count: enProcesoCount },
       { type: 'Solucionada', count: solucionadaCount },
@@ -112,31 +93,49 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
     ];
   }
 
+  private setupPagination(): void {
+    this.totalPages = Math.ceil(this.filteredIncidents.length / this.pageSize) || 1;
+    // Asegura currentPage en rango [1..totalPages]
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+    if (this.currentPage < 1) this.currentPage = 1;
+    this.updatePagedIncidents();
+  }
 
-
-  setupPagination(): void {
-  this.totalPages = Math.ceil(this.filteredIncidents.length / this.pageSize) || 1;
-  this.currentPage = Math.min(Math.max(this.currentPage, 1), this.totalPages);
-  this.currentChunk = 0;
-  this.updateChunks();
-  this.updatePagedIncidents();
-}
-
-  updatePagedIncidents(): void {
+  private updatePagedIncidents(): void {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     this.pagedIncidents = this.filteredIncidents.slice(startIndex, endIndex);
   }
 
   goToPage(page: number): void {
-  if (page < 1 || page > this.totalPages) return;
-  this.currentPage = page;
-  const newChunk = Math.floor((page - 1) / this.maxPageLinks);
-  if (newChunk !== this.currentChunk) {
-    this.currentChunk = newChunk;
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.updatePagedIncidents();
   }
-  this.updatePagedIncidents();
-}
+
+  /**
+   * Ventana fija de hasta 5 páginas:
+   * - Si totalPages ≤ 5: [1..totalPages]
+   * - Si currentPage ≤ 3: [1,2,3,4,5]
+   * - Si currentPage > totalPages - 3: [totalPages-4..totalPages]
+   * - En otro caso: [currentPage-2..currentPage+2]
+   */
+  public getVisiblePages(): number[] {
+    const total = this.totalPages;
+    const current = this.currentPage;
+    const maxVisible = 5;
+
+    if (total <= maxVisible) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    if (current <= 3) {
+      return [1, 2, 3, 4, 5];
+    }
+    if (current > total - 3) {
+      return Array.from({ length: maxVisible }, (_, i) => total - (maxVisible - 1) + i);
+    }
+    return [current - 2, current - 1, current, current + 1, current + 2];
+  }
 
   openDeleteModal(inc: Incidencia): void {
     this.incidenciaAEliminar = inc;
@@ -155,12 +154,8 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
       this.incidenciaAEliminar.dniProfesor
     ).subscribe({
       next: () => {
-        this.incidentsData = this.incidentsData.filter(
-          i => i.idIncidencia !== this.incidenciaAEliminar?.idIncidencia
-        );
-        this.filteredIncidents = this.filteredIncidents.filter(
-          i => i.idIncidencia !== this.incidenciaAEliminar?.idIncidencia
-        );
+        this.incidentsData = this.incidentsData.filter(i => i.idIncidencia !== this.incidenciaAEliminar?.idIncidencia);
+        this.filteredIncidents = this.filteredIncidents.filter(i => i.idIncidencia !== this.incidenciaAEliminar?.idIncidencia);
         this.showModal = false;
         this.showSuccessModal = true;
         this.incidenciaAEliminar = null;
@@ -176,7 +171,6 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
   }
 
   openDetailModal(inc: Incidencia): void {
-    console.log(inc);
     this.zoomImageUrl = null;
     this.incidenciaDetalle = inc;
     this.showDetailModal = true;
@@ -208,20 +202,15 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
       this.resolucion
     ).subscribe({
       next: updated => {
-        // Actualizar localmente estado y resolución
-        this.incidenciaAResolver!.estado = updated.estado;
-        this.incidenciaAResolver!.resolucion = updated.resolucion;
-        // Si está en summaryBaseData (solo incidencias en proceso), al estar resuelta deberíamos quitarla:
+        // Actualiza localmente y quita de listas si corresponde
         this.summaryBaseData = this.summaryBaseData.filter(i =>
           !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
         );
         this.filteredIncidents = this.filteredIncidents.filter(i =>
           !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
         );
-
-        this.showResolveModal = true;     // ← lo mostramos
+        this.showResolveModal = true;
         setTimeout(() => this.showResolveModal = false, 1500);
-
         this.setupPagination();
         this.updateSummary();
         this.cerrarModalSolucion();
@@ -233,38 +222,23 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
     });
   }
 
-  /**
-   * Método para generar PDF de un tipo específico desde el resumen
-   */
   generarPDFPorTipo(tipoReporte: string): void {
-    // Obtener los datos correspondientes al tipo de reporte
     let datosParaPdf: Incidencia[] = [];
-
     if (tipoReporte === 'Totales') {
       datosParaPdf = [...this.summaryBaseData];
     } else if (tipoReporte === 'Solucionada') {
-      datosParaPdf = this.summaryBaseData.filter(
-        i => i.estado?.toLowerCase() === 'solucionada'
-      );
+      datosParaPdf = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'solucionada');
     } else if (tipoReporte === 'En proceso') {
-      datosParaPdf = this.summaryBaseData.filter(
-        i => i.estado?.toLowerCase() === 'en proceso'
-      );
+      datosParaPdf = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'en proceso');
     }
-
-    // Determinar el tipo de reporte con información de fechas si aplica
     let tipoReporteConFecha = tipoReporte;
     if (this.filtroFechaActivo) {
       tipoReporteConFecha += ' (Filtrado por fecha)';
     }
-
-    // Formatear fechas para el PDF si hay filtro activo
-    const fechaDesdeFormateada = this.fechaDesdeActual ?
-      new Date(this.fechaDesdeActual).toLocaleDateString('es-ES') : undefined;
-    const fechaHastaFormateada = this.fechaHastaActual ?
-      new Date(this.fechaHastaActual).toLocaleDateString('es-ES') : undefined;
-
-    // Generar el PDF
+    const fechaDesdeFormateada = this.fechaDesdeActual
+      ? new Date(this.fechaDesdeActual).toLocaleDateString('es-ES') : undefined;
+    const fechaHastaFormateada = this.fechaHastaActual
+      ? new Date(this.fechaHastaActual).toLocaleDateString('es-ES') : undefined;
     this.pdfService.generarPdfIncidencias(
       datosParaPdf,
       tipoReporteConFecha,
@@ -273,23 +247,16 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
     );
   }
 
-  /**
-   * Método actualizado para generar PDF de los datos actualmente mostrados en la tabla
-   */
   generarPDF(): void {
-    // Este método ahora genera PDF de lo que está en la tabla de abajo
     const datosParaPdf = [...this.filteredIncidents];
-
     let tipoReporte = `Tabla filtrada (${this.tipoReporteActivo})`;
     if (this.filtroFechaActivo) {
       tipoReporte += ' - Con filtro de fecha';
     }
-
-    const fechaDesdeFormateada = this.fechaDesdeActual ?
-      new Date(this.fechaDesdeActual).toLocaleDateString('es-ES') : undefined;
-    const fechaHastaFormateada = this.fechaHastaActual ?
-      new Date(this.fechaHastaActual).toLocaleDateString('es-ES') : undefined;
-
+    const fechaDesdeFormateada = this.fechaDesdeActual
+      ? new Date(this.fechaDesdeActual).toLocaleDateString('es-ES') : undefined;
+    const fechaHastaFormateada = this.fechaHastaActual
+      ? new Date(this.fechaHastaActual).toLocaleDateString('es-ES') : undefined;
     this.pdfService.generarPdfIncidencias(
       datosParaPdf,
       tipoReporte,
@@ -298,41 +265,26 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
     );
   }
 
-  /**
-   * Método actualizado filtrarPorEstado para rastrear el tipo activo
-   */
   filtrarPorEstado(estado: string): void {
-    this.tipoReporteActivo = estado; // Rastrear el tipo activo
-
+    this.tipoReporteActivo = estado;
     if (estado === 'Totales') {
       this.filteredIncidents = [...this.summaryBaseData];
     } else if (estado === 'Solucionada') {
-      this.filteredIncidents = this.summaryBaseData.filter(
-        i => i.estado?.toLowerCase() === 'solucionada'
-      );
+      this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'solucionada');
     } else if (estado === 'En proceso') {
-      this.filteredIncidents = this.summaryBaseData.filter(
-        i => i.estado?.toLowerCase() === 'en proceso'
-      );
+      this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'en proceso');
     } else {
       this.filteredIncidents = [];
     }
-
     this.currentPage = 1;
     this.setupPagination();
   }
 
-  /**
-   * Filtrar por fecha - ÚNICA VERSIÓN
-   */
   filterByDate(from: HTMLInputElement, to: HTMLInputElement): void {
     let start = from.value;
     let end = to.value;
-
-    // Guardar las fechas actuales para el PDF
     this.fechaDesdeActual = start;
     this.fechaHastaActual = end;
-
     if (start && end) {
       const startDate = new Date(start);
       const endDate = new Date(end);
@@ -344,17 +296,13 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
         this.fechaHastaActual = end;
       }
     }
-
     this.filtroFechaActivo = !!start || !!end;
     this.isLoading = true;
-
     this.incidenciaService.filtrarPorFechas(start, end).subscribe({
       next: data => {
         this.isLoading = false;
         this.summaryBaseData = data;
         this.updateSummary();
-
-        // Aplicar automáticamente el filtro que estaba activo
         this.filtrarPorEstado(this.tipoReporteActivo);
       },
       error: err => {
@@ -364,9 +312,6 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
     });
   }
 
-  /**
-   * Filtrar por ID - ÚNICA VERSIÓN
-   */
   filterById(term: string): void {
     const q = term.trim().toLowerCase();
     this.filteredIncidents = this.incidentsData.filter(i =>
@@ -376,70 +321,29 @@ export class GestionIncidenciasComponent implements OnInit, AfterViewInit {
     this.setupPagination();
   }
 
-
   toggleDateSort(): void {
     this.isDateDesc = !this.isDateDesc;
-
     this.filteredIncidents.sort((a, b) => {
       const tA = new Date(a.fechaIncidencia).getTime();
       const tB = new Date(b.fechaIncidencia).getTime();
-
       if (tA !== tB) {
         return this.isDateDesc ? tB - tA : tA - tB;
       }
-
       return this.isDateDesc
         ? Number(b.idIncidencia) - Number(a.idIncidencia)
         : Number(a.idIncidencia) - Number(b.idIncidencia);
     });
-
+    this.currentPage = 1;
     this.setupPagination();
   }
 
-  ngAfterViewInit(): void {
-  this.calculateMaxLinks();
-}
+  /** Abre la imagen en grande */
+  zoomImage(fotoBase64: string) {
+    this.zoomImageUrl = 'data:image/jpeg;base64,' + fotoBase64;
+  }
 
-@HostListener('window:resize')
-onResize(): void {
-  this.calculateMaxLinks();
-}
-
-private calculateMaxLinks(): void {
-  const available = this.paginationList.nativeElement.clientWidth;
-  const approxLi = 40;
-  this.maxPageLinks = Math.max(1, Math.floor(available / approxLi) - 2);
-  this.updateChunks();
-}
-
-private updateChunks(): void {
-  this.totalChunks = Math.ceil(this.totalPages / this.maxPageLinks);
-  this.currentChunk = Math.min(this.currentChunk, this.totalChunks - 1);
-  if (this.currentChunk < 0) this.currentChunk = 0;
-}
-
-public getVisiblePages(): number[] {
-  const start = this.currentChunk * this.maxPageLinks;
-  const end = Math.min(start + this.maxPageLinks, this.totalPages);
-  return Array.from({ length: end - start }, (_, i) => start + i + 1);
-}
-
-prevChunk(): void {
-  if (this.currentChunk > 0) this.currentChunk--;
-}
-
-nextChunk(): void {
-  if (this.currentChunk < this.totalChunks - 1) this.currentChunk++;
-}
-
-/** Abre la imagen en grande */
-zoomImage(fotoBase64: string) {
-  this.zoomImageUrl = 'data:image/jpeg;base64,' + fotoBase64;
-}
-
-/** Cierra el overlay */
-closeZoom() {
-  this.zoomImageUrl = null;
-}
-
+  /** Cierra el overlay */
+  closeZoom() {
+    this.zoomImageUrl = null;
+  }
 }

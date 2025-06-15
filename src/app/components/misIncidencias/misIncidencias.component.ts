@@ -1,10 +1,6 @@
 import {
   Component,
-  OnInit,
-  AfterViewInit,
-  ViewChild,
-  ElementRef,
-  HostListener
+  OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
@@ -17,7 +13,7 @@ import { AuthService } from '../../auth.service';
   templateUrl: './misIncidencias.component.html',
   styleUrls: ['./misIncidencias.component.css']
 })
-export class MisIncidenciasComponent implements OnInit, AfterViewInit {
+export class MisIncidenciasComponent implements OnInit {
   isDateDesc = true;
   incidentsData: Incidencia[] = [];
   filteredIncidents: Incidencia[] = [];
@@ -37,20 +33,16 @@ export class MisIncidenciasComponent implements OnInit, AfterViewInit {
   showDetailModal = false;
   incidenciaDetalle: Incidencia | null = null;
 
-  // --- Chunked pagination ---
-  @ViewChild('paginationList', { static: true }) paginationList!: ElementRef<HTMLUListElement>;
-  maxPageLinks: number = 5;    // se recalculará según ancho
-  currentChunk: number = 0;    // índice del bloque actual
-  totalChunks: number = 1;
+  /** URL (o base64) de la imagen ampliada; null = nada abierto */
+  zoomImageUrl: string | null = null;
 
   constructor(
     private incidenciaService: IncidenciaService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.isLoading = true;
-
     this.authService.dniProfesor$.subscribe(dni => {
       this.dniProfesor = dni ?? '';
       this.incidenciaService.listarPorProfesor(this.dniProfesor).subscribe({
@@ -76,67 +68,8 @@ export class MisIncidenciasComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void {
-    this.calculateMaxLinks();
-  }
-
-  @HostListener('window:resize')
-  onResize(): void {
-    this.calculateMaxLinks();
-  }
-
-  private calculateMaxLinks(): void {
-    const ul = this.paginationList.nativeElement;
-    const available = ul.clientWidth;
-    // Ajusta el valor 40 si tus estilos hacen que cada <li> sea más ancho o estrecho
-    const approxLi = 40;
-    this.maxPageLinks = Math.max(1, Math.floor(available / approxLi) - 2);
-    this.updateChunks();
-  }
-
-  private updateChunks(): void {
-    this.totalChunks = Math.ceil(this.totalPages / this.maxPageLinks);
-    if (this.currentChunk >= this.totalChunks) {
-      this.currentChunk = this.totalChunks - 1;
-    }
-    if (this.currentChunk < 0) {
-      this.currentChunk = 0;
-    }
-  }
-
-  public getVisiblePages(): number[] {
-    const start = this.currentChunk * this.maxPageLinks;
-    const end = Math.min(start + this.maxPageLinks, this.totalPages);
-    return Array.from({ length: end - start }, (_, i) => start + i + 1);
-  }
-
-  goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-    // ajustar chunk si la página queda fuera del rango visible
-    const newChunk = Math.floor((page - 1) / this.maxPageLinks);
-    if (newChunk !== this.currentChunk) {
-      this.currentChunk = newChunk;
-    }
-    this.updatePagedIncidents();
-  }
-
-  prevChunk(): void {
-    if (this.currentChunk > 0) {
-      this.currentChunk--;
-    }
-  }
-
-  nextChunk(): void {
-    if (this.currentChunk < this.totalChunks - 1) {
-      this.currentChunk++;
-    }
-  }
-
-  setupPagination(): void {
+  private setupPagination(): void {
     this.totalPages = Math.ceil(this.filteredIncidents.length / this.pageSize) || 1;
-    this.currentChunk = 0;
-    this.updateChunks();
     if (this.currentPage > this.totalPages) {
       this.currentPage = this.totalPages;
     }
@@ -146,7 +79,7 @@ export class MisIncidenciasComponent implements OnInit, AfterViewInit {
     this.updatePagedIncidents();
   }
 
-  updatePagedIncidents(): void {
+  private updatePagedIncidents(): void {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     this.pagedIncidents = this.filteredIncidents.slice(startIndex, endIndex);
@@ -159,6 +92,40 @@ export class MisIncidenciasComponent implements OnInit, AfterViewInit {
     );
     this.currentPage = 1;
     this.setupPagination();
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.updatePagedIncidents();
+  }
+
+  /**
+   * Devuelve un array de números de página a mostrar en la paginación,
+   * con ventana de hasta 5 enlaces según la regla:
+   * - Si totalPages ≤ 5, mostrar [1..totalPages].
+   * - Si currentPage ≤ 3, mostrar [1,2,3,4,5].
+   * - Si currentPage > totalPages - 3, mostrar [totalPages-4..totalPages].
+   * - En otro caso, centrar currentPage: [current-2..current+2].
+   */
+  public getVisiblePages(): number[] {
+    const total = this.totalPages;
+    const current = this.currentPage;
+    const maxVisible = 5;
+
+    if (total <= maxVisible) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    if (current <= 3) {
+      return [1, 2, 3, 4, 5];
+    }
+    if (current > total - 3) {
+      // últimos 5
+      return Array.from({ length: maxVisible }, (_, i) => (total - (maxVisible - 1) + i));
+    }
+    // centrado
+    return [current - 2, current - 1, current, current + 1, current + 2];
   }
 
   openDeleteModal(incidencia: Incidencia): void {
@@ -225,15 +192,10 @@ export class MisIncidenciasComponent implements OnInit, AfterViewInit {
     this.setupPagination();
   }
 
-  /** URL (o base64) de la imagen ampliada; null = nada abierto */
-  zoomImageUrl: string | null = null;
-
-  /** Abre la imagen en grande */
   zoomImage(fotoBase64: string) {
     this.zoomImageUrl = 'data:image/jpeg;base64,' + fotoBase64;
   }
 
-  /** Cierra el overlay */
   closeZoom() {
     this.zoomImageUrl = null;
   }
