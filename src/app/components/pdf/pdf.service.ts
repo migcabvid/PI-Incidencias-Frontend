@@ -88,7 +88,6 @@ export class PdfService {
         doc.addImage(logoBase64, 'PNG', 15, 15, 25, 25);
       } catch (error) {
         console.warn('Error al añadir logo:', error);
-        // Si falla, simplemente no muestra logo
       }
     }
 
@@ -101,9 +100,7 @@ export class PdfService {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
 
-    // CAMBIO: Usar el tipoReporte dinámicamente
     let estadoTexto = tipoReporte;
-    // Limpiar el texto para obtener solo el estado principal
     if (tipoReporte.includes('(Filtrado por fecha)')) {
       estadoTexto = tipoReporte.replace(' (Filtrado por fecha)', '');
     }
@@ -113,7 +110,7 @@ export class PdfService {
 
     doc.text(`REGISTRO DE INCIDENCIAS (${estadoTexto.toUpperCase()})`, 20, 45);
 
-    // Información de fechas en la misma línea
+    // Información de fechas
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     const fechaDesdeTexto = fechaDesde || 'dd/MM/yyyy';
@@ -126,42 +123,50 @@ export class PdfService {
       inc.idIncidencia,
       inc.tipoIncidencia || 'N/A',
       inc.estado || 'N/A',
-      this.truncateText(inc.descripcion, 35),
+      inc.descripcion || 'N/A',
       this.formatearFecha(inc.fechaIncidencia),
-      this.truncateText(inc.resolucion || 'N/A', 30)
+      inc.resolucion || 'N/A'
     ]);
 
-    // Crear tabla con estilo similar a tu imagen
+    // Calcular márgenes para centrar la tabla
+    const pageWidth = doc.internal.pageSize.getWidth(); // 210mm para A4
+    const tableWidth = 165; // Suma de cellWidth de todas las columnas
+    const margin = (pageWidth - tableWidth) / 2;
+
     autoTable(doc, {
       head: [['ID', 'Tipo', 'Estado', 'Descripción', 'Fecha', 'Resolución']],
       body: tableData,
-      startY: 65, // AJUSTAR: Reducir Y porque eliminamos la línea
+      startY: 65,
       theme: 'grid',
       styles: {
-        fontSize: 9,
-        cellPadding: 4,
+        fontSize: 8,
+        cellPadding: 3,
         lineColor: [128, 128, 128],
         lineWidth: 0.5,
+        overflow: 'linebreak',
+        valign: 'top'
       },
       headStyles: {
-        fillColor: [22, 96, 78], // Color #16604E en RGB
+        fillColor: [22, 96, 78],
         textColor: 255,
         fontStyle: 'bold',
-        fontSize: 10,
-        halign: 'center'
+        fontSize: 9,
+        halign: 'center',
+        valign: 'middle'
       },
       columnStyles: {
-        0: { cellWidth: 25, halign: 'center' },
-        1: { cellWidth: 25, halign: 'center' },
-        2: { cellWidth: 20, halign: 'center' },
-        3: { cellWidth: 50, halign: 'left' },
-        4: { cellWidth: 25, halign: 'center' },
-        5: { cellWidth: 40, halign: 'left' }
+        0: { cellWidth: 22, halign: 'center', fontSize: 8 }, // ID
+        1: { cellWidth: 24, halign: 'center', fontSize: 8 }, // Tipo
+        2: { cellWidth: 24, halign: 'center', fontSize: 8 }, // Estado
+        3: { cellWidth: 42, halign: 'left', overflow: 'linebreak', fontSize: 8 }, // Descripción
+        4: { cellWidth: 22, halign: 'center', fontSize: 8 }, // Fecha
+        5: { cellWidth: 31, halign: 'left', overflow: 'linebreak', fontSize: 8 } // Resolución
       },
       alternateRowStyles: {
         fillColor: [245, 245, 245]
       },
-      margin: { left: 15, right: 15 },
+      margin: { left: margin, right: margin },
+      tableWidth: tableWidth,
       didDrawPage: (data) => {
         this.agregarPiePagina(doc, data.pageNumber, doc.getNumberOfPages());
       }
