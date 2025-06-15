@@ -28,11 +28,18 @@ export class AppComponent implements OnInit {
     // Comprueba sesión en el backend; si falla, redirige a login
     this.auth.checkSession().subscribe({
       next: () => {
-        // Si estamos en /login y la sesión es válida, vamos a crearIncidencia
-        if (this.router.url === '/login') {
-        this.router.navigate(['/crearIncidencia']);
+      if (this.router.url === '/' || this.router.url === '/login') {
+
+        const rol = (this.auth.activeRole || '').toLowerCase();
+        const gestion = ['coordinadortic', 'equipodirectivo']
+                        .includes(rol);
+
+        this.router.navigate([
+          gestion ? '/gestionIncidencias'
+                  : '/crearIncidencia'
+        ]);
       }
-      },
+    },
       error: () => {
         this.router.navigate(['/login']);
       }

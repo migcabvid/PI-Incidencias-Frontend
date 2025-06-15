@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   Router, RouterModule,
@@ -41,7 +41,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   constructor(
     private auth: AuthService,
     private incidenciaService: IncidenciaService,
-    private router: Router
+    private router: Router,
+    private cd: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -58,6 +59,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
       } else {
         // Si no es gestión, opcionalmente limpiar conteo
         this.countEnProceso = 0;
+      }
+    });
+
+    this.router.events.pipe(
+      filter(ev => ev instanceof NavigationEnd)
+    ).subscribe((ev: NavigationEnd) => {
+      this.setFlags(ev.urlAfterRedirects);
+      this.cd.detectChanges();      // <-- fuerza el repaint YA
+      if (this.isGestionRole && ev.urlAfterRedirects.includes('gestionIncidencias')) {
+        this.fetchCountEnProceso();
       }
     });
 

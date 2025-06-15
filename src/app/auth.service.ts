@@ -1,4 +1,3 @@
-// src/app/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -112,4 +111,8 @@ export class AuthService {
   get dniProfesor(): string | null {
     return this.dniSubject.getValue();
   }
+
+  get activeRole(): string | null {
+  return this.activeRoleSubject.getValue();
+}
 }
