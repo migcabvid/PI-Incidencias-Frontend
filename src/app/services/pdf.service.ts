@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Incidencia } from '../../services/incidencia.service';
+import { Incidencia } from './incidencia.service';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -62,6 +62,17 @@ export class PdfService {
     });
   }
 
+  private cargarLogoComoBase64(): Promise<string> {
+    return fetch('assets/images/logo.png')
+      .then(res => res.blob())
+      .then(blob => new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      }));
+  }
+
   generarPdfIncidencias(
     incidencias: Incidencia[],
     tipoReporte: string,
@@ -82,10 +93,10 @@ export class PdfService {
   ): void {
     const doc = new jsPDF();
 
-    // Agregar logo real si está disponible
+    // Logo más pequeño y más arriba a la izquierda
     if (logoBase64) {
       try {
-        doc.addImage(logoBase64, 'PNG', 15, 15, 25, 25);
+        doc.addImage(logoBase64, 'PNG', 10, 6, 20, 20); // X=10, Y=6, ancho=20, alto=20
       } catch (error) {
         console.warn('Error al añadir logo:', error);
       }
@@ -94,7 +105,12 @@ export class PdfService {
     // Título principal centrado
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('INCIDENCIAS', 105, 30, { align: 'center' });
+    doc.text('INCIDENCIAS', 105, 25, { align: 'center' }); // Título un poco más arriba
+
+    // Línea de separación debajo del logo y el título
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.5);
+    doc.line(10, 32, 200, 32); // Línea más arriba
 
     // Subtítulo dinámico con el estado específico
     doc.setFontSize(11);

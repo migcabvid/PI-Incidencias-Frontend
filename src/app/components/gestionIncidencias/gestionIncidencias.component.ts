@@ -3,7 +3,7 @@ import { AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
-import { PdfService } from '../pdf/pdf.service'; // ← Importar el servicio
+import { PdfService } from '../../services/pdf.service'; // ← Importar el servicio
 
 @Component({
   selector: 'app-gestion-incidencias',
