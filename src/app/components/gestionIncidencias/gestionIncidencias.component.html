@@ -40,15 +40,18 @@
                 </tr>
               </thead>
               <tbody>
+                <!-- SOLO DATOS DINÁMICOS -->
                 <tr *ngFor="let s of summaryData">
-                  <td>{{ s.type }}</td>
-                  <td>{{ s.count }}</td>
+                  <td>{{s.type}}</td>
+                  <td>{{s.count}}</td>
                   <td>
-                    <div class="d-flex flex-column flex-sm-row gap-1">
-                      <button class="btn btn-sm btn-success " (click)="filtrarPorEstado(s.type)">
-                        <i class="bi bi-plus-lg"></i>
-                      </button>
-                      <button class="btn btn-sm btn-success ">
+                    <div class="d-flex justify-content-center">
+                      <button type="button" class="btn btn-sm btn-success me-2"
+                        style="min-width: 36px; min-height: 36px;"
+                        (click)="filtrarPorEstado(s.type)">+</button>
+                      <button type="button" class="btn btn-sm btn-success"
+                        style="min-width: 36px; min-height: 36px;"
+                        (click)="generarPDFPorTipo(s.type)">
                         <i class="bi bi-filetype-pdf"></i>
                       </button>
                     </div>
@@ -339,12 +342,14 @@
             </div>
 
             <!-- Modal de resolución exitosa -->
-            <div *ngIf="showResolveModal" class="modal fade show d-block custom-modal-backdrop" (click)="showResolveModal = false">
+            <div *ngIf="showResolveModal" class="modal fade show d-block custom-modal-backdrop"
+              (click)="showResolveModal = false">
               <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
                 <div class="modal-content custom-modal-content">
                   <div class="modal-header custom-modal-header">
                     <h5 class="modal-title flex-grow-1 text-center">Resolución</h5>
-                    <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="showResolveModal = false">
+                    <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar"
+                      (click)="showResolveModal = false">
                       <i class="bi bi-x-circle-fill"></i>
                     </button>
                   </div>
