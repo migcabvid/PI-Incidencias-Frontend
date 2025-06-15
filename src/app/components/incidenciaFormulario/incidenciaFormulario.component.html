@@ -1,6 +1,6 @@
-<main class="container py-5">
+<main class="container py-3">
   <div class="row justify-content-center">
-    <div class="col-12 col-lg-10">
+    <div class="col-lg-8">
       <div class="card shadow-sm">
         <!-- Título dentro de la misma caja del formulario -->
         <div class="titulo-formulario">
@@ -90,7 +90,6 @@
                 </div>
 
                 <!-- B) MÓVIL: solo aparece en anchos ≤576px -->
-                <!-- ¡OJO! No dejamos aquí ninguna clase de Bootstrap que haga always display:flex -->
                 <div class="mobile-only">
                   <button
                     type="button"
@@ -140,24 +139,34 @@
   </div>
 </main>
 
-<!-- Modal de confirmación -->
-<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal">
-  <div class="modal-dialog modal-dialog-centered">
+<!-- Modal de éxito -->
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal" (click)="closeSuccessModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content custom-modal-content">
-      <!-- HEADER -->
       <div class="modal-header custom-modal-header">
         <h5 class="modal-title flex-grow-1 text-center">Mensaje</h5>
-        <button
-          type="button"
-          class="btn-close custom-btn-close"
-          aria-label="Cerrar"
-          (click)="closeModal()"
-        >
+        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="closeSuccessModal()">
           <i class="bi bi-x-circle-fill"></i>
         </button>
       </div>
-      <!-- BODY -->
       <div class="modal-body text-center custom-modal-body">Incidencia enviada.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de error -->
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showErrorModal" (click)="closeErrorModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content custom-modal-content">
+      <div class="modal-header custom-modal-header">
+        <h5 class="modal-title flex-grow-1 text-center">Error</h5>
+        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="closeErrorModal()">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+      <div class="modal-body text-center custom-modal-body">
+        {{ errorMessage }}
+      </div>
     </div>
   </div>
 </div>

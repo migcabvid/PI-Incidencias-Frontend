@@ -6,7 +6,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastService } from '../toast/toast.service';
 import { IncidenciaService, Incidencia } from '../../services/incidencia.service';
 import { AuthService } from '../../auth.service';
 import { take, filter, switchMap } from 'rxjs/operators';
@@ -41,7 +40,11 @@ export class IncidenciaFormularioComponent implements OnInit {
   isDragOver = false;
   private dragCounter = 0;
   isHover = false;
-  showModal = false;
+
+  // Modales
+  showSuccessModal = false;
+  showErrorModal = false;
+  errorMessage = '';
 
   tipos = [
     { value: '', label: 'Selecciona un tipo' },
@@ -53,7 +56,6 @@ export class IncidenciaFormularioComponent implements OnInit {
   @ViewChild('cameraInput') cameraInputRef!: ElementRef<HTMLInputElement>;
 
   constructor(
-    private toast: ToastService,
     private incService: IncidenciaService,
     private authService: AuthService
   ) { }
@@ -79,7 +81,7 @@ export class IncidenciaFormularioComponent implements OnInit {
   }
 
   private resetFormFields(): void {
-    // sólo limpia descripción, tipo, foto y preview/drag states
+    // Sólo limpia descripción, tipo, foto y estados de preview/drag
     this.formData.descripcion = '';
     this.formData.tipo = '';
     this.formData.fotoFile = null;
@@ -126,7 +128,8 @@ export class IncidenciaFormularioComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.formData.descripcion || !this.formData.tipo) {
-      this.toast.show('Error', 'Completa todos los campos requeridos', 'destructive');
+      this.errorMessage = 'Completa todos los campos requeridos';
+      this.showErrorModal = true;
       return;
     }
 
@@ -142,9 +145,9 @@ export class IncidenciaFormularioComponent implements OnInit {
 
     this.incService.crearConFoto(payload).pipe(
       switchMap((inc: Incidencia) => {
-        // Mostrar modal en vez de toast
-        this.showModal = true;
-        setTimeout(() => this.showModal = false, 2000);
+        // Mostrar modal de éxito
+        this.showSuccessModal = true;
+        setTimeout(() => this.showSuccessModal = false, 2000);
         return this.incService.nextId();
       })
     ).subscribe({
@@ -154,18 +157,23 @@ export class IncidenciaFormularioComponent implements OnInit {
       },
       error: err => {
         console.error('Error al crear incidencia:', err);
-        this.toast.show('Error', 'No se pudo crear la incidencia', 'destructive');
+        this.errorMessage = 'No se pudo crear la incidencia';
+        this.showErrorModal = true;
       }
     });
   }
 
-  closeModal(): void {
-    this.showModal = false;
+  closeSuccessModal(): void {
+    this.showSuccessModal = false;
+  }
+
+  closeErrorModal(): void {
+    this.showErrorModal = false;
   }
 
   onReset(): void {
     this.resetFormFields();
-    // opcional: puedes recargar un nuevo ID
+    // opcional: recargar nuevo ID
     this.incService.nextId().subscribe(id => this.formData.id = id);
   }
 

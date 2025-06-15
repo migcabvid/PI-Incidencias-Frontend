@@ -3,7 +3,6 @@ import { Router, RouterOutlet } from '@angular/router';
 import { NgIf }                 from '@angular/common';
 
 import { NavbarComponent } from './components/navbar/navbar.component';
-import { ToasterComponent } from './components/toast/toaster.component';
 import { AuthService }      from './auth.service';
 
 @Component({
@@ -13,7 +12,6 @@ import { AuthService }      from './auth.service';
     RouterOutlet,
     NgIf,
     NavbarComponent,
-    ToasterComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
@@ -28,18 +26,11 @@ export class AppComponent implements OnInit {
     // Comprueba sesión en el backend; si falla, redirige a login
     this.auth.checkSession().subscribe({
       next: () => {
-      if (this.router.url === '/' || this.router.url === '/login') {
-
-        const rol = (this.auth.activeRole || '').toLowerCase();
-        const gestion = ['coordinadortic', 'equipodirectivo']
-                        .includes(rol);
-
-        this.router.navigate([
-          gestion ? '/gestionIncidencias'
-                  : '/crearIncidencia'
-        ]);
+        // Si estamos en /login y la sesión es válida, vamos a crearIncidencia
+        if (this.router.url === '/login') {
+        this.router.navigate(['/crearIncidencia']);
       }
-    },
+      },
       error: () => {
         this.router.navigate(['/login']);
       }
