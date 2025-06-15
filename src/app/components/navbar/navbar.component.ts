@@ -156,4 +156,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.router.navigate(['/login']);
     });
   }
+
+  reloadGestionIncidencias(ev: MouseEvent) {
+  // Si ya estamos en /gestionIncidencias forzamos la recarga
+  if (this.router.url.includes('gestionIncidencias')) {
+    ev.preventDefault();                        // evitamos la navegación “vacía”
+    this.router.navigateByUrl('/', {            // paso 1: ruta ficticia (sin dejar historial)
+      skipLocationChange: true
+    }).then(() => {
+      this.router.navigate(['/gestionIncidencias']);  // paso 2: volvemos y el comp. se recrea
+    });
+  }
+}
 }

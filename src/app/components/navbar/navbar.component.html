@@ -57,7 +57,7 @@
         <!-- Nueva opción: Gestión de Incidencias -->
         <ng-container *ngIf="isGestionRole">
           <li class="nav-item">
-            <a class="nav-link" [routerLink]="['/gestionIncidencias']">
+            <a class="nav-link" [routerLink]="['/gestionIncidencias']" (click)="reloadGestionIncidencias($event)">
               <i class="bi bi-clipboard2-data"></i>
               <span>Gestión Incidencias</span>
               <!-- Badge boostrap dinámico: -->
