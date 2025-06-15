@@ -38,7 +38,7 @@ export class GestionIncidenciasComponent implements OnInit {
 
   filtroFechaActivo = false;
 
-  pageSize: number = 1;
+  pageSize: number = 7;
   currentPage: number = 1;
   totalPages: number = 1;
   pagedIncidents: Incidencia[] = [];
