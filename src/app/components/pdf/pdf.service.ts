@@ -15,6 +15,7 @@ export class PdfService {
     this.cargarLogo();
   }
 
+  /** Carga el logo real de assets/images/logo.png y lo guarda en base64 */
   private cargarLogo(): void {
     this.http.get('assets/images/logo.png', { responseType: 'blob' })
       .subscribe({
@@ -32,6 +33,7 @@ export class PdfService {
       });
   }
 
+  /** Devuelve el logo en base64 (o string vacío si no está disponible) */
   private obtenerLogoBase64(): Observable<string> {
     return new Observable(observer => {
       if (this.logoBase64) {
@@ -61,9 +63,9 @@ export class PdfService {
   }
 
   generarPdfIncidencias(
-    incidencias: Incidencia[], 
-    tipoReporte: string, 
-    fechaDesde?: string, 
+    incidencias: Incidencia[],
+    tipoReporte: string,
+    fechaDesde?: string,
     fechaHasta?: string
   ): void {
     this.obtenerLogoBase64().subscribe(logoBase64 => {
@@ -72,35 +74,33 @@ export class PdfService {
   }
 
   private crearPDF(
-    incidencias: Incidencia[], 
-    tipoReporte: string, 
-    fechaDesde?: string, 
+    incidencias: Incidencia[],
+    tipoReporte: string,
+    fechaDesde?: string,
     fechaHasta?: string,
     logoBase64?: string
   ): void {
     const doc = new jsPDF();
-    
-    // Agregar logo en la esquina superior izquierda
+
+    // Agregar logo real si está disponible
     if (logoBase64) {
       try {
         doc.addImage(logoBase64, 'PNG', 15, 15, 25, 25);
       } catch (error) {
         console.warn('Error al añadir logo:', error);
-        this.dibujarLogoSimulado(doc);
+        // Si falla, simplemente no muestra logo
       }
-    } else {
-      this.dibujarLogoSimulado(doc);
     }
-    
+
     // Título principal centrado
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.text('INCIDENCIAS', 105, 30, { align: 'center' });
-    
+
     // Subtítulo dinámico con el estado específico
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    
+
     // CAMBIO: Usar el tipoReporte dinámicamente
     let estadoTexto = tipoReporte;
     // Limpiar el texto para obtener solo el estado principal
@@ -110,9 +110,9 @@ export class PdfService {
     if (tipoReporte.includes('Tabla filtrada')) {
       estadoTexto = tipoReporte.split('(')[1]?.split(')')[0] || tipoReporte;
     }
-    
+
     doc.text(`REGISTRO DE INCIDENCIAS (${estadoTexto.toUpperCase()})`, 20, 45);
-    
+
     // Información de fechas en la misma línea
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
@@ -120,7 +120,7 @@ export class PdfService {
     const fechaHastaTexto = fechaHasta || 'dd/MM/yyyy';
     doc.text(`Fecha desde: ${fechaDesdeTexto}`, 20, 55);
     doc.text(`Fecha hasta: ${fechaHastaTexto}`, 120, 55);
-    
+
     // Preparar datos para la tabla
     const tableData = incidencias.map(inc => [
       inc.idIncidencia,
@@ -130,7 +130,7 @@ export class PdfService {
       this.formatearFecha(inc.fechaIncidencia),
       this.truncateText(inc.resolucion || 'N/A', 30)
     ]);
-    
+
     // Crear tabla con estilo similar a tu imagen
     autoTable(doc, {
       head: [['ID', 'Tipo', 'Estado', 'Descripción', 'Fecha', 'Resolución']],
@@ -166,30 +166,28 @@ export class PdfService {
         this.agregarPiePagina(doc, data.pageNumber, doc.getNumberOfPages());
       }
     });
-    
+
     // Descargar el PDF
     const nombreArchivo = `incidencias_${this.limpiarNombreArchivo(estadoTexto)}_${this.obtenerFechaActual()}.pdf`;
     doc.save(nombreArchivo);
   }
-  
-  private dibujarLogoSimulado(doc: jsPDF): void {
-    // Logo simulado como fallback - círculo más parecido a tu imagen
-    doc.setDrawColor(100, 100, 100);
-    doc.setLineWidth(1);
-    doc.circle(27.5, 27.5, 12);
-    doc.setFontSize(6);
-    doc.setFont('helvetica', 'bold');
-    doc.text('LOGO', 27.5, 29, { align: 'center' });
-  }
-  
+
   private agregarPiePagina(doc: jsPDF, paginaActual: number, totalPaginas: number): void {
     const pageHeight = doc.internal.pageSize.height;
-    
+    const pageWidth = doc.internal.pageSize.width;
+
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Página ${paginaActual} de ${totalPaginas}`, 105, pageHeight - 10, { align: 'center' });
+
+    // Alinear paginación a la derecha
+    doc.text(
+      `Página ${paginaActual} de ${totalPaginas}`,
+      pageWidth - 15, // X: 15mm desde el borde derecho
+      pageHeight - 10,
+      { align: 'right', baseline: 'bottom' }
+    );
   }
-  
+
   private formatearFecha(fecha: string): string {
     if (!fecha) return 'N/A';
     try {
@@ -199,16 +197,16 @@ export class PdfService {
       return fecha;
     }
   }
-  
+
   private truncateText(text: string, maxLength: number): string {
     if (!text) return '';
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   }
-  
+
   private obtenerFechaActual(): string {
     return new Date().toISOString().split('T')[0];
   }
-  
+
   private limpiarNombreArchivo(nombre: string): string {
     return nombre.toLowerCase()
       .replace(/[^a-z0-9]/g, '_')
