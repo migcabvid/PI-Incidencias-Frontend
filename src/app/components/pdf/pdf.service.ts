@@ -128,9 +128,9 @@ export class PdfService {
       inc.resolucion || 'N/A'
     ]);
 
-    // Calcular márgenes para centrar la tabla
+    // Hacer la tabla más grande (más ancha)
     const pageWidth = doc.internal.pageSize.getWidth(); // 210mm para A4
-    const tableWidth = 165; // Suma de cellWidth de todas las columnas
+    const tableWidth = 190; // Más grande, casi todo el ancho de la hoja
     const margin = (pageWidth - tableWidth) / 2;
 
     autoTable(doc, {
@@ -155,12 +155,12 @@ export class PdfService {
         valign: 'middle'
       },
       columnStyles: {
-        0: { cellWidth: 22, halign: 'center', fontSize: 8 }, // ID
-        1: { cellWidth: 24, halign: 'center', fontSize: 8 }, // Tipo
-        2: { cellWidth: 24, halign: 'center', fontSize: 8 }, // Estado
-        3: { cellWidth: 42, halign: 'left', overflow: 'linebreak', fontSize: 8 }, // Descripción
-        4: { cellWidth: 22, halign: 'center', fontSize: 8 }, // Fecha
-        5: { cellWidth: 31, halign: 'left', overflow: 'linebreak', fontSize: 8 } // Resolución
+        0: { cellWidth: 25, halign: 'center', fontSize: 8 }, // ID
+        1: { cellWidth: 30, halign: 'center', fontSize: 8 }, // Tipo
+        2: { cellWidth: 30, halign: 'center', fontSize: 8 }, // Estado
+        3: { cellWidth: 45, halign: 'left', overflow: 'linebreak', fontSize: 8 }, // Descripción
+        4: { cellWidth: 20, halign: 'center', fontSize: 8 }, // Fecha
+        5: { cellWidth: 40, halign: 'left', overflow: 'linebreak', fontSize: 8 } // Resolución
       },
       alternateRowStyles: {
         fillColor: [245, 245, 245]
