@@ -190,7 +190,8 @@ export class PdfService {
 
     // Descargar el PDF
     const nombreArchivo = `incidencias_${this.limpiarNombreArchivo(estadoTexto)}_${this.obtenerFechaActual()}.pdf`;
-    doc.save(nombreArchivo);
+    const blobUrl = doc.output('bloburl');
+    window.open(blobUrl, '_blank');
   }
 
   private agregarPiePagina(doc: jsPDF, paginaActual: number, totalPaginas: number): void {
