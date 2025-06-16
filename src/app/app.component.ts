@@ -1,10 +1,51 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit }    from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { NgIf }                 from '@angular/common';
+
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { AuthService }      from './auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: `<router-outlet></router-outlet>`
+  imports: [
+    RouterOutlet,
+    NgIf,
+    NavbarComponent,
+  ],
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(
+    private router: Router,
+    private auth: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    // Comprueba sesión en el backend; si falla, redirige a login
+    this.auth.checkSession().subscribe({
+      next: () => {
+        // Si estamos en /login y la sesión es válida, vamos a crearIncidencia
+        if (this.router.url === '/' || this.router.url === '/login') {
+
+        const rol = (this.auth.activeRole || '').toLowerCase();
+        const gestion = ['coordinadortic', 'equipodirectivo']
+                        .includes(rol);
+
+        this.router.navigate([
+          gestion ? '/gestionIncidencias'
+                  : '/crearIncidencia'
+        ]);
+      }
+    },
+      error: () => {
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+
+  showLayout(): boolean {
+    return this.router.url !== '/login';
+  }
+}

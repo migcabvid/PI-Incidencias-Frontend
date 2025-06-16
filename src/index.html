@@ -5,10 +5,56 @@
   <title>IncidenciasTicInstalaciones</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Icono de la pestaña -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- Google Fonts Poppins -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,500,700&display=swap" rel="stylesheet">
+
+  <!-- Estilos en línea para el preloader -->
+  <style>
+    /* 1) Oculta app-root hasta que todo cargue */
+    app-root {
+      visibility: hidden;
+    }
+    /* 2) Contenedor que ocupa toda la pantalla y muestra un spinner */
+    #preloader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: #fff; /* o el color de fondo que uses en login */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+  </style>
+
+  <!-- Tus otros estilos globales -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
+  <!-- PRELOADER: spinner mientras carga Angular y estilos -->
+  <div id="preloader">
+    <div class="spinner-border text-success" role="status">
+      <span class="visually-hidden">Cargando…</span>
+    </div>
+  </div>
+
   <app-root></app-root>
+
+  <!-- Cuando el navegador haya cargado TODO (HTML, CSS, fuentes, imágenes y scripts),
+       quitamos el preloader y mostramos app-root -->
+  <script>
+    window.addEventListener('load', () => {
+      const pre = document.getElementById('preloader');
+      if (pre) pre.style.display = 'none';
+      const appRoot = document.querySelector('app-root');
+      if (appRoot) appRoot.style.visibility = 'visible';
+    });
+  </script>
+
 </body>
 </html>

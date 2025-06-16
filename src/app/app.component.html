@@ -1,1 +1,16 @@
-<router-outlet></router-outlet>
+<!-- src/app/app.component.html -->
+
+<ng-container *ngIf="showLayout(); else loginContent">
+  <!-- Mostramos navbar solo con sesión iniciada -->
+  <app-navbar></app-navbar>
+  
+  <!-- Outlet principal para todas las rutas protegidas -->
+  <router-outlet></router-outlet>
+
+
+</ng-container>
+
+<!-- Cuando no hay sesión, solo mostramos el outlet (p.ej. login) -->
+<ng-template #loginContent>
+  <router-outlet></router-outlet>
+</ng-template>

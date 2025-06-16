@@ -1,0 +1,90 @@
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container-fluid">
+    <!-- Marca sólo en móvil -->
+    <a class="navbar-brand d-lg-none" [routerLink]="[ isGestionRole ? '/gestionIncidencias' : '/crearIncidencia' ]">
+      Incidencias
+    </a>
+
+    <!-- Toggler móvil -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Alternar navegación">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Menú colapsable -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <!-- PRIMERA LISTA: ocultamos vía [hidden], sin eliminar del DOM -->
+      <ul id="ListaRoles" class="navbar-nav mb-2 mb-lg-0">
+        <!-- Dropdown de roles -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" (click)="$event.preventDefault()" id="rolesDropdown"
+            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-fill"></i>
+            {{ displayActiveRole }}
+          </a>
+          <ul class="dropdown-menu custom-dropdown" aria-labelledby="rolesDropdown">
+            <li *ngFor="let r of otherRoles">
+              <a class="dropdown-item" href="#" (click)="selectOption(r, $event)">
+                {{ roleDisplayMap[r.toLowerCase()] || titleCase(r) }}
+              </a>
+            </li>
+            <li *ngIf="otherRoles.length === 0">
+              <span class="dropdown-item disabled" style="color: rgba(255,255,255) !important;">
+                No hay más roles
+              </span>
+            </li>
+          </ul>
+
+        </li>
+
+        <ng-container *ngIf="!isGestionRole">
+          <!-- Cuando estamos en “Crear”, muestro “Mis Incidencias” -->
+          <li class="nav-item" [hidden]="!isCrearIncidencia">
+            <a class="nav-link" [routerLink]="['/misIncidencias']">
+              <i class="bi bi-clipboard2-data"></i>
+              Mis Incidencias
+            </a>
+          </li>
+          <!-- Cuando estamos en “Mis”, muestro “Crear Incidencia” -->
+          <li class="nav-item" [hidden]="!isMisIncidencias">
+            <a class="nav-link" [routerLink]="['/crearIncidencia']">
+              <i class="bi bi-clipboard2-plus"></i>
+              Crear Incidencia
+            </a>
+          </li>
+        </ng-container>
+
+        <!-- Nueva opción: Gestión de Incidencias -->
+        <ng-container *ngIf="isGestionRole">
+          <li class="nav-item">
+            <a class="nav-link" [routerLink]="['/gestionIncidencias']" (click)="reloadGestionIncidencias($event)">
+              <i class="bi bi-clipboard2-data"></i>
+              <span>Gestión Incidencias</span>
+              <!-- Badge boostrap dinámico: -->
+              <span class="badge badge-pill badge-danger rojo">{{ countEnProceso }}</span>
+            </a>
+          </li>
+        </ng-container>
+
+      </ul>
+
+      <!-- SEGUNDA LISTA -->
+      <ul class="navbar-nav mb-2 mb-lg-0 align-items-lg-center ms-lg-auto">
+        <!-- Marca sólo en escritorio -->
+        <li class="nav-item d-none d-lg-flex">
+          <a class="nav-link pe-3" [routerLink]="[ isGestionRole ? '/gestionIncidencias' : '/crearIncidencia' ]">
+            Incidencias
+          </a>
+        </li>
+
+        <!-- Logout: icono + texto sólo en móvil -->
+        <li class="nav-item">
+          <a class="nav-link" href="#" (click)="logout()">
+            <i class="bi bi-escape"></i>
+            <span class="d-lg-none">Salir</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

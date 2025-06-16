@@ -1,0 +1,234 @@
+<main class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <div class="card shadow-sm">
+        <!-- Título dentro de la misma caja -->
+        <div class="titulo-formulario">
+          Lista de Incidencias
+        </div>
+        <div class="card-body">
+
+          <!-- BUSCADOR por ID -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-12">
+              <label for="searchId" class="form-label">Buscar ID</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input #searchId type="text" id="searchId" class="form-control" placeholder="Escribe el ID..."
+                  (input)="filterById(searchId.value)" />
+              </div>
+            </div>
+          </div>
+
+          <!-- INDICADOR DE CARGA -->
+          <div class="d-flex justify-content-center align-items-center" style="height: 200px;" *ngIf="isLoading">
+            <div class="spinner-border text-success" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+
+          <!-- TABLA de Incidencias -->
+          <div *ngIf="!isLoading">
+            <div class="incidents-container">
+              <table class="table align-middle mb-0 incidents-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th class="sortable-header" (click)="toggleDateSort()">Fecha</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let inc of pagedIncidents">
+                    <td data-label="ID">{{ inc.idIncidencia }}</td>
+                    <td data-label="Descripción">{{ inc.descripcion }}</td>
+                    <td data-label="Fecha">{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
+                    <td data-label="Estado">{{ inc.estado }}</td>
+                    <td data-label="Acción" class="text-center">
+                      <button class="btn btn-sm btn-success me-1" (click)="openDetailModal(inc)" title="Ver detalles">
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger me-1" (click)="openDeleteModal(inc)" title="Eliminar">
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Paginación de Bootstrap -->
+            <nav aria-label="Paginación de incidencias" class="mt-3">
+              <ul class="pagination justify-content-center mb-0">
+                <!-- Botón “Primera página” -->
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <button class="page-link border-success text-success" (click)="goToPage(1)"
+                    [attr.disabled]="currentPage === 1 ? true : null">
+                    <i class="bi bi-chevron-double-left"></i>
+                  </button>
+                </li>
+
+                <!-- Enlaces de página (ventana de hasta 5) -->
+                <li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
+                  <button class="page-link" [class.border-success]="currentPage !== p"
+                    [class.text-success]="currentPage !== p" [class.bg-success]="currentPage === p"
+                    [class.text-white]="currentPage === p" (click)="goToPage(p)">
+                    {{ p }}
+                  </button>
+                </li>
+
+                <!-- Botón “Última página” -->
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                  <button class="page-link border-success text-success" (click)="goToPage(totalPages)"
+                    [attr.disabled]="currentPage === totalPages ? true : null">
+                    <i class="bi bi-chevron-double-right"></i>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content custom-modal-content">
+      <div class="modal-header custom-modal-header">
+        <h5 class="modal-title flex-grow-1 text-center">
+          Eliminación
+        </h5>
+      </div>
+      <div class="modal-body text-center custom-modal-body">
+        ¿Desea eliminar?
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <button type="button" class="btn btn-success me-2" (click)="confirmDelete()">
+          <i class="bi bi-check-circle-fill me-1"></i> Aceptar
+        </button>
+        <button type="button" class="btn btn-danger" (click)="closeModal()">
+          <i class="bi bi-x-circle-fill me-1"></i> Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de eliminación exitosa -->
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal"
+  (click)="showSuccessModal = false">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content custom-modal-content">
+      <div class="modal-header custom-modal-header">
+        <h5 class="modal-title flex-grow-1 text-center">
+          Eliminación
+        </h5>
+        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="showSuccessModal = false">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+      <div class="modal-body text-center custom-modal-body">
+        Eliminado correctamente.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de detalles de incidencia -->
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showDetailModal"
+  (click)="closeDetailModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content custom-modal-content">
+      <div class="modal-header custom-modal-header">
+        <h5 class="modal-title flex-grow-1 text-center">
+          Detalles de la Incidencia
+        </h5>
+        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="closeDetailModal()">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+      <div class="modal-body custom-modal-body">
+        <div *ngIf="incidenciaDetalle" class="container-fluid">
+          <div class="row">
+            <!-- Columna izquierda -->
+            <div class="col-12 col-md-6">
+              <!-- IdIncidencia -->
+              <div class="mb-3">
+                <div><strong>ID Incidencia:</strong></div>
+                <div>{{ incidenciaDetalle.idIncidencia }}</div>
+              </div>
+              <!-- Tipo -->
+              <div class="mb-3">
+                <div><strong>Tipo:</strong></div>
+                <div>{{ incidenciaDetalle.tipoIncidencia }}</div>
+              </div>
+              <!-- Descripción -->
+              <div class="mb-3">
+                <div><strong>Descripción:</strong></div>
+                <div style="white-space: pre-wrap;">{{ incidenciaDetalle.descripcion }}</div>
+              </div>
+              <!-- Foto -->
+              <div class="mb-3">
+                <div><strong>Foto:</strong></div>
+                <ng-container *ngIf="incidenciaDetalle.foto">
+                  <img [src]="'data:image/jpeg;base64,' + incidenciaDetalle.foto" alt="Foto de la incidencia"
+                    class="incidence-thumb" (click)="zoomImage(incidenciaDetalle.foto)" />
+                </ng-container>
+                <div *ngIf="!incidenciaDetalle.foto" class="text-muted">
+                  No hay foto disponible.
+                </div>
+              </div>
+            </div>
+
+            <!-- Columna derecha -->
+            <div class="col-12 col-md-6">
+              <!-- Fecha -->
+              <div class="mb-3">
+                <div><strong>Fecha</strong></div>
+                <div>{{ incidenciaDetalle.fechaIncidencia | date:'yyyy-MM-dd' }}</div>
+              </div>
+              <!-- Estado -->
+              <div class="mb-3">
+                <div><strong>Estado</strong></div>
+                <div>{{ incidenciaDetalle.estado }}</div>
+              </div>
+              <!-- Resolución (solo si existe) -->
+              <div class="mb-3" *ngIf="incidenciaDetalle.resolucion; else noResu">
+                <div><strong>Resolución</strong></div>
+                <div style="white-space: pre-wrap;">
+                  {{ incidenciaDetalle.resolucion }}
+                </div>
+              </div>
+              <!-- Mensaje alternativo si no hay resolución -->
+              <ng-template #noResu>
+                <div class="mb-3">
+                  <div><strong>Resolución</strong></div>
+                  <div class="text-muted">Aún no hay resolución.</div>
+                </div>
+              </ng-template>
+              <!-- Nombre Profesor -->
+              <div class="mb-3">
+                <div><strong>Nombre Profesor</strong></div>
+                <div>{{ incidenciaDetalle.nombreProfesor }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Overlay para imagen ampliada -->
+    <div class="image-zoom-backdrop" *ngIf="zoomImageUrl">
+      <div class="zoom-container">
+        <button class="zoom-close-btn" (click)="closeZoom()">&times;</button>
+        <img [src]="zoomImageUrl" class="zoomed-image" (click)="$event.stopPropagation()" />
+      </div>
+    </div>
+  </div>
+</div>
