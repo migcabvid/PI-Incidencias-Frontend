@@ -41,7 +41,7 @@ img {
   display: grid;
   align-items: center;
   justify-items: center;
-  background-image: url('../../assets/images/fondo.png');
+  background-image: url('../../../assets/images/fondo.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -154,7 +154,6 @@ input:-webkit-autofill {
   font-size: 0.813rem;
 }
 
-/*=============== BREAKPOINTS ===============*/
 @media screen and (min-width: 576px) {
   .login {
     justify-content: center;
@@ -171,7 +170,6 @@ input:-webkit-autofill {
   }
 }
 
-/*=============== CUSTOM SELECT (rol) ===============*/
 .login__box--custom-select {
   position: relative;
 }
@@ -200,13 +198,13 @@ input:-webkit-autofill {
   transition: transform 300ms ease;
   font-size: 1.1rem;
   vertical-align: middle;
-  transform: rotate(0deg);      /* flecha a la derecha */
+  transform: rotate(0deg);
 
 }
 
 /* cuando .custom-select tenga la clase .open, gira -90° para apuntar hacia arriba */
 .custom-select.open .icon-toggle {
-  transform: rotate(90deg);    /* flecha arriba */
+  transform: rotate(90deg);
 }
 
 
@@ -227,7 +225,7 @@ input:-webkit-autofill {
 
 /* Estado abierto: altura y opacidad completos */
 .custom-select.open .options {
-  max-height: 200px; /* ajusta según nº de roles */
+  max-height: 200px;
   opacity: 1;
 }
 

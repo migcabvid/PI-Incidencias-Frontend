@@ -32,31 +32,91 @@
 
             <!-- Descripción & Foto -->
             <div class="row g-3 mb-4">
+              <!-- Descripción -->
               <div class="col-md-6">
                 <label for="descripcion" class="form-label">Descripción</label>
-                <textarea id="descripcion" name="descripcion" class="form-control" rows="8" [(ngModel)]="formData.descripcion"
-                  required>
-                              </textarea>
+                <textarea
+                  id="descripcion"
+                  name="descripcion"
+                  class="form-control"
+                  rows="8"
+                  [(ngModel)]="formData.descripcion"
+                  required
+                ></textarea>
               </div>
+
+              <!-- FOTO: un SOLO col-md-6 que contendrá ambas variantes (desktop / móvil) -->
               <div class="col-md-6">
                 <label class="form-label d-block">
                   Foto <i class="bi bi-image"></i>
                 </label>
-              
-                <div class="form-control drop-zone d-flex flex-column justify-content-center align-items-center" [class.drag-over]="isDragOver|| isHover" [class.has-preview]="!!imagePreview"
-                  style="height: 220px; cursor: pointer; min-height: unset; max-height: 220px; overflow: hidden;"
-                  (click)="triggerFileInput()" (dragenter)="onDragEnter($event)" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
-                  (drop)="onDrop($event)" (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">
-                  <ng-container *ngIf="!imagePreview">
-                    <p class="mb-1">Arrastra y suelta una imagen</p>
-                    <p class="small text-muted">o haz clic para seleccionar</p>
-                  </ng-container>
-              
-                  <!-- Previsualización -->
-                  <img *ngIf="imagePreview" [src]="imagePreview" alt="Previsualización"
-                    style="max-width: 100%; max-height: 100%; object-fit: contain;" />
-              
-                  <input type="file" accept="image/*" #fileInput class="d-none" (change)="onFileSelected($event)" />
+
+                <!-- A) DESKTOP: solo aparece en anchos >576px -->
+                <div class="desktop-only">
+                  <div
+                    class="form-control drop-zone d-flex flex-column justify-content-center align-items-center"
+                    [class.drag-over]="isDragOver || isHover"
+                    [class.has-preview]="!!imagePreview"
+                    style="height: 220px; cursor: pointer; min-height: unset; max-height: 220px; overflow: hidden;"
+                    (click)="triggerFileInput()"
+                    (dragenter)="onDragEnter($event)"
+                    (dragover)="onDragOver($event)"
+                    (dragleave)="onDragLeave($event)"
+                    (drop)="onDrop($event)"
+                    (mouseenter)="onMouseEnter()"
+                    (mouseleave)="onMouseLeave()"
+                  >
+                    <ng-container *ngIf="!imagePreview">
+                      <p class="mb-1">Arrastra y suelta una imagen</p>
+                      <p class="small text-muted">o haz clic para seleccionar</p>
+                    </ng-container>
+
+                    <!-- Previsualización en escritorio -->
+                    <img
+                      *ngIf="imagePreview"
+                      [src]="imagePreview"
+                      alt="Previsualización"
+                      style="max-width: 100%; max-height: 100%; object-fit: contain;"
+                    />
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      #fileInput
+                      class="d-none"
+                      (change)="onFileSelected($event)"
+                    />
+                  </div>
+                </div>
+
+                <!-- B) MÓVIL: solo aparece en anchos ≤576px -->
+                <div class="mobile-only">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary camera-button"
+                    (click)="triggerCameraInput()"
+                  >
+                    <i class="bi bi-camera-fill" style="font-size: 2rem;"></i>
+                    <p class="small mt-1">Tomar foto</p>
+                  </button>
+
+                  <!-- Previsualización en móvil -->
+                  <img
+                    *ngIf="imagePreview"
+                    [src]="imagePreview"
+                    alt="Previsualización"
+                    style="margin-top: 0.5rem; max-width: 100%; max-height: 180px; object-fit: contain;"
+                  />
+
+                  <!-- Input oculto para abrir la cámara -->
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    #cameraInput
+                    class="d-none"
+                    (change)="onCameraSelected($event)"
+                  />
                 </div>
               </div>
             </div>
@@ -79,31 +139,33 @@
   </div>
 </main>
 
-<!-- Modal de confirmación -->
-<div
-  class="modal fade show d-block custom-modal-backdrop"
-  tabindex="-1"
-  *ngIf="showModal"
->
-  <div class="modal-dialog modal-dialog-centered">
+<!-- Modal de éxito -->
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showSuccessModal" (click)="closeSuccessModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content custom-modal-content">
-      <!-- HEADER -->
       <div class="modal-header custom-modal-header">
-        <h5 class="modal-title flex-grow-1 text-center">
-          Mensaje
-        </h5>
-        <button
-          type="button"
-          class="btn-close custom-btn-close"
-          aria-label="Cerrar"
-          (click)="closeModal()"
-        >
+        <h5 class="modal-title flex-grow-1 text-center">Mensaje</h5>
+        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="closeSuccessModal()">
           <i class="bi bi-x-circle-fill"></i>
         </button>
       </div>
-      <!-- BODY -->
+      <div class="modal-body text-center custom-modal-body">Incidencia enviada.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de error -->
+<div class="modal fade show d-block custom-modal-backdrop" tabindex="-1" *ngIf="showErrorModal" (click)="closeErrorModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content custom-modal-content">
+      <div class="modal-header custom-modal-header-error">
+        <h5 class="modal-title flex-grow-1 text-center">Error</h5>
+        <button type="button" class="btn-close custom-btn-close" aria-label="Cerrar" (click)="closeErrorModal()">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
       <div class="modal-body text-center custom-modal-body">
-        Incidencia enviada.
+        {{ errorMessage }}
       </div>
     </div>
   </div>

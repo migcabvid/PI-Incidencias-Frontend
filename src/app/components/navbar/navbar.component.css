@@ -1,4 +1,3 @@
-/* src/app/components/navbar/navbar.component.css */
 nav.navbar {
   width: 100%;
   background-color: #153529 !important;
@@ -23,8 +22,27 @@ nav.navbar {
   vertical-align: top;
 }
 
-/* Opcional: ajusta el padding del enlace "Incidencias" en desktop */
 .navbar-nav .nav-item.d-lg-flex .nav-link {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
+}
+
+.rojo{
+  color: firebrick;
+}
+
+.custom-dropdown {
+  background-color: #285846 !important;
+}
+.custom-dropdown .dropdown-item {
+  background-color: #285846;
+  color: #fff;
+}
+
+/* Hover oscuro en las opciones de cambio de rol */
+.custom-dropdown .dropdown-item:hover,
+.custom-dropdown .dropdown-item:focus {
+  background-color: #164533;
+  color: #fff;
+  border-radius: .55rem;
 }

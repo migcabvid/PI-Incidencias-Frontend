@@ -22,13 +22,13 @@
   width: 100%;
   box-sizing: border-box;
   display: block;
-  font-size: 1.25rem; 
-  font-weight: 600;   
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 /* Fondo de la tarjeta */
 .card {
-  background-color: #EDF1EF;
+  background-color: #edf1ef;
   border-radius: 0.5rem;
   overflow: hidden;
 }
@@ -53,16 +53,24 @@
 
 /* keyframes de pulso */
 @keyframes pulse-border {
-  0%   { box-shadow: 0 0 0 0 rgba(40,168,69, 0.7); }
-  70%  { box-shadow: 0 0 0 10px rgba(40,168,69, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(40,168,69, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 168, 69, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(40, 168, 69, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 168, 69, 0);
+  }
 }
 
 /* foco verde en inputs, textarea y selects */
 .form-control:focus,
 .form-select:focus {
   border-color: #28a745;
-  box-shadow: 0 0 0 0.2rem rgba(40,168,69, .25);
+  box-shadow: 0 0 0 0.2rem rgba(40, 168, 69, 0.25);
   outline: none;
 }
 
@@ -74,12 +82,12 @@
 /* radio de bordes en todo el contenedor */
 .custom-modal-content {
   border-radius: 0.5rem;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 /* header en verde, texto blanco */
 .custom-modal-header {
-  background-color: #3C7E66;
+  background-color: #3c7e66;
   color: #fff;
   align-items: center;
   justify-content: space-between;
@@ -92,6 +100,15 @@
   font-family: 'Poppins', sans-serif;
   font-size: 16px;
   margin: 0;
+}
+
+.custom-modal-header-error {
+  background-color: #dc3545;
+  color: #fff;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: none;
+  padding: 0.75rem 1rem;
 }
 
 /* botón de cerrar */
@@ -111,10 +128,54 @@
   padding: 1.5rem 1rem;
 }
 
-/* Si el id de tu textarea es “descripcion”: */
 #descripcion {
-  resize: none;       /* impide redimensionar */
-  /* Opcional: puedes forzar anchura/alto concretos */
-  /* width: 100%;    por defecto form-control ya lo lleva */
-  height: 220px;  
+  resize: none;
+  height: 220px;
+}
+
+/* ------------------------------------------- */
+/* Mostrar/ocultar según tamaño de pantalla   */
+/* ------------------------------------------- */
+
+/* Por defecto, ocultamos el bloque “móvil” y mostramos “desktop” */
+.mobile-only {
+  display: none;
+}
+
+.desktop-only {
+  display: block;
+}
+
+/* Cuando el ancho real de la ventana sea 576px o menor (móvil pura),
+   ocultamos la drop-zone (desktop-only) y mostramos el icono-cámara (mobile-only) */
+@media (max-width: 767px) {
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Ajustes para el botón de cámara en móvil */
+  .camera-button {
+    width: 100%;
+    max-width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #edf1ef;
+    border: 2px dashed #ccc;
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+
+  .camera-button:focus {
+    outline: none;
+    border-color: #28a745;
+  }
 }

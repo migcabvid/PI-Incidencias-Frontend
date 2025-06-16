@@ -1,4 +1,3 @@
-// src/app/login.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,9 +23,9 @@ export class LoginComponent {
 
   // Opciones de rol para el desplegable
   availableRoles: RoleOption[] = [
-    { value: 'Profesor',        label: 'Profesor' },
-    { value: 'CoordinadorTic',  label: 'Coordinador Tic' },
-    { value: 'EquipoDirectivo', label: 'Equipo Directivo' }
+    { value: 'profesor',        label: 'Profesor' },
+    { value: 'coordinadortic',  label: 'Coordinador Tic' },
+    { value: 'equipodirectivo', label: 'Equipo Directivo' }
   ];
 
   // Estado del desplegable
@@ -62,14 +61,11 @@ closeOptions(event: MouseEvent) {
   this.optionsVisible = false;
 }
 
-
   selectOption(option: RoleOption) {
     this.selectedRoleValue = option.value;
     this.selectedRoleLabel = option.label;
     this.optionsVisible = false;
   }
-
-
 
   togglePasswordVisibility() {
     const input = document.getElementById('login-pass') as HTMLInputElement;
@@ -95,12 +91,16 @@ closeOptions(event: MouseEvent) {
     const req: LoginRequest = {
       username: this.usuario,
       password: this.password,
-      rol:      this.selectedRoleValue
+      rol: this.selectedRoleValue
     };
 
     this.auth.login(req).subscribe({
-      next: () => {
-        this.router.navigate(['/crearIncidencia']);
+      next: (resp) => {
+        const key = resp.activeRole.toLowerCase();
+        const destino = key === 'profesor'
+          ? '/crearIncidencia'
+          : '/gestionIncidencias';
+        this.router.navigate([destino]);
       },
       error: err => {
         if (err.status === 401 || err.status === 403) {
