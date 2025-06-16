@@ -45,10 +45,6 @@ export class AppComponent implements OnInit {
     });
   }
 
-  /** 
-   * Muestra navbar y toaster siempre que NO estemos en /login.
-   * De esta forma, tras F5 en una ruta protegida, el layout sigue visible.
-   */
   showLayout(): boolean {
     return this.router.url !== '/login';
   }

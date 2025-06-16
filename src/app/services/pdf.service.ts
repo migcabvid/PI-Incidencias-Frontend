@@ -1,5 +1,3 @@
-// src/app/services/pdf.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import jsPDF from 'jspdf';
@@ -97,10 +95,9 @@ export class PdfService {
   ): void {
     const doc = new jsPDF();
 
-    // Logo más pequeño y más arriba a la izquierda
     if (logoBase64) {
       try {
-        doc.addImage(logoBase64, 'PNG', 10, 6, 20, 20); // X=10, Y=6, ancho=20, alto=20
+        doc.addImage(logoBase64, 'PNG', 10, 6, 20, 20);
       } catch (error) {
         console.warn('Error al añadir logo:', error);
       }
@@ -109,7 +106,7 @@ export class PdfService {
     // Título principal centrado
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('INCIDENCIAS', 105, 25, { align: 'center' }); // Título un poco más arriba
+    doc.text('INCIDENCIAS', 105, 25, { align: 'center' });
 
     // Línea de separación debajo del logo y el título
     doc.setDrawColor(180, 180, 180);
@@ -188,7 +185,6 @@ export class PdfService {
       },
       margin: { left: margin, right: margin },
       tableWidth: tableWidth
-      // NO usar didDrawPage aquí
     });
 
     // Tras dibujar la tabla, conocer el total real de páginas:
@@ -214,7 +210,7 @@ export class PdfService {
     doc.setFont('helvetica', 'normal');
     doc.text(
       `Página ${paginaActual} de ${totalPaginas}`,
-      pageWidth - 15, // X: 15mm desde el borde derecho
+      pageWidth - 15,
       pageHeight - 10,
       { align: 'right', baseline: 'bottom' }
     );

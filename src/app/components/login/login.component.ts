@@ -61,14 +61,11 @@ closeOptions(event: MouseEvent) {
   this.optionsVisible = false;
 }
 
-
   selectOption(option: RoleOption) {
     this.selectedRoleValue = option.value;
     this.selectedRoleLabel = option.label;
     this.optionsVisible = false;
   }
-
-
 
   togglePasswordVisibility() {
     const input = document.getElementById('login-pass') as HTMLInputElement;

@@ -173,7 +173,6 @@ export class IncidenciaFormularioComponent implements OnInit {
 
   onReset(): void {
     this.resetFormFields();
-    // opcional: recargar nuevo ID
     this.incService.nextId().subscribe(id => this.formData.id = id);
   }
 

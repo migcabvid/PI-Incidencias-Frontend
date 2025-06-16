@@ -35,7 +35,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     equipodirectivo: 'Equipo Directivo'
   };
 
-  // Nuevo campo para el conteo de “En proceso”
   countEnProceso: number = 0;
 
   constructor(
@@ -66,7 +65,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       filter(ev => ev instanceof NavigationEnd)
     ).subscribe((ev: NavigationEnd) => {
       this.setFlags(ev.urlAfterRedirects);
-      this.cd.detectChanges();      // <-- fuerza el repaint YA
+      this.cd.detectChanges();
       if (this.isGestionRole && ev.urlAfterRedirects.includes('gestionIncidencias')) {
         this.fetchCountEnProceso();
       }
@@ -92,7 +91,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.incidenciaService.cambios$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        if (this.isGestionRole) {          // solo interesa a roles de gestión
+        if (this.isGestionRole) {
           this.fetchCountEnProceso();
         }
       });
@@ -117,7 +116,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private setFlags(url: string) {
     this.isMisIncidencias = url.includes('misIncidencias');
     this.isCrearIncidencia = url.includes('crearIncidencia');
-    // isGestionRole se calcula en subscription de activeRole
   }
 
   get displayActiveRole(): string {
@@ -158,13 +156,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   reloadGestionIncidencias(ev: MouseEvent) {
-  // Si ya estamos en /gestionIncidencias forzamos la recarga
   if (this.router.url.includes('gestionIncidencias')) {
-    ev.preventDefault();                        // evitamos la navegación “vacía”
-    this.router.navigateByUrl('/', {            // paso 1: ruta ficticia (sin dejar historial)
+    ev.preventDefault();
+    this.router.navigateByUrl('/', {
       skipLocationChange: true
     }).then(() => {
-      this.router.navigate(['/gestionIncidencias']);  // paso 2: volvemos y el comp. se recrea
+      this.router.navigate(['/gestionIncidencias']);
     });
   }
 }

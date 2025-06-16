@@ -128,12 +128,8 @@
   padding: 1.5rem 1rem;
 }
 
-/* Si el id de tu textarea es “descripcion”: */
 #descripcion {
   resize: none;
-  /* impide redimensionar */
-  /* Opcional: puedes forzar anchura/alto concretos */
-  /* width: 100%; por defecto form-control ya lo lleva */
   height: 220px;
 }
 
@@ -158,7 +154,6 @@
   }
 
   .mobile-only {
-    /* Aquí sí ponemos el flex únicamente en móvil */
     display: flex !important;
     flex-direction: column;
     align-items: center;

@@ -28,13 +28,13 @@ export class AuthService {
 
   private readonly STORAGE_ROLES   = 'roles';
   private readonly STORAGE_ACTIVE  = 'activeRole';
-  private readonly STORAGE_DNI     = 'dniProfesor';  // ← nueva constante
+  private readonly STORAGE_DNI     = 'dniProfesor';
 
   constructor(private http: HttpClient) {
     // 0) Cargar desde localStorage si existe
     const savedRoles  = localStorage.getItem(this.STORAGE_ROLES);
     const savedActive = localStorage.getItem(this.STORAGE_ACTIVE);
-    const savedDni    = localStorage.getItem(this.STORAGE_DNI); // cargar dni si estaba guardado
+    const savedDni    = localStorage.getItem(this.STORAGE_DNI);
 
     if (savedRoles)  {
       try {
@@ -57,26 +57,16 @@ export class AuthService {
         this.rolesSubject.next(resp.roles);
         this.dniSubject.next(resp.dniProfesor);
         localStorage.setItem(this.STORAGE_ROLES, JSON.stringify(resp.roles));
-        localStorage.setItem(this.STORAGE_DNI, resp.dniProfesor);  // persistir dni de sesión
+        localStorage.setItem(this.STORAGE_DNI, resp.dniProfesor);
 
         // Solo actualizamos activeRole si no había uno guardado
         if (!savedActive) {
           this.activeRoleSubject.next(resp.activeRole);
           localStorage.setItem(this.STORAGE_ACTIVE, resp.activeRole);
         } else {
-          // Si ya había activeRole en storage, opcionalmente podrías validar que esté en resp.roles.
-          // Quedamos con el valor guardado en storage si cumple. (No se modifica aquí.)
         }
       },
       error: () => {
-        // Si no hay sesión válida, podría limpiar también dni/roles/activeRole:
-        // this.rolesSubject.next([]);
-        // this.activeRoleSubject.next(null);
-        // this.dniSubject.next(null);
-        // localStorage.removeItem(this.STORAGE_ROLES);
-        // localStorage.removeItem(this.STORAGE_ACTIVE);
-        // localStorage.removeItem(this.STORAGE_DNI);
-        // Por ahora, se mantiene lo que había en localStorage.
       }
     });
   }
@@ -94,9 +84,8 @@ export class AuthService {
 
         localStorage.setItem(this.STORAGE_ROLES, JSON.stringify(resp.roles));
         localStorage.setItem(this.STORAGE_ACTIVE, resp.activeRole);
-        localStorage.setItem(this.STORAGE_DNI, resp.dniProfesor);  // persistir dni al hacer login
+        localStorage.setItem(this.STORAGE_DNI, resp.dniProfesor);
       })
-      // Podrías añadir catchError aquí si quisieras manejar errores de login de forma centralizada
     );
   }
 
@@ -113,7 +102,7 @@ export class AuthService {
 
         localStorage.removeItem(this.STORAGE_ROLES);
         localStorage.removeItem(this.STORAGE_ACTIVE);
-        localStorage.removeItem(this.STORAGE_DNI);  // eliminar dni al hacer logout
+        localStorage.removeItem(this.STORAGE_DNI);
       })
     );
   }
@@ -124,7 +113,6 @@ export class AuthService {
       { withCredentials: true }
     ).pipe(
       catchError(err => {
-        // Podrías limpiar estado aquí si deseas forzar logout en sesión inválida.
         throw err;
       })
     );

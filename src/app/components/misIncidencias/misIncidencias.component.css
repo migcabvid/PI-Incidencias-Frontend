@@ -100,30 +100,26 @@
   outline: none;
 }
 
-
-
-/* 1. Al recibir foco, quitamos outline y box-shadow azul; 
-   pero NO le ponemos fondo verde a los inactivos */
 .pagination .page-link:focus {
   outline: none !important;
   box-shadow: none !important;
   background-color: transparent !important;
-  color: #285846 !important;       /* obligamos el texto verde en el caso inactivo */
-  border-color: #285846 !important; /* borde verde */
+  color: #285846 !important;
+  border-color: #285846 !important;
 }
 
 /* 2. SOLO si el <li> padre está activo, queremos que el fondo verde permanezca en focus */
 .pagination .page-item.active .page-link:focus {
-  background-color: #285846 !important; /* verde */
-  border-color:     #285846 !important; /* verde */
-  color:            #fff    !important; /* texto blanco */
+  background-color: #285846 !important;
+  border-color:     #285846 !important;
+  color:            #fff    !important;
 }
 
 /* 3. Aseguramos también que, aunque pierda el foco, la página activa se vea siempre en verde */
 .pagination .page-item.active .page-link {
-  background-color: #285846 !important; /* verde */
-  border-color:     #285846 !important; /* verde */
-  color:            #fff    !important; /* texto blanco */
+  background-color: #285846 !important;
+  border-color:     #285846 !important;
+  color:            #fff    !important; 
 }
 
 .sortable-header {
@@ -133,24 +129,18 @@
   text-decoration: underline;
   text-decoration-color: transparent;
   /* Ajustes de grosor y separación */
-  text-decoration-thickness: 3px;   /* grosor de 3px */
-  text-underline-offset: 4px;       /* separación de 4px */
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
   transition:
     text-decoration-color 0.2s,
     text-underline-offset 0.2s;
 }
 
 .sortable-header:hover {
-  /* Color blanco sólo al pasar el ratón */
   text-decoration-color: #fff;
-  /* Opcionalmente puedes jugar con offset al hover:
-  text-underline-offset: 6px;
-  */
 }
 
-/* ============================= */
 /* Estilos responsivos estilo “tarjeta” para .incidents-table en móvil */
-/* ============================= */
 @media (max-width: 576px) {
   /* Ocultar la cabecera */
   .incidents-table thead {
@@ -196,10 +186,10 @@
   }
 
   .incidents-table td[data-label="Acción"] .btn {
-     /* --> Botón algo más grande */
-    font-size: 1rem;          /* antes 0.9rem */
-    padding: 0.45rem 0.9rem;  /* alto y ancho mayores */
-    line-height: 1;           /* evita que crezca más de la cuenta */
+     /* Botón más grande */
+    font-size: 1rem;
+    padding: 0.45rem 0.9rem;
+    line-height: 1;
   }
 }
 
@@ -215,11 +205,11 @@
 
   /* Añadimos un pequeño margen inferior SOLO a partir del segundo botón */
   .incidents-table td[data-label="Acción"] .btn + .btn {
-    margin-top: 0.25rem;   /* ≈ 4 px de separación vertical */
+    margin-top: 0.25rem;
   }
 
   .incidents-table td[data-label="Acción"] .btn {
-    font-size: 1rem;          /* mismo tamaño que en móvil */
+    font-size: 1rem;
     padding: 0.45rem 0.9rem;
     line-height: 1;
   }
@@ -229,7 +219,7 @@
 /* Forzar verde en el texto de paginación incluso antes de que Angular calcule clases */
 .pagination .page-link {
   color: #285846 !important;
-  transition: none !important; /* opcional: desactiva cualquier animación de color */
+  transition: none !important;
 }
 
 /* Miniatura en el modal: cursor “zoom” */
@@ -267,15 +257,14 @@
   right: .5rem;
 
   /* solo texto/icono */
-  background: none;      /* sin fondo */
+  background: none;
   border: none;
-  border-radius: 0;      /* esquinas rectas */
-  color: #fff;           /* se mantiene blanco; cámbialo si quieres otro color */
+  border-radius: 0;
+  color: #fff;
   font-size: 2.5rem;
   line-height: 1;
   cursor: pointer;
   
-  /* opcional: ligero sombreado para que se vea en fondos claros */
   text-shadow: 0 0 6px rgba(0,0,0,.7);
 }
 
@@ -294,16 +283,16 @@
 
   /* ▶︎ tabla principal */
   .incidents-table {
-    border-collapse: collapse;   /* fusiona bordes interiores */
-    border: 2px solid #285846;      /* marco exterior */
-    border-radius: .5rem;        /* esquinas */
-    overflow: hidden;            /* recorta lo que sobresalga */
+    border-collapse: collapse;
+    border: 2px solid #285846;
+    border-radius: .5rem;
+    overflow: hidden;
   }
 
   /* ▶︎ celdas */
   .incidents-table th,
   .incidents-table td {
-    border: 1px solid #285846;   /* líneas internas finas */
+    border: 1px solid #285846;
   }
 
   /* cabecera verde (repetido por claridad; mantiene prioridad) */

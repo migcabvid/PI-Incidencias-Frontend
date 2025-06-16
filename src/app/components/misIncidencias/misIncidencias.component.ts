@@ -33,7 +33,6 @@ export class MisIncidenciasComponent implements OnInit {
   showDetailModal = false;
   incidenciaDetalle: Incidencia | null = null;
 
-  /** URL (o base64) de la imagen ampliada; null = nada abierto */
   zoomImageUrl: string | null = null;
 
   constructor(
@@ -121,10 +120,8 @@ export class MisIncidenciasComponent implements OnInit {
       return [1, 2, 3, 4, 5];
     }
     if (current > total - 3) {
-      // últimos 5
       return Array.from({ length: maxVisible }, (_, i) => (total - (maxVisible - 1) + i));
     }
-    // centrado
     return [current - 2, current - 1, current, current + 1, current + 2];
   }
 
