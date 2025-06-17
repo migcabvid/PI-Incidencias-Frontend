@@ -1,6 +1,7 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 
 export interface LoginRequest {
@@ -18,25 +19,25 @@ export interface LoginResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private rolesSubject      = new BehaviorSubject<string[]>([]);
+  private rolesSubject = new BehaviorSubject<string[]>([]);
   private activeRoleSubject = new BehaviorSubject<string | null>(null);
-  private dniSubject        = new BehaviorSubject<string | null>(null);
+  private dniSubject = new BehaviorSubject<string | null>(null);
 
-  roles$       = this.rolesSubject.asObservable();
-  activeRole$  = this.activeRoleSubject.asObservable();
+  roles$ = this.rolesSubject.asObservable();
+  activeRole$ = this.activeRoleSubject.asObservable();
   dniProfesor$ = this.dniSubject.asObservable();
 
-  private readonly STORAGE_ROLES   = 'roles';
-  private readonly STORAGE_ACTIVE  = 'activeRole';
-  private readonly STORAGE_DNI     = 'dniProfesor';
+  private readonly STORAGE_ROLES = 'roles';
+  private readonly STORAGE_ACTIVE = 'activeRole';
+  private readonly STORAGE_DNI = 'dniProfesor';
 
   constructor(private http: HttpClient) {
-    // 0) Cargar desde localStorage si existe
-    const savedRoles  = localStorage.getItem(this.STORAGE_ROLES);
+    // Cargar estado desde localStorage
+    const savedRoles = localStorage.getItem(this.STORAGE_ROLES);
     const savedActive = localStorage.getItem(this.STORAGE_ACTIVE);
-    const savedDni    = localStorage.getItem(this.STORAGE_DNI);
+    const savedDni = localStorage.getItem(this.STORAGE_DNI);
 
-    if (savedRoles)  {
+    if (savedRoles) {
       try {
         this.rolesSubject.next(JSON.parse(savedRoles));
       } catch {
@@ -49,35 +50,21 @@ export class AuthService {
     if (savedDni) {
       this.dniSubject.next(savedDni);
     }
-
-    // 1) Intentar recargar sesión desde el servidor
-    this.checkSession().subscribe({
-      next: resp => {
-        // Actualizamos roles y dni siempre
-        this.rolesSubject.next(resp.roles);
-        this.dniSubject.next(resp.dniProfesor);
-        localStorage.setItem(this.STORAGE_ROLES, JSON.stringify(resp.roles));
-        localStorage.setItem(this.STORAGE_DNI, resp.dniProfesor);
-
-        // Solo actualizamos activeRole si no había uno guardado
-        if (!savedActive) {
-          this.activeRoleSubject.next(resp.activeRole);
-          localStorage.setItem(this.STORAGE_ACTIVE, resp.activeRole);
-        } else {
-        }
-      },
-      error: () => {
-      }
-    });
   }
 
-  login(req: LoginRequest): Observable<LoginResponse> {
+  /**
+   * Realiza login. En caso de recibir 401/403 u otro error HTTP,
+   * lo captura internamente y emite null, evitando que la rama error
+   * de subscribe se dispare en el componente.
+   */
+  login(req: LoginRequest): Observable<LoginResponse | null> {
     return this.http.post<LoginResponse>(
       'http://localhost:8080/auth/login',
       req,
       { withCredentials: true }
     ).pipe(
       tap(resp => {
+        // Solo si la respuesta es exitosa
         this.rolesSubject.next(resp.roles);
         this.activeRoleSubject.next(resp.activeRole);
         this.dniSubject.next(resp.dniProfesor);
@@ -85,6 +72,10 @@ export class AuthService {
         localStorage.setItem(this.STORAGE_ROLES, JSON.stringify(resp.roles));
         localStorage.setItem(this.STORAGE_ACTIVE, resp.activeRole);
         localStorage.setItem(this.STORAGE_DNI, resp.dniProfesor);
+      }),
+      catchError(() => {
+        // Suprimir error y devolver null
+        return of(null);
       })
     );
   }
@@ -103,18 +94,20 @@ export class AuthService {
         localStorage.removeItem(this.STORAGE_ROLES);
         localStorage.removeItem(this.STORAGE_ACTIVE);
         localStorage.removeItem(this.STORAGE_DNI);
+      }),
+      catchError(() => {
+        // Suprimir error de logout
+        return of(undefined as void);
       })
     );
   }
 
-  checkSession(): Observable<LoginResponse> {
+  checkSession(): Observable<LoginResponse | null> {
     return this.http.get<LoginResponse>(
       'http://localhost:8080/auth/session',
       { withCredentials: true }
     ).pipe(
-      catchError(err => {
-        throw err;
-      })
+      catchError(() => of(null))
     );
   }
 

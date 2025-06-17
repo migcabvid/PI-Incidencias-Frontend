@@ -40,7 +40,7 @@
                 </tr>
               </thead>
               <tbody>
-                <!-- SOLO DATOS DINÁMICOS -->
+                <!-- Datos dinámicos -->
                 <tr *ngFor="let s of summaryData">
                   <td>{{s.type}}</td>
                   <td>{{s.count}}</td>
@@ -95,9 +95,10 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let inc of pagedIncidents">
-                    <!-- Añadimos data-label con el texto del header -->
                     <td data-label="ID">{{ inc.idIncidencia }}</td>
-                    <td data-label="Descripción">{{ inc.descripcion }}</td>
+                    <td class="descripcion-col" [attr.title]="inc.descripcion" data-label="Descripción">
+                      {{ inc.descripcion }}
+                    </td>
                     <td data-label="Fecha">{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
                     <td data-label="Profesor">{{ inc.nombreProfesor }}</td>
                     <td data-label="Acción" class="text-center">
@@ -292,7 +293,6 @@
               </div>
             </div>
 
-
             <!-- Modal de “¿Cómo lo has resuelto?” -->
             <div class="modal fade show d-block custom-modal-backdrop solucion-modal" tabindex="-1"
               *ngIf="mostrarModalSolucion" (click)="cerrarModalSolucion()">
@@ -309,6 +309,10 @@
                     <textarea [(ngModel)]="resolucion" placeholder="Escribe el motivo de la resolución..."
                       class="form-control"></textarea>
                   </div>
+                  <!-- Mensaje de validación en rojo -->
+                  <span *ngIf="errorMessage" class="text-danger w-100 text-center mb-2">
+                    {{ errorMessage }}
+                  </span>
                   <div class="modal-footer border-0 justify-content-center">
                     <button type="button" class="btn btn-success me-2" (click)="enviarResolucion()">
                       <i class="bi bi-check-circle-fill me-1"></i> Enviar
@@ -341,7 +345,6 @@
             </div>
 
           </ng-container>
-
         </div>
       </div>
     </div>

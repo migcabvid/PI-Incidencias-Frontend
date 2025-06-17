@@ -55,7 +55,7 @@
 /* radio de bordes en todo el contenedor */
 .custom-modal-content {
   border-radius: 0.5rem;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 /* header en verde, texto blanco */
@@ -111,15 +111,15 @@
 /* 2. SOLO si el <li> padre está activo, queremos que el fondo verde permanezca en focus */
 .pagination .page-item.active .page-link:focus {
   background-color: #285846 !important;
-  border-color:     #285846 !important;
-  color:            #fff    !important;
+  border-color: #285846 !important;
+  color: #fff !important;
 }
 
 /* 3. Aseguramos también que, aunque pierda el foco, la página activa se vea siempre en verde */
 .pagination .page-item.active .page-link {
   background-color: #285846 !important;
-  border-color:     #285846 !important;
-  color:            #fff    !important; 
+  border-color: #285846 !important;
+  color: #fff !important;
 }
 
 .sortable-header {
@@ -141,11 +141,13 @@
 }
 
 /* Estilos responsivos estilo “tarjeta” para .incidents-table en móvil */
-@media (max-width: 576px) {
+@media (max-width: 769px) {
+
   /* Ocultar la cabecera */
   .incidents-table thead {
     display: none;
   }
+
   /* Forzar que la tabla, tbody, tr y td sean bloques de ancho completo */
   .incidents-table,
   .incidents-table tbody,
@@ -154,6 +156,7 @@
     display: block;
     width: 100%;
   }
+
   /* Espaciado y estilo de “tarjeta” para cada fila */
   .incidents-table tr {
     margin-bottom: 1rem;
@@ -162,13 +165,21 @@
     padding: 0.5rem;
     background-color: #fff;
   }
+
   /* Cada celda como bloque con padding */
   .incidents-table td {
     padding: 0.5rem;
     position: relative;
     text-align: left;
     word-break: break-word;
+    overflow: hidden;
+    /* Oculta el contenido que se desborda */
+    text-overflow: ellipsis;
+    /* Agrega "..." al final del texto largo */
+    white-space: nowrap;
+    /* Impide saltos de línea */
   }
+
   /* Mostrar etiqueta mediante data-label */
   .incidents-table td::before {
     content: attr(data-label);
@@ -176,45 +187,24 @@
     display: inline-block;
     width: 35%;
   }
+
   /* Ajuste específico para columna Acción: que los botones estén a la derecha */
   .incidents-table td[data-label="Acción"] {
     text-align: left !important;
   }
+
   /* Pequeño margen superior en botones dentro de tarjetas */
   .incidents-table td .btn {
     margin-top: 0.25rem;
   }
 
   .incidents-table td[data-label="Acción"] .btn {
-     /* Botón más grande */
+    /* Botón más grande */
     font-size: 1rem;
     padding: 0.45rem 0.9rem;
     line-height: 1;
   }
 }
-
-/*  ▶︎  De 577 px a 768 px (aprox.)
-    – en este rango la cabecera está visible,
-      los botones se apilan y queremos hueco vertical */
-@media (min-width: 577px) and (max-width: 768px) {
-
-  /* Quitamos el margen horizontal que aporta la clase .me-1   */
-  .incidents-table td[data-label="Acción"] .btn {
-    margin-right: 0 !important;
-  }
-
-  /* Añadimos un pequeño margen inferior SOLO a partir del segundo botón */
-  .incidents-table td[data-label="Acción"] .btn + .btn {
-    margin-top: 0.25rem;
-  }
-
-  .incidents-table td[data-label="Acción"] .btn {
-    font-size: 1rem;
-    padding: 0.45rem 0.9rem;
-    line-height: 1;
-  }
-}
-
 
 /* Forzar verde en el texto de paginación incluso antes de que Angular calcule clases */
 .pagination .page-link {
@@ -235,9 +225,11 @@
 /* Fondo oscuro y centrado para la imagen ampliada */
 .image-zoom-backdrop {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.8);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -264,8 +256,8 @@
   font-size: 2.5rem;
   line-height: 1;
   cursor: pointer;
-  
-  text-shadow: 0 0 6px rgba(0,0,0,.7);
+
+  text-shadow: 0 0 6px rgba(0, 0, 0, .7);
 }
 
 /* Imagen ampliada: usa viewport units */
@@ -274,48 +266,47 @@
   max-height: 90vh;
   object-fit: contain;
   border-radius: 0.5rem;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
   cursor: zoom-out;
   pointer-events: none;
-}
-
-@media (min-width: 576.98px) {
-
-  /* ▶︎ tabla principal */
-  .incidents-table {
-    border-collapse: collapse;
-    border: 2px solid #285846;
-    border-radius: .5rem;
-    overflow: hidden;
-  }
-
-  /* ▶︎ celdas */
-  .incidents-table th,
-  .incidents-table td {
-    border: 1px solid #285846;
-  }
-
-  /* cabecera verde (repetido por claridad; mantiene prioridad) */
-  .incidents-table th {
-    background: #285846;
-    color: #fff;
-    font-weight: 500;
-  }
 }
 
 /* Pestañas normales */
 .pagination .page-link,
 .pagination .page-item.disabled .page-link,
 .pagination .page-item:first-child .page-link,
-.pagination .page-item:last-child  .page-link {
-  border-color: #285846 !important;   /* verde */
-  color:        #285846 !important;
+.pagination .page-item:last-child .page-link {
+  border-color: #285846 !important;
+  /* verde */
+  color: #285846 !important;
 }
 
 /* Pestaña activa */
 .pagination .page-item.active .page-link {
   background-color: #285846 !important;
-  border-color:     #285846 !important; 
-  color:            #fff    !important;
+  border-color: #285846 !important;
+  color: #fff !important;
 }
 
+/* Control de ancho de la columna Descripción */
+@media (min-width: 769px) {
+  .descripcion-col {
+    max-width: 300px;
+    /* Limita el ancho de la columna */
+    overflow: hidden;
+    /* Oculta el contenido que se desborda */
+    text-overflow: ellipsis;
+    /* Agrega "..." al final del texto largo */
+    white-space: nowrap;
+    /* Impide saltos de línea */
+  }
+}
+
+@media (max-width: 769px) {
+  .descripcion-col {
+    white-space: normal;
+    /* Permite saltos de línea */
+    overflow-wrap: break-word;
+    /* Corta las palabras largas si es necesario */
+  }
+}

@@ -1,51 +1,48 @@
-import { Component, OnInit }    from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
-import { NgIf }                 from '@angular/common';
 
+import { Component, OnInit } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AuthService, LoginResponse } from './auth.service';
 import { NavbarComponent } from './components/navbar/navbar.component';
-import { AuthService }      from './auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    RouterOutlet,
-    NgIf,
-    NavbarComponent,
-  ],
+  imports: [CommonModule, RouterOutlet, NavbarComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+  title = 'MiAplicacion';
+
   constructor(
-    private router: Router,
-    private auth: AuthService
-  ) {}
+    private auth: AuthService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
-    // Comprueba sesión en el backend; si falla, redirige a login
-    this.auth.checkSession().subscribe({
-      next: () => {
-        // Si estamos en /login y la sesión es válida, vamos a crearIncidencia
-        if (this.router.url === '/' || this.router.url === '/login') {
+    const activeRole = this.auth.activeRole;
+    if (activeRole) {
+      this.auth.checkSession().subscribe(resp => {
+        if (resp) {
+          // Sesión válida
+        } else {
+          this.limpiarYSacarLogin();
+        }
+      });
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
 
-        const rol = (this.auth.activeRole || '').toLowerCase();
-        const gestion = ['coordinadortic', 'equipodirectivo']
-                        .includes(rol);
-
-        this.router.navigate([
-          gestion ? '/gestionIncidencias'
-                  : '/crearIncidencia'
-        ]);
-      }
-    },
-      error: () => {
-        this.router.navigate(['/login']);
-      }
+  private limpiarYSacarLogin(): void {
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']);
     });
   }
 
   showLayout(): boolean {
-    return this.router.url !== '/login';
+    return this.auth.activeRole !== null;
   }
 }

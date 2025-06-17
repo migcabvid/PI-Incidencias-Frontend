@@ -128,7 +128,7 @@ export class IncidenciaFormularioComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.formData.descripcion || !this.formData.tipo) {
-      this.errorMessage = 'Completa todos los campos requeridos';
+      this.errorMessage = '"Tipo Incidencia" y "Descripción" son obligatorios';
       this.showErrorModal = true;
       return;
     }

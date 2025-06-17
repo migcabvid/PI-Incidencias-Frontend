@@ -45,7 +45,7 @@
                 <tbody>
                   <tr *ngFor="let inc of pagedIncidents">
                     <td data-label="ID">{{ inc.idIncidencia }}</td>
-                    <td data-label="Descripción">{{ inc.descripcion }}</td>
+                    <td data-label="Descripción" class="descripcion-col">{{ inc.descripcion }}</td>
                     <td data-label="Fecha">{{ inc.fechaIncidencia | date:'yyyy-MM-dd' }}</td>
                     <td data-label="Estado">{{ inc.estado }}</td>
                     <td data-label="Acción" class="text-center">

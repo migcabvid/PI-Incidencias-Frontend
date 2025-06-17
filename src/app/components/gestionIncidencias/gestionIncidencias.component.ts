@@ -35,6 +35,7 @@ export class GestionIncidenciasComponent implements OnInit {
   incidenciaAResolver: Incidencia | null = null;
 
   resolucion: string = '';
+  errorMessage: string = '';
 
   filtroFechaActivo = false;
 
@@ -185,6 +186,7 @@ export class GestionIncidenciasComponent implements OnInit {
   abrirModalSolucion(inc: Incidencia): void {
     this.incidenciaAResolver = inc;
     this.resolucion = '';
+    this.errorMessage = '';
     this.mostrarModalSolucion = true;
   }
 
@@ -192,17 +194,23 @@ export class GestionIncidenciasComponent implements OnInit {
     this.mostrarModalSolucion = false;
     this.incidenciaAResolver = null;
     this.resolucion = '';
+    this.errorMessage = '';
   }
 
   enviarResolucion(): void {
-    if (!this.resolucion || !this.incidenciaAResolver) return;
+    if (!this.incidenciaAResolver) return;
+    if (!this.resolucion.trim()) {
+      // Mostrar mensaje de validación si está vacío
+      this.errorMessage = 'El motivo de resolución es obligatorio.';
+      return;
+    }
+    this.errorMessage = '';
     this.incidenciaService.resolverIncidencia(
       this.incidenciaAResolver.idIncidencia,
       this.incidenciaAResolver.dniProfesor,
       this.resolucion
     ).subscribe({
       next: updated => {
-        // Actualiza localmente y quita de listas si corresponde
         this.summaryBaseData = this.summaryBaseData.filter(i =>
           !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
         );
