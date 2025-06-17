@@ -223,10 +223,4 @@ export class IncidenciaFormularioComponent implements OnInit {
   get caracteresRestantes(): number {
     return this.MAX_DESCRIPCION - (this.formData.descripcion?.length || 0);
   }
-
-  guardarDescripcion(): void {
-    if (!this.formData.descripcion) { return; }
-    this.formData.descripcion = this.formData.descripcion.slice(0, this.MAX_DESCRIPCION);
-    // Aquí puedes llamar a tu servicio para guardar la descripción si lo necesitas
-  }
 }
