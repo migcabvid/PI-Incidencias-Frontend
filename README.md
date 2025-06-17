@@ -67,7 +67,7 @@ cd PI-Incidencias-Frontend
 docker-compose up
 
 ### 5) Abrimos la aplicacion
-Escribimos en cualquier navegador localhost
+Escribimos en cualquier navegador [localhost](http://localhost:80)
 
 ### 6) Login
 Para el login disponemos de 3 usuarios anteriormente predefinidos, sus credenciales son los siguientes:
