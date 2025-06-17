@@ -205,24 +205,65 @@ export class GestionIncidenciasComponent implements OnInit {
 
   enviarResolucion(): void {
     if (!this.resolucion || !this.incidenciaAResolver) { return; }
-    this.resolucion = this.resolucion.slice(0, this.MAX_RESOLUCION); // corte final
-    // llamada al servicio que guarda la incidencia…
+
+    // Asegurarnos de no exceder el máximo
+    this.resolucion = this.resolucion.slice(0, this.MAX_RESOLUCION);
+
+    // Detectar si antes ya estaba “solucionada”
+    const wasAlreadySolved = this.incidenciaAResolver.estado?.toLowerCase() === 'solucionada';
+
     this.incidenciaService.resolverIncidencia(
       this.incidenciaAResolver.idIncidencia,
       this.incidenciaAResolver.dniProfesor,
       this.resolucion
     ).subscribe({
       next: updated => {
-        this.summaryBaseData = this.summaryBaseData.filter(i =>
-          !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
-        );
-        this.filteredIncidents = this.filteredIncidents.filter(i =>
-          !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
-        );
+        if (wasAlreadySolved) {
+          // Si ya estaba solucionada, en lugar de filtrar, sólo actualizamos la incidencia en summaryBaseData
+          this.summaryBaseData = this.summaryBaseData.map(i => {
+            if (i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor) {
+              return {
+                ...i,
+                estado: updated.estado,
+                resolucion: updated.resolucion,
+                nombreCoordinador: updated.nombreCoordinador,
+                // si hay otros campos actualizables, incluirlos aquí
+              };
+            }
+            return i;
+          });
+          // Si está en filteredIncidents (p. ej. si el filtro actual incluye “Solucionada”), actualizar también allí:
+          this.filteredIncidents = this.filteredIncidents.map(i => {
+            if (i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor) {
+              return {
+                ...i,
+                estado: updated.estado,
+                resolucion: updated.resolucion,
+                nombreCoordinador: updated.nombreCoordinador,
+              };
+            }
+            return i;
+          });
+          // No cambiamos página ni recuento de “En proceso” porque no se elimina nada
+        } else {
+          // Si no estaba solucionada antes, la removemos de arrays “En proceso”
+          this.summaryBaseData = this.summaryBaseData.filter(i =>
+            !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
+          );
+          this.filteredIncidents = this.filteredIncidents.filter(i =>
+            !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
+          );
+        }
+
+        // Mostrar modal de confirmación
         this.showResolveModal = true;
         setTimeout(() => this.showResolveModal = false, 1500);
+
+        // Recalcular paginación, summary counts, etc.
         this.setupPagination();
         this.updateSummary();
+
+        // Cerrar modal de resolución
         this.cerrarModalSolucion();
       },
       error: err => {
