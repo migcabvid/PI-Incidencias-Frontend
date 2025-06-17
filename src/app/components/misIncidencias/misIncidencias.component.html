@@ -172,7 +172,7 @@
               <!-- Descripción -->
               <div class="mb-3">
                 <div><strong>Descripción:</strong></div>
-                <div style="white-space: pre-wrap;">{{ incidenciaDetalle.descripcion }}</div>
+                <div>{{ incidenciaDetalle.descripcion }}</div>
               </div>
               <!-- Foto -->
               <div class="mb-3">
@@ -202,7 +202,7 @@
               <!-- Resolución (solo si existe) -->
               <div class="mb-3" *ngIf="incidenciaDetalle.resolucion; else noResu">
                 <div><strong>Resolución</strong></div>
-                <div style="white-space: pre-wrap;">
+                <div>
                   {{ incidenciaDetalle.resolucion }}
                 </div>
               </div>
@@ -223,6 +223,7 @@
         </div>
       </div>
     </div>
+    
     <!-- Overlay para imagen ampliada -->
     <div class="image-zoom-backdrop" *ngIf="zoomImageUrl">
       <div class="zoom-container">

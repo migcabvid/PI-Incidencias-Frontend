@@ -56,6 +56,7 @@
 .custom-modal-content {
   border-radius: 0.5rem;
   overflow: hidden;
+  overflow-wrap: break-word;
 }
 
 /* header en verde, texto blanco */
@@ -173,11 +174,8 @@
     text-align: left;
     word-break: break-word;
     overflow: hidden;
-    /* Oculta el contenido que se desborda */
     text-overflow: ellipsis;
-    /* Agrega "..." al final del texto largo */
     white-space: nowrap;
-    /* Impide saltos de línea */
   }
 
   /* Mostrar etiqueta mediante data-label */
