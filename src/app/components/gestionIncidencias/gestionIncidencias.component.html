@@ -306,15 +306,16 @@
                     </button>
                   </div>
                   <div class="modal-body custom-modal-body">
-                    <textarea [(ngModel)]="resolucion" placeholder="Escribe el motivo de la resolución..."
-                      class="form-control"></textarea>
+                    <textarea class="form-control" rows="6" name="resolucion" [(ngModel)]="resolucion"
+                      [maxlength]="MAX_RESOLUCION" required>
+                    </textarea>
+                    <div class="text-end small mt-1">
+                      {{ caracteresRestantes }} / {{ MAX_RESOLUCION }}
+                    </div>
                   </div>
-                  <!-- Mensaje de validación en rojo -->
-                  <span *ngIf="errorMessage" class="text-danger w-100 text-center mb-2">
-                    {{ errorMessage }}
-                  </span>
                   <div class="modal-footer border-0 justify-content-center">
-                    <button type="button" class="btn btn-success me-2" (click)="enviarResolucion()">
+                    <button type="button" class="btn btn-success me-2" [disabled]="!resolucion"
+                      (click)="enviarResolucion()">
                       <i class="bi bi-check-circle-fill me-1"></i> Enviar
                     </button>
                     <button type="button" class="btn btn-danger" (click)="cerrarModalSolucion()">

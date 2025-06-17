@@ -27,6 +27,8 @@ interface FormDataIncidencia {
   styleUrls: ['./incidenciaFormulario.component.css']
 })
 export class IncidenciaFormularioComponent implements OnInit {
+  readonly MAX_DESCRIPCION = 500; // tope único
+
   formData: FormDataIncidencia = {
     id: '',
     fecha: '',
@@ -216,5 +218,15 @@ export class IncidenciaFormularioComponent implements OnInit {
       reader.onload = () => this.imagePreview = reader.result;
       reader.readAsDataURL(file);
     }
+  }
+
+  get caracteresRestantes(): number {
+    return this.MAX_DESCRIPCION - (this.formData.descripcion?.length || 0);
+  }
+
+  guardarDescripcion(): void {
+    if (!this.formData.descripcion) { return; }
+    this.formData.descripcion = this.formData.descripcion.slice(0, this.MAX_DESCRIPCION);
+    // Aquí puedes llamar a tu servicio para guardar la descripción si lo necesitas
   }
 }

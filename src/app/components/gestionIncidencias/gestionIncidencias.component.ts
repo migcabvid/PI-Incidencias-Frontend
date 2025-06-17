@@ -52,6 +52,8 @@ export class GestionIncidenciasComponent implements OnInit {
   fechaHastaActual: string = '';
   tipoReporteActivo: string = 'En proceso';
 
+  readonly MAX_RESOLUCION = 500; // tope centralizado
+
   constructor(
     private incidenciaService: IncidenciaService,
     private pdfService: PdfService
@@ -197,14 +199,14 @@ export class GestionIncidenciasComponent implements OnInit {
     this.errorMessage = '';
   }
 
+  get caracteresRestantes(): number {
+    return this.MAX_RESOLUCION - (this.resolucion?.length || 0);
+  }
+
   enviarResolucion(): void {
-    if (!this.incidenciaAResolver) return;
-    if (!this.resolucion.trim()) {
-      // Mostrar mensaje de validación si está vacío
-      this.errorMessage = 'El motivo de resolución es obligatorio.';
-      return;
-    }
-    this.errorMessage = '';
+    if (!this.resolucion || !this.incidenciaAResolver) { return; }
+    this.resolucion = this.resolucion.slice(0, this.MAX_RESOLUCION); // corte final
+    // llamada al servicio que guarda la incidencia…
     this.incidenciaService.resolverIncidencia(
       this.incidenciaAResolver.idIncidencia,
       this.incidenciaAResolver.dniProfesor,
