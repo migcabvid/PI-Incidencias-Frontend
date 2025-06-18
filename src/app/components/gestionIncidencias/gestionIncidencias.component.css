@@ -22,8 +22,8 @@
   width: 100%;
   box-sizing: border-box;
   display: block;
-  font-size: 1.25rem; 
-  font-weight: 600;   
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 /* Fondo de la tarjeta */
@@ -41,7 +41,7 @@
 /* radio de bordes en todo el contenedor */
 .custom-modal-content {
   border-radius: 0.5rem;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 /* header en verde, texto blanco */
@@ -82,7 +82,7 @@
 .form-control:focus,
 .form-select:focus {
   border-color: #28a745;
-  box-shadow: 0 0 0 0.2rem rgba(40,168,69, .25);
+  box-shadow: 0 0 0 0.2rem rgba(40, 168, 69, .25);
   outline: none;
 }
 
@@ -142,11 +142,12 @@
   color: #285846 !important;
   border-color: #285846 !important;
 }
+
 .pagination .page-item.active .page-link:focus,
 .pagination .page-item.active .page-link {
   background-color: #285846 !important;
-  border-color:     #285846 !important;
-  color:            #fff    !important;
+  border-color: #285846 !important;
+  color: #fff !important;
 }
 
 .sortable-header {
@@ -164,7 +165,8 @@
 }
 
 /* Aplica en pantallas pequeñas (hasta 576px de ancho) */
-@media (max-width: 576px) {
+@media (max-width: 769px) {
+
   /* Ocultar la cabecera */
   .incidents-table thead {
     display: none;
@@ -194,7 +196,14 @@
     position: relative;
     text-align: left;
     word-break: break-word;
+    overflow: hidden;
+    /* Oculta el contenido que se desborda */
+    text-overflow: ellipsis;
+    /* Agrega "..." al final del texto largo */
+    white-space: nowrap;
+    /* Impide saltos de línea */
   }
+
   /* Mostrar etiqueta mediante data-label */
   .incidents-table td::before {
     content: attr(data-label);
@@ -214,29 +223,7 @@
   }
 
   .incidents-table td[data-label="Acción"] .btn {
-     /* --> Botón algo más grande */
-    font-size: 1rem;
-    padding: 0.45rem 0.9rem;
-    line-height: 1;
-  }
-}
-
-/*  ▶︎  De 577 px a 768 px (aprox.)
-    – en este rango la cabecera está visible,
-      los botones se apilan y queremos hueco vertical */
-@media (min-width: 577px) and (max-width: 768px) {
-
-  /* Quitamos el margen horizontal que aporta la clase .me-1 */
-  .incidents-table td[data-label="Acción"] .btn {
-    margin-right: 0 !important;
-  }
-
-  /* Añadimos un pequeño margen inferior SOLO a partir del segundo botón */
-  .incidents-table td[data-label="Acción"] .btn + .btn {
-    margin-top: 0.25rem;
-  }
-
-  .incidents-table td[data-label="Acción"] .btn {
+    /* --> Botón algo más grande */
     font-size: 1rem;
     padding: 0.45rem 0.9rem;
     line-height: 1;
@@ -263,11 +250,11 @@
 /* Fondo oscuro y centrado para la imagen ampliada */
 .image-zoom-backdrop {
   position: fixed;
-  top:   0;
-  left:  0;
+  top: 0;
+  left: 0;
   width: 100%;
-  height:100%;
-  background: rgba(0,0,0,0.8);
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -276,11 +263,11 @@
 }
 
 .zoomed-image {
-  max-width:  90vw;
+  max-width: 90vw;
   max-height: 90vh;
   object-fit: contain;
   border-radius: 0.5rem;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
   cursor: zoom-out;
   pointer-events: none;
 }
@@ -307,36 +294,83 @@
   right: 0.5rem;
   width: 2.5rem;
   height: 2.5rem;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2001;
 
-  text-shadow: 0 0 6px rgba(0,0,0,.7);
+  text-shadow: 0 0 6px rgba(0, 0, 0, .7);
 }
 
-@media (min-width: 576.98px) {
+/* Control de ancho de la columna Descripción */
+@media (min-width: 769px) {
+  .descripcion-col {
+    max-width: 300px;
+    /* Limita el ancho de la columna */
+    overflow: hidden;
+    /* Oculta el contenido que se desborda */
+    text-overflow: ellipsis;
+    /* Agrega "..." al final del texto largo */
+    white-space: nowrap;
+    /* Impide saltos de línea */
+  }
+}
 
-  /* ▶︎ tabla principal */
+@media (max-width: 768px) {
+  .descripcion-col {
+    white-space: normal;
+    /* Permite saltos de línea */
+    overflow-wrap: break-word;
+    /* Corta las palabras largas si es necesario */
+  }
+}
+
+/* Antes tenías esto: */
+/* @media (min-width: 576.98px) { … } */
+
+/* Cámbialo a algo así: */
+@media (min-width: 769px) {
   .incidents-table {
     border-collapse: collapse;
     border: 2px solid #285846;
     border-radius: .5rem;
     overflow: hidden;
   }
-
-  /* ▶︎ celdas */
   .incidents-table th,
   .incidents-table td {
     border: 1px solid #285846;
   }
+}
 
-  /* cabecera verde (repetido por claridad; mantiene prioridad) */
-  .incidents-table th {
-    background: #285846;
-    color: #fff;
-    font-weight: 500;
+/* Y lo mismo si quieres para .incidents-table-r */
+@media (min-width: 768px) {
+  .incidents-table-r {
+    border-collapse: collapse;
+    border: 2px solid #285846;
+    border-radius: .5rem;
+    overflow: hidden;
+  }
+  .incidents-table-r th,
+  .incidents-table-r td {
+    border: 1px solid #285846;
   }
 }
+
+@media (min-width: 770px) and (max-width: 992px) {
+  /* Botones “Acción” apilados como en móvil */
+  .incidents-table td[data-label="Acción"] .btn {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 1rem;
+    padding: 0.45rem 0.9rem;
+    line-height: 1;
+  }
+  .incidents-table td[data-label="Acción"] .btn + .btn {
+    margin-top: 0.25rem;
+  }
+}
+
+

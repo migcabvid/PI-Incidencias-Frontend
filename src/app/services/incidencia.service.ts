@@ -61,14 +61,6 @@ export class IncidenciaService {
     return this.http.get<Incidencia[]>(`${this.apiUrl}/en-proceso`, { withCredentials: true });
   }
 
-  /** Buscar por ID */
-  buscarPorId(idIncidencia: string, dniProfesor: string): Observable<Incidencia> {
-    return this.http.get<Incidencia>(
-      `${this.apiUrl}/${idIncidencia}/${dniProfesor}`,
-      { withCredentials: true }
-    );
-  }
-
   /** Actualizar (sin foto) */
   actualizar(inc: Incidencia): Observable<Incidencia> {
     return this.http.put<Incidencia>(

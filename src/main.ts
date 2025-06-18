@@ -1,18 +1,23 @@
-// src/main.ts
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';  // <-- Importa Bootstrap JS (incluye Popper)
 
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter }        from '@angular/router';
-import { importProvidersFrom }  from '@angular/core';
-import { FormsModule }          from '@angular/forms';
+import { provideRouter } from '@angular/router';
+import { importProvidersFrom } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import {
   HttpClientModule,
   HTTP_INTERCEPTORS
 } from '@angular/common/http';
 
-import { AppComponent }    from './app/app.component';
-import { routes }          from './app/routes';
+import { environment } from './environments/environment';
+import { AppComponent } from './app/app.component';
+import { routes } from './app/routes';
 import { AuthInterceptor } from './app/auth.interceptor';
+
+if (environment.production) {
+  enableProdMode();
+}
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -24,4 +29,6 @@ bootstrapApplication(AppComponent, {
       multi: true
     }
   ]
-}).catch(err => console.error(err));
+}).catch(() => {
+  // Suprimir logs de errores inesperados al iniciar
+});
