@@ -318,15 +318,24 @@ export class GestionIncidenciasComponent implements OnInit {
 
   filtrarPorEstado(estado: string): void {
     this.tipoReporteActivo = estado;
+
     if (estado === 'Totales') {
       this.filteredIncidents = [...this.summaryBaseData];
     } else if (estado === 'Solucionada') {
-      this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'solucionada');
+      this.filteredIncidents = this.summaryBaseData.filter(i =>
+        i.estado?.toLowerCase() === 'solucionada'
+      );
     } else if (estado === 'En proceso') {
-      this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'en proceso');
+      this.filteredIncidents = this.summaryBaseData.filter(i =>
+        i.estado?.toLowerCase() === 'en proceso'
+      );
     } else {
       this.filteredIncidents = [];
     }
+
+    // Se sincroniza el array actual
+    this.incidentsData = [...this.filteredIncidents];
+
     this.currentPage = 1;
     this.setupPagination();
   }
