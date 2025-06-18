@@ -326,3 +326,51 @@
     /* Corta las palabras largas si es necesario */
   }
 }
+
+/* Antes tenías esto: */
+/* @media (min-width: 576.98px) { … } */
+
+/* Cámbialo a algo así: */
+@media (min-width: 769px) {
+  .incidents-table {
+    border-collapse: collapse;
+    border: 2px solid #285846;
+    border-radius: .5rem;
+    overflow: hidden;
+  }
+  .incidents-table th,
+  .incidents-table td {
+    border: 1px solid #285846;
+  }
+}
+
+/* Y lo mismo si quieres para .incidents-table-r */
+@media (min-width: 768px) {
+  .incidents-table-r {
+    border-collapse: collapse;
+    border: 2px solid #285846;
+    border-radius: .5rem;
+    overflow: hidden;
+  }
+  .incidents-table-r th,
+  .incidents-table-r td {
+    border: 1px solid #285846;
+  }
+}
+
+@media (min-width: 770px) and (max-width: 992px) {
+  /* Botones “Acción” apilados como en móvil */
+  .incidents-table td[data-label="Acción"] .btn {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 1rem;
+    padding: 0.45rem 0.9rem;
+    line-height: 1;
+  }
+  .incidents-table td[data-label="Acción"] .btn + .btn {
+    margin-top: 0.25rem;
+  }
+}
+
+
