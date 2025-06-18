@@ -60,31 +60,36 @@ export class GestionIncidenciasComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.isLoading = true;
-    this.incidenciaService.listarTodas().subscribe({
-      next: data => {
-        this.isLoading = false;
-        // Ordena por fecha descendente e ID descendente
-        const sortedAll = data.sort((a, b) => {
-          const tA = new Date(a.fechaIncidencia).getTime();
-          const tB = new Date(b.fechaIncidencia).getTime();
-          if (tA !== tB) return tB - tA;
-          return Number(b.idIncidencia) - Number(a.idIncidencia);
-        });
-        this.summaryBaseData = [...sortedAll];
-        this.updateSummary();
+  this.isLoading = true;
+  this.incidenciaService.listarTodas().subscribe({
+    next: data => {
+      this.isLoading = false;
 
-        // Mostrar inicialmente solo "En proceso"
-        this.incidentsData = sortedAll.filter(i => i.estado?.toLowerCase() === 'en proceso');
-        this.filteredIncidents = [...this.incidentsData];
-        this.setupPagination();
-      },
-      error: err => {
-        console.error(err);
-        this.isLoading = false;
-      }
-    });
-  }
+      // Ordena por fecha descendente e ID descendente
+      const sortedAll = data.sort((a, b) => {
+        const tA = new Date(a.fechaIncidencia).getTime();
+        const tB = new Date(b.fechaIncidencia).getTime();
+        if (tA !== tB) return tB - tA;
+        return Number(b.idIncidencia) - Number(a.idIncidencia);
+      });
+
+      // Base de datos para resumen
+      this.summaryBaseData = [...sortedAll];
+      this.updateSummary();
+
+      // Mostrar inicialmente todas las incidencias
+      this.incidentsData      = [...sortedAll];
+      this.filteredIncidents  = [...sortedAll];
+      this.tipoReporteActivo  = 'Totales';
+
+      this.setupPagination();
+    },
+    error: err => {
+      console.error(err);
+      this.isLoading = false;
+    }
+  });
+}
 
   updateSummary(): void {
     const enProcesoCount = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'en proceso').length;
