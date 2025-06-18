@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import jsPDF from 'jspdf';
@@ -63,18 +64,6 @@ export class PdfService {
     });
   }
 
-  /** (Opcional) Método alternativo basado en fetch, no usado si se emplea HttpClient */
-  private cargarLogoComoBase64(): Promise<string> {
-    return fetch('assets/images/logo.png')
-      .then(res => res.blob())
-      .then(blob => new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      }));
-  }
-
   generarPdfIncidencias(
     incidencias: Incidencia[],
     tipoReporte: string,
@@ -130,8 +119,8 @@ export class PdfService {
     // Información de fechas
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const fechaDesdeTexto = fechaDesde || 'dd/MM/yyyy';
-    const fechaHastaTexto = fechaHasta || 'dd/MM/yyyy';
+    const fechaDesdeTexto = fechaDesde || 'Pasado';
+    const fechaHastaTexto = fechaHasta || 'Actual';
     doc.text(`Fecha desde: ${fechaDesdeTexto}`, 20, 55);
     doc.text(`Fecha hasta: ${fechaHastaTexto}`, 120, 55);
 

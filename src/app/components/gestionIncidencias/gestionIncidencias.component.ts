@@ -35,6 +35,7 @@ export class GestionIncidenciasComponent implements OnInit {
   incidenciaAResolver: Incidencia | null = null;
 
   resolucion: string = '';
+  errorMessage: string = '';
 
   filtroFechaActivo = false;
 
@@ -51,37 +52,44 @@ export class GestionIncidenciasComponent implements OnInit {
   fechaHastaActual: string = '';
   tipoReporteActivo: string = 'En proceso';
 
+  readonly MAX_RESOLUCION = 500; // tope centralizado
+
   constructor(
     private incidenciaService: IncidenciaService,
     private pdfService: PdfService
   ) { }
 
   ngOnInit(): void {
-    this.isLoading = true;
-    this.incidenciaService.listarTodas().subscribe({
-      next: data => {
-        this.isLoading = false;
-        // Ordena por fecha descendente e ID descendente
-        const sortedAll = data.sort((a, b) => {
-          const tA = new Date(a.fechaIncidencia).getTime();
-          const tB = new Date(b.fechaIncidencia).getTime();
-          if (tA !== tB) return tB - tA;
-          return Number(b.idIncidencia) - Number(a.idIncidencia);
-        });
-        this.summaryBaseData = [...sortedAll];
-        this.updateSummary();
+  this.isLoading = true;
+  this.incidenciaService.listarTodas().subscribe({
+    next: data => {
+      this.isLoading = false;
 
-        // Mostrar inicialmente solo "En proceso"
-        this.incidentsData = sortedAll.filter(i => i.estado?.toLowerCase() === 'en proceso');
-        this.filteredIncidents = [...this.incidentsData];
-        this.setupPagination();
-      },
-      error: err => {
-        console.error(err);
-        this.isLoading = false;
-      }
-    });
-  }
+      // Ordena por fecha descendente e ID descendente
+      const sortedAll = data.sort((a, b) => {
+        const tA = new Date(a.fechaIncidencia).getTime();
+        const tB = new Date(b.fechaIncidencia).getTime();
+        if (tA !== tB) return tB - tA;
+        return Number(b.idIncidencia) - Number(a.idIncidencia);
+      });
+
+      // Base de datos para resumen
+      this.summaryBaseData = [...sortedAll];
+      this.updateSummary();
+
+      // Mostrar inicialmente todas las incidencias
+      this.incidentsData      = [...sortedAll];
+      this.filteredIncidents  = [...sortedAll];
+      this.tipoReporteActivo  = 'Totales';
+
+      this.setupPagination();
+    },
+    error: err => {
+      console.error(err);
+      this.isLoading = false;
+    }
+  });
+}
 
   updateSummary(): void {
     const enProcesoCount = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'en proceso').length;
@@ -185,6 +193,7 @@ export class GestionIncidenciasComponent implements OnInit {
   abrirModalSolucion(inc: Incidencia): void {
     this.incidenciaAResolver = inc;
     this.resolucion = '';
+    this.errorMessage = '';
     this.mostrarModalSolucion = true;
   }
 
@@ -192,27 +201,74 @@ export class GestionIncidenciasComponent implements OnInit {
     this.mostrarModalSolucion = false;
     this.incidenciaAResolver = null;
     this.resolucion = '';
+    this.errorMessage = '';
+  }
+
+  get caracteresRestantes(): number {
+    return this.MAX_RESOLUCION - (this.resolucion?.length || 0);
   }
 
   enviarResolucion(): void {
-    if (!this.resolucion || !this.incidenciaAResolver) return;
+    if (!this.resolucion || !this.incidenciaAResolver) { return; }
+
+    // Asegurarnos de no exceder el máximo
+    this.resolucion = this.resolucion.slice(0, this.MAX_RESOLUCION);
+
+    // Detectar si antes ya estaba “solucionada”
+    const wasAlreadySolved = this.incidenciaAResolver.estado?.toLowerCase() === 'solucionada';
+
     this.incidenciaService.resolverIncidencia(
       this.incidenciaAResolver.idIncidencia,
       this.incidenciaAResolver.dniProfesor,
       this.resolucion
     ).subscribe({
       next: updated => {
-        // Actualiza localmente y quita de listas si corresponde
-        this.summaryBaseData = this.summaryBaseData.filter(i =>
-          !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
-        );
-        this.filteredIncidents = this.filteredIncidents.filter(i =>
-          !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
-        );
+        if (wasAlreadySolved) {
+          // Si ya estaba solucionada, en lugar de filtrar, sólo actualizamos la incidencia en summaryBaseData
+          this.summaryBaseData = this.summaryBaseData.map(i => {
+            if (i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor) {
+              return {
+                ...i,
+                estado: updated.estado,
+                resolucion: updated.resolucion,
+                nombreCoordinador: updated.nombreCoordinador,
+                // si hay otros campos actualizables, incluirlos aquí
+              };
+            }
+            return i;
+          });
+          // Si está en filteredIncidents (p. ej. si el filtro actual incluye “Solucionada”), actualizar también allí:
+          this.filteredIncidents = this.filteredIncidents.map(i => {
+            if (i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor) {
+              return {
+                ...i,
+                estado: updated.estado,
+                resolucion: updated.resolucion,
+                nombreCoordinador: updated.nombreCoordinador,
+              };
+            }
+            return i;
+          });
+          // No cambiamos página ni recuento de “En proceso” porque no se elimina nada
+        } else {
+          // Si no estaba solucionada antes, la removemos de arrays “En proceso”
+          this.summaryBaseData = this.summaryBaseData.filter(i =>
+            !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
+          );
+          this.filteredIncidents = this.filteredIncidents.filter(i =>
+            !(i.idIncidencia === updated.idIncidencia && i.dniProfesor === updated.dniProfesor)
+          );
+        }
+
+        // Mostrar modal de confirmación
         this.showResolveModal = true;
         setTimeout(() => this.showResolveModal = false, 1500);
+
+        // Recalcular paginación, summary counts, etc.
         this.setupPagination();
         this.updateSummary();
+
+        // Cerrar modal de resolución
         this.cerrarModalSolucion();
       },
       error: err => {
@@ -267,15 +323,24 @@ export class GestionIncidenciasComponent implements OnInit {
 
   filtrarPorEstado(estado: string): void {
     this.tipoReporteActivo = estado;
+
     if (estado === 'Totales') {
       this.filteredIncidents = [...this.summaryBaseData];
     } else if (estado === 'Solucionada') {
-      this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'solucionada');
+      this.filteredIncidents = this.summaryBaseData.filter(i =>
+        i.estado?.toLowerCase() === 'solucionada'
+      );
     } else if (estado === 'En proceso') {
-      this.filteredIncidents = this.summaryBaseData.filter(i => i.estado?.toLowerCase() === 'en proceso');
+      this.filteredIncidents = this.summaryBaseData.filter(i =>
+        i.estado?.toLowerCase() === 'en proceso'
+      );
     } else {
       this.filteredIncidents = [];
     }
+
+    // Se sincroniza el array actual
+    this.incidentsData = [...this.filteredIncidents];
+
     this.currentPage = 1;
     this.setupPagination();
   }

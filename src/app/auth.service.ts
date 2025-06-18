@@ -1,7 +1,11 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
+
+import { throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 export interface LoginRequest {
   username: string;
@@ -18,66 +22,75 @@ export interface LoginResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private rolesSubject      = new BehaviorSubject<string[]>([]);
+  private rolesSubject = new BehaviorSubject<string[]>([]);
   private activeRoleSubject = new BehaviorSubject<string | null>(null);
-  private dniSubject        = new BehaviorSubject<string | null>(null);
+  private dniSubject = new BehaviorSubject<string | null>(null);
 
-  roles$       = this.rolesSubject.asObservable();
-  activeRole$  = this.activeRoleSubject.asObservable();
+  roles$ = this.rolesSubject.asObservable();
+  activeRole$ = this.activeRoleSubject.asObservable();
   dniProfesor$ = this.dniSubject.asObservable();
 
-  private readonly STORAGE_ROLES   = 'roles';
-  private readonly STORAGE_ACTIVE  = 'activeRole';
-  private readonly STORAGE_DNI     = 'dniProfesor';
+  private readonly STORAGE_ROLES = 'roles';
+  private readonly STORAGE_ACTIVE = 'activeRole';
+  private readonly STORAGE_DNI = 'dniProfesor';
 
   constructor(private http: HttpClient) {
-    // 0) Cargar desde localStorage si existe
-    const savedRoles  = localStorage.getItem(this.STORAGE_ROLES);
-    const savedActive = localStorage.getItem(this.STORAGE_ACTIVE);
-    const savedDni    = localStorage.getItem(this.STORAGE_DNI);
+  // Cargar estado desde localStorage
+  const savedRoles = localStorage.getItem(this.STORAGE_ROLES);
+  const savedActive = localStorage.getItem(this.STORAGE_ACTIVE);
+  const savedDni = localStorage.getItem(this.STORAGE_DNI);
 
-    if (savedRoles)  {
-      try {
-        this.rolesSubject.next(JSON.parse(savedRoles));
-      } catch {
-        localStorage.removeItem(this.STORAGE_ROLES);
-      }
+  if (savedRoles) {
+    try {
+      this.rolesSubject.next(JSON.parse(savedRoles));
+    } catch {
+      localStorage.removeItem(this.STORAGE_ROLES);
     }
-    if (savedActive) {
-      this.activeRoleSubject.next(savedActive);
-    }
-    if (savedDni) {
-      this.dniSubject.next(savedDni);
-    }
-
-    // 1) Intentar recargar sesión desde el servidor
-    this.checkSession().subscribe({
-      next: resp => {
-        // Actualizamos roles y dni siempre
-        this.rolesSubject.next(resp.roles);
-        this.dniSubject.next(resp.dniProfesor);
-        localStorage.setItem(this.STORAGE_ROLES, JSON.stringify(resp.roles));
-        localStorage.setItem(this.STORAGE_DNI, resp.dniProfesor);
-
-        // Solo actualizamos activeRole si no había uno guardado
-        if (!savedActive) {
-          this.activeRoleSubject.next(resp.activeRole);
-          localStorage.setItem(this.STORAGE_ACTIVE, resp.activeRole);
-        } else {
-        }
-      },
-      error: () => {
-      }
-    });
+  }
+  if (savedActive) {
+    this.activeRoleSubject.next(savedActive);
+  }
+  if (savedDni) {
+    this.dniSubject.next(savedDni);
   }
 
-  login(req: LoginRequest): Observable<LoginResponse> {
+  // recargar sesión si había un activeRole guardado
+   if (savedActive) {
+     this.checkSession().subscribe({
+       next: resp => {
+         if (resp) {
+           // refrescar siempre roles y dni
+           this.rolesSubject.next(resp.roles);
+           this.dniSubject.next(resp.dniProfesor);
+           localStorage.setItem(this.STORAGE_ROLES, JSON.stringify(resp.roles));
+           localStorage.setItem(this.STORAGE_DNI, resp.dniProfesor);
+
+           // solo asignar activeRole si no venía de localStorage
+           if (!savedActive) {
+             this.activeRoleSubject.next(resp.activeRole);
+             localStorage.setItem(this.STORAGE_ACTIVE, resp.activeRole);
+           }
+         }
+       },
+       error: () => {
+       }
+     });
+   }
+}
+
+  /**
+   * Realiza login. En caso de recibir 401/403 u otro error HTTP,
+   * lo captura internamente y emite null, evitando que la rama error
+   * de subscribe se dispare en el componente.
+   */
+  login(req: LoginRequest): Observable<LoginResponse | null> {
     return this.http.post<LoginResponse>(
       'http://localhost:8080/auth/login',
       req,
       { withCredentials: true }
     ).pipe(
       tap(resp => {
+        // Solo si la respuesta es exitosa
         this.rolesSubject.next(resp.roles);
         this.activeRoleSubject.next(resp.activeRole);
         this.dniSubject.next(resp.dniProfesor);
@@ -85,6 +98,10 @@ export class AuthService {
         localStorage.setItem(this.STORAGE_ROLES, JSON.stringify(resp.roles));
         localStorage.setItem(this.STORAGE_ACTIVE, resp.activeRole);
         localStorage.setItem(this.STORAGE_DNI, resp.dniProfesor);
+      }),
+      catchError(() => {
+        // Suprimir error y devolver null
+        return of(null);
       })
     );
   }
@@ -103,20 +120,29 @@ export class AuthService {
         localStorage.removeItem(this.STORAGE_ROLES);
         localStorage.removeItem(this.STORAGE_ACTIVE);
         localStorage.removeItem(this.STORAGE_DNI);
+      }),
+      catchError(() => {
+        // Suprimir error de logout
+        return of(undefined as void);
       })
     );
   }
 
-  checkSession(): Observable<LoginResponse> {
-    return this.http.get<LoginResponse>(
-      'http://localhost:8080/auth/session',
-      { withCredentials: true }
-    ).pipe(
-      catchError(err => {
-        throw err;
-      })
-    );
-  }
+  checkSession(): Observable<LoginResponse | null> {
+   return this.http.get<LoginResponse>(
+     'http://localhost:8080/auth/session',
+     { withCredentials: true }
+   ).pipe(
+     catchError((err: HttpErrorResponse) => {
+       if (err.status === 401) {
+         // sesión caducada → devolvemos null sin error en consola
+         return of(null);
+       }
+       // cualquier otro error lo propagamos
+       return throwError(err);
+     })
+   );
+ }
 
   setActiveRole(rol: string) {
     this.activeRoleSubject.next(rol);
