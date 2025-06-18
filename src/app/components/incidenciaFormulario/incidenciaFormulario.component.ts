@@ -27,6 +27,8 @@ interface FormDataIncidencia {
   styleUrls: ['./incidenciaFormulario.component.css']
 })
 export class IncidenciaFormularioComponent implements OnInit {
+  readonly MAX_DESCRIPCION = 500; // tope único
+
   formData: FormDataIncidencia = {
     id: '',
     fecha: '',
@@ -128,7 +130,7 @@ export class IncidenciaFormularioComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.formData.descripcion || !this.formData.tipo) {
-      this.errorMessage = 'Completa todos los campos requeridos';
+      this.errorMessage = '"Tipo Incidencia" y "Descripción" son obligatorios';
       this.showErrorModal = true;
       return;
     }
@@ -216,5 +218,9 @@ export class IncidenciaFormularioComponent implements OnInit {
       reader.onload = () => this.imagePreview = reader.result;
       reader.readAsDataURL(file);
     }
+  }
+
+  get caracteresRestantes(): number {
+    return this.MAX_DESCRIPCION - (this.formData.descripcion?.length || 0);
   }
 }
