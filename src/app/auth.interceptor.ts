@@ -30,7 +30,6 @@ export class AuthInterceptor implements HttpInterceptor {
           const fakeResponse = new HttpResponse({ status: 200, body: null });
           return of(fakeResponse);
         }
-        // Para cualquier otro error, lo propagamos
         return throwError(err);
       })
     );

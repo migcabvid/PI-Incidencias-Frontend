@@ -54,7 +54,7 @@ export class AuthService {
     this.dniSubject.next(savedDni);
   }
 
-  // Solo intento recargar sesión si había un activeRole guardado
+  // recargar sesión si había un activeRole guardado
    if (savedActive) {
      this.checkSession().subscribe({
        next: resp => {
@@ -73,7 +73,6 @@ export class AuthService {
          }
        },
        error: () => {
-         // aquí puedes loguear errores de red si quieres
        }
      });
    }

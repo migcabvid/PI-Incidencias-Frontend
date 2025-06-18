@@ -43,12 +43,12 @@ export class AppComponent implements OnInit {
           ]);
         }
       } else {
-        // Sesión expirada o no válida → limpiamos y vamos a login
+        // Sesión expirada o no válida limpiamos y vamos a login
         this.limpiarYSacarLogin();
       }
     },
     error: () => {
-      // Error de red u otro → idem, limpiamos y login
+      // Error de red u otro idem, limpiamos y login
       this.limpiarYSacarLogin();
     }
   });
