@@ -1,4 +1,4 @@
-# Front‑End Angular · **Gestión de Incidencias**
+# Front‑End Angular · **Gestión de Incidencias** V1.0
 
 Este repositorio contiene el _front_ de la **Aplicación de Gestión de Incidencias**, desarrollado con **Angular**.  
 La interfaz permite a los **Coordinadores TIC** y **Profesores** registrar y consultar incidencias de forma sencilla.
